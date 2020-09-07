@@ -1,7 +1,7 @@
 {
   "name": "@dev.mohe/indexeddb",
   "version": "0.0.1",
-  "description": "> ✨ Bootstrapped with Create Snowpack App (CSA).",
+  "description": "Make a database interface available that works in the browser and in nodejs",
   "exports": {
     "node": "./src/node.js",
     "default": "./src/browser.js"
@@ -19,10 +19,11 @@
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.1",
     "@types/canvas-confetti": "^1.0.0",
+    "@types/mongodb": "^3.5.27",
     "@types/snowpack-env": "^2.3.0",
     "prettier": "^2.0.5",
     "snowpack": "^2.10.0",
-    "typescript": "^3.9.7"
+    "typescript": "^4.0.2"
   },
   "repository": {
     "type": "git",

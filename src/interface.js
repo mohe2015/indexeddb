@@ -16,29 +16,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
+// https://jsdoc.app/
 
-// https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
+class Database {
 
-class IndexedDBDatabase extends Database {
-    
-    /**
-     * @private
-     * @param {string} name
-     * @param {number} version
-     */
-    constructor(name, version) {
-        super();
-        this.database = window.indexedDB.open(name, version);
-    }
-
-    /**
-    * @param {any} name
-    * @param {any} version
-    * @returns Promise<IndexedDBDatabase>
-    */
-    static async create(name, version) {
-        let database = new IndexedDBDatabase(name, version);
-        await database.connect();
-        return database;
+    async connect() {
+        throw new Error("not implemented");
     }
 }
