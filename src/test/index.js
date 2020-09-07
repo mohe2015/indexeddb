@@ -17,10 +17,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { create } from "../src/browser";
+import { create } from "../browser.js";
 
 async function run() {
     let database = await create("blub", 1);
+    console.log(database)
 }
 
 run()
