@@ -73,6 +73,9 @@ let migration1 = {
     addedIndexes: {
         "test.name": {
             keyPath: "name",
+        },
+        "test.value": {
+            keyPath: "name",
         }
     },
     removedIndexes: []
@@ -85,10 +88,16 @@ let migration3: Migration<(keyof typeof merged)> = {
     removedIndexes: ["test.name"]
 }
 
-const removed = minus(merged, migration3.removedIndexes)
+const removed = test(merged, migration3.removedIndexes)
 
 function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B) {
     return Object.assign({}, state, migration)
+}
+
+function test<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)[]>(state: A, migration: B): Exclude<keyof A, B>[] {
+    const a: Array<keyof A> = Object.keys(state)
+    const b: Exclude<keyof A, B>[] = a.filter((key: keyof A) => !migration.includes(key)) as Exclude<keyof A, B>[]
+    return b
 }
 
 function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)[]>(state: A, migration: B): Pick<A, Exclude<keyof A, B>> {
@@ -100,6 +109,3 @@ function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A
     }, {} as Record<Exclude<keyof A, B>, DatabaseSchemaIndex>)
     return c
 }
-
-
-removed["test.name"]
