@@ -19,4 +19,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { create } from "../src/browser";
 
-let database = await create("blub", 1);
+async function run() {
+    let database = await create("blub", 1);
+}
+
+run()

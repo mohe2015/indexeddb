@@ -19,37 +19,29 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
+import { Database } from './interface'
+
 class IndexedDBDatabase extends Database {
-    
     /**
+     * @param {IDBDatabase} database
      * @private
      */
-    constructor() {
+    constructor(database) {
         super();
+        this.database = database
     }
 
     /**
-    * @param {any} name
-    * @param {any} version has to be at least 1
-    * @returns Promise<IndexedDBDatabase>
-    */
-    static async create(name, version) {
-        let database = new IndexedDBDatabase();
-        await database.connect(name, version);
-        return database;
-    }
-
-    /**
-     * @param {string} name
-     * @param {number} version
+     * @param {any} name
+     * @param {any} version has to be at least 1
+     * @returns Promise<IndexedDBDatabase>
      */
-    async connect(name, version) {
-        const promise = new Promise((resolve, reject) => {
+    static create(name, version) {
+        return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, version);
             
             databaseOpenRequest.addEventListener("success", (event) => {
-                this.database = databaseOpenRequest.result
-                resolve(this);
+                resolve(new IndexedDBDatabase(databaseOpenRequest.result));
             })
             databaseOpenRequest.addEventListener("error", (event) => {
                 console.error(event)

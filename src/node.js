@@ -18,18 +18,18 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // @ts-check
 
 import { MongoClient } from 'mongodb';
+import { Database } from './interface';
 
 // https://docs.mongodb.com/drivers/node/
 
 class MongoDBDatabase extends Database {
 
   /**
-   * @private
-   * @param {string} uri
+   * @param {MongoClient} database
    */
-  constructor(uri) {
+  constructor(database) {
     super();
-    this.database = new MongoClient(uri);
+    this.database = database;
   }
 
   /**
@@ -38,13 +38,9 @@ class MongoDBDatabase extends Database {
    * @returns Promise<MongoDBDatabase>
    */
   static async create(uri, version) {
-    let database = new MongoDBDatabase(uri);
+    let database = new MongoClient(uri);
     await database.connect();
-    return database;
-  }
-
-  async connect() {
-    await this.database.connect();
+    return new MongoDBDatabase(database);
   }
 }
 
