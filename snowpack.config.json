@@ -1,4 +1,5 @@
 {
+  "exclude": ["**/src/node.js", "**/node_modules/**/*"],
   "mount": {
     "public": "/",
     "src": "/_dist_"

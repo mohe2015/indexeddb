@@ -25,6 +25,6 @@
     "baseUrl": "./",
     "paths": { "*": ["web_modules/.types/*"] }
   },
-  "include": ["src", "types"],
+  "include": ["src", "test", "types"],
   "exclude": ["node_modules"]
 }
