@@ -20,8 +20,11 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 import { create } from "../browser.js";
 
 async function run() {
-    let database = await create("blub", 1);
+    let databaseConnection = await create("localhost");
+    let database = await databaseConnection.database("blub", 1)
     console.log(database)
+
+    let objectStore = database.createObjectStore("name", { keyPath: "myKey" })
 }
 
 run()

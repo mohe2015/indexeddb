@@ -19,29 +19,37 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
-import { Database } from './interface'
+import { Database, DatabaseObjectStore, DatabaseConnection } from './interface'
 
-class IndexedDBDatabase extends Database {
+class IndexedDatabaseConnection extends DatabaseConnection {
+
     /**
-     * @param {IDBDatabase} database
      * @private
      */
-    constructor(database) {
-        super();
-        this.database = database
+    constructor() {
+        super()
     }
 
     /**
+     * @param {string} uri
+     * @returns {Promise<IndexedDatabaseConnection>}
+     */
+    static async create(uri) {
+        return new IndexedDatabaseConnection()
+    }
+
+    /**
+     * 
      * @param {any} name
      * @param {any} version has to be at least 1
-     * @returns Promise<IndexedDBDatabase>
+     * @returns {Promise<IndexedDatabase>}
      */
-    static create(name, version) {
+    async database(name, version) {
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, version);
             
             databaseOpenRequest.addEventListener("success", (event) => {
-                resolve(new IndexedDBDatabase(databaseOpenRequest.result));
+                resolve(new IndexedDatabase(databaseOpenRequest.result));
             })
             databaseOpenRequest.addEventListener("error", (event) => {
                 console.error(event)
@@ -61,4 +69,35 @@ class IndexedDBDatabase extends Database {
     }
 }
 
-export const create = IndexedDBDatabase.create;
+class IndexedDatabase extends Database {
+
+    /**
+     * @param {IDBDatabase} database
+     */
+    constructor(database) {
+        super();
+        this.database = database
+    }
+
+    /**
+     * @param {string} name
+     * @param {IDBObjectStoreParameters} options
+     */
+    createObjectStore(name, options) {
+        let objectStore = this.database.createObjectStore(name, options)
+        return new IndexedDatabaseObjectStore(objectStore)
+    }
+}
+
+class IndexedDatabaseObjectStore extends DatabaseObjectStore {
+    
+    /**
+     * @param {IDBObjectStore} objectStore
+     */
+    constructor(objectStore) {
+        super();
+        this.objectStore = objectStore
+    }
+}
+
+export const create = IndexedDatabaseConnection.create;
