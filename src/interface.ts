@@ -85,6 +85,8 @@ let migration3: Migration<(keyof typeof merged)> = {
     removedIndexes: ["test.name"]
 }
 
+const removed = minus(merged, migration3.removedIndexes)
+
 function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B) {
     return Object.assign({}, state, migration)
 }
@@ -99,6 +101,5 @@ function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A
     return c
 }
 
-const removed = minus(merged, migration3.removedIndexes)
 
 removed["test.name"]
