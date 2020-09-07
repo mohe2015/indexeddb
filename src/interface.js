@@ -35,13 +35,13 @@ export class DatabaseConnection {
     }
 
     /**
-     * 
      * @abstract
      * @param {any} name the name of the database
      * @param {any} version has to be at least 1
+     * @param {(database: Database) => Promise<void>} onUpgrade
      * @returns {Promise<Database>}
      */
-    async database(name, version) {
+    async database(name, version, onUpgrade) {
         throw new Error("not implemented")
     }
 }

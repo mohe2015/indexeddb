@@ -56,6 +56,9 @@ class MongoDatabaseConnection extends DatabaseConnection {
 
 class MongoDatabase extends Database {
 
+  /**
+   * @param {import("mongodb").Db} database
+   */
   constructor(database) {
     super()
     this.database = database

@@ -42,9 +42,10 @@ class IndexedDatabaseConnection extends DatabaseConnection {
      * 
      * @param {any} name
      * @param {any} version has to be at least 1
+     * @param {(database: Database) => Promise<void>} onUpgrade
      * @returns {Promise<IndexedDatabase>}
      */
-    async database(name, version) {
+    async database(name, version, onUpgrade) {
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, version);
             
@@ -60,10 +61,19 @@ class IndexedDatabaseConnection extends DatabaseConnection {
                 console.error(event)
                 reject("database blocked")
             })
-            databaseOpenRequest.addEventListener("upgradeneeded", (event) => {
-                // TODO FIXME
-                console.error(event)
-                reject("upgrade needed")
+            databaseOpenRequest.addEventListener("upgradeneeded", async (event) => {
+                // TODO FIXME multiple versions update at once
+                
+                let database = new IndexedDatabase(databaseOpenRequest.result)
+                console.log("upgradeneeded")
+                try {
+                    await onUpgrade(database) // TODO what if it throws
+                } catch (error) {
+                    console.log(error)
+                    databaseOpenRequest.transaction.abort()
+                    reject("upgrade failed")
+                }
+                resolve(database)
             })
         })
     }
