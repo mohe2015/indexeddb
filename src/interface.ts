@@ -64,9 +64,9 @@ export interface DatabaseSchemaIndex {
     options?: IDBIndexParameters
 }
 
-export interface Migration {
+export interface Migration<T = string[]> {
     addedIndexes: { [a: string]: DatabaseSchemaIndex; }
-    removedIndexes: string[]
+    removedIndexes: T[]
 }
 
 let migration1 = {
@@ -78,16 +78,9 @@ let migration1 = {
     removedIndexes: []
 }
 
-let migration2 = {
-    addedIndexes: {
-        "test.value": {
-            keyPath: "value",
-        }
-    },
-    removedIndexes: []
-}
+const merged = merge({}, migration1.addedIndexes)
 
-let migration3 = {
+let migration3: Migration<(keyof typeof merged)> = {
     addedIndexes: {},
     removedIndexes: ["test.name"]
 }
@@ -106,7 +99,6 @@ function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A
     return c
 }
 
-const merged = merge({}, migration1.addedIndexes)
 const removed = minus(merged, migration3.removedIndexes)
 
 removed["test.name"]
