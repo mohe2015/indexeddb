@@ -43,7 +43,8 @@ class IndexedDatabaseConnection extends DatabaseConnection {
      * @param {any} name
      * @param {any} version has to be at least 1
      * @param {(database: IndexedDatabase, oldVersion: number, newVersion: number) => void} onUpgrade
-     * @returns {Promise<IndexedDatabase>}
+     * @template T
+     * @returns {Promise<Database<T>>}
      */
     async database(name, version, onUpgrade) {
         return new Promise((resolve, reject) => {
@@ -73,6 +74,9 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     }
 }
 
+/**
+ * @template T {DatabaseSchema}
+ */
 class IndexedDatabase extends Database {
 
     /**
@@ -90,6 +94,7 @@ class IndexedDatabase extends Database {
      */
     createObjectStore(name, options) {
         let objectStore = this.database.createObjectStore(name, options)
+
         return new IndexedDatabaseObjectStore(objectStore)
     }
 }

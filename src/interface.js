@@ -39,7 +39,11 @@ export class DatabaseConnection {
      * @param {any} name the name of the database
      * @param {any} version has to be at least 1
      * @param {(database: Database, oldVersion: number, newVersion: number) => void} onUpgrade
-     * @returns {Promise<Database>}
+     * The problem is that the indexeddb update handler has to be synchronous and is the only place to change the schema.
+     * The mongodb database needs promises so we can't run a custom update handler as these would be incompatible
+     * The idea would be to create an array of the migrations per version / easier would be to specify a schema (then renames are probably not possible)
+     * @template T
+     * @returns {Promise<Database<T>>}
      */
     async database(name, version, onUpgrade) {
         throw new Error("not implemented")
@@ -48,19 +52,11 @@ export class DatabaseConnection {
 
 /**
  * @abstract
+ * @template T {DatabaseSchema}
  */
 export class Database {
 
-    /**
-     * @name createObjectStore
-     * @abstract
-     * @param {string} name 
-     * @param {IDBObjectStoreParameters} options 
-     * @returns DatabaseObjectStore
-     */
-    createObjectStore(name, options) {
-        throw new Error("not implemented")
-    }
+
 }
 
 /**
@@ -69,3 +65,24 @@ export class Database {
 export class DatabaseObjectStore {
 
 }
+
+/**
+ * 
+ * @typedef DatabaseSchema
+ * @property {DatabaseSchemaObjectStore[]} objectStores
+ */
+
+ /**
+  * 
+  * @typedef DatabaseSchemaObjectStore
+  * @property {string} name
+  * @property {IDBObjectStoreParameters} options
+  * @property {DatabaseSchemaIndex[]} indexes
+  */
+
+  /**
+   * @typedef DatabaseSchemaIndex
+   * @property {string} name 
+   * @property {string | string[]} keyPath 
+   * @property {IDBIndexParameters} [options]
+   */

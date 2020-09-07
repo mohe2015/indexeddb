@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // @ts-check
 
 import { MongoClient } from 'mongodb';
-import { Database, DatabaseConnection } from './interface';
+import { Database, DatabaseConnection, DatabaseObjectStore } from './interface';
 
 // https://docs.mongodb.com/drivers/node/
 
@@ -49,7 +49,8 @@ class MongoDatabaseConnection extends DatabaseConnection {
    * @returns {Promise<MongoDatabase>}
    */
   async database(name, version) {
-    let database = this.databaseConnection.db("dbname")
+    let database = this.databaseConnection.db(name)
+    // TODO FIXME implement upgradeneeded manually
     return new MongoDatabase(database)
   }
 }
@@ -62,6 +63,21 @@ class MongoDatabase extends Database {
   constructor(database) {
     super()
     this.database = database
+  }
+
+  /**
+   * @param {string} name 
+   * @param {IDBObjectStoreParameters} options 
+   * @returns {Promise<DatabaseObjectStore>}
+   */
+  async createObjectStore(name, options) {
+   // options.keyPath
+    let collection = await this.database.createCollection(name, {
+      autoIndexId: options.autoIncrement,
+    })
+    let index = await collection.createIndex(options.keyPath, {
+      
+    })
   }
 }
 
