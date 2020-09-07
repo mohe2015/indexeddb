@@ -15,69 +15,49 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-// @ts-check
 
-import { MongoClient } from 'mongodb';
-import { Database, DatabaseConnection, DatabaseObjectStore } from './interface';
+import { Db, MongoClient } from 'mongodb';
+import { Database, DatabaseConnection, DatabaseObjectStore, DatabaseSchema } from './interface';
 
 // https://docs.mongodb.com/drivers/node/
 
 class MongoDatabaseConnection extends DatabaseConnection {
+  databaseConnection: MongoClient;
 
-  /**
-   * @param {MongoClient} databaseConnection
-   */
-  constructor(databaseConnection) {
+  constructor(databaseConnection: MongoClient) {
     super();
     this.databaseConnection = databaseConnection;
   }
 
-  /**
-   * @param {string} uri
-   * @returns {Promise<MongoDatabaseConnection>}
-   */
-  static async create(uri) {
+  static async create(uri: string): Promise<MongoDatabaseConnection> {
     let database = new MongoClient(uri);
     await database.connect();
     return new MongoDatabaseConnection(database);
   }
 
-  /**
-   * 
-   * @param {any} name
-   * @param {any} version has to be at least 1
-   * @returns {Promise<MongoDatabase>}
-   */
-  async database(name, version) {
+  async database<T extends DatabaseSchema>(name: string, version: number): Promise<MongoDatabase<T>> {
     let database = this.databaseConnection.db(name)
     // TODO FIXME implement upgradeneeded manually
     return new MongoDatabase(database)
   }
 }
 
-class MongoDatabase extends Database {
+class MongoDatabase<T extends DatabaseSchema> extends Database<T> {
+  database: Db;
 
-  /**
-   * @param {import("mongodb").Db} database
-   */
-  constructor(database) {
+  constructor(database: Db) {
     super()
     this.database = database
   }
 
-  /**
-   * @param {string} name 
-   * @param {IDBObjectStoreParameters} options 
-   * @returns {Promise<DatabaseObjectStore>}
-   */
-  async createObjectStore(name, options) {
-   // options.keyPath
+  async createObjectStore(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore> {
     let collection = await this.database.createCollection(name, {
       autoIndexId: options.autoIncrement,
     })
     let index = await collection.createIndex(options.keyPath, {
       
     })
+    throw new Error("not implemented")
   }
 }
 

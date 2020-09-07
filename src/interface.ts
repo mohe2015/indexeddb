@@ -15,74 +15,41 @@ GNU Affero General -Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-// @ts-check
-
-// https://jsdoc.app/
 
 /**
  * @abstract
  */
-export class DatabaseConnection {
+export abstract class DatabaseConnection {
 
-    /**
-     * 
-     * @abstract
-     * @param {string} uri
-     * @returns {Promise<DatabaseConnection>}d
-     */
-    static async create(uri) {
+    static async create(uri: string): Promise<DatabaseConnection> {
         throw new Error("not implemented")
     }
 
-    /**
-     * @abstract
-     * @param {any} name the name of the database
-     * @param {any} version has to be at least 1
-     * @param {(database: Database, oldVersion: number, newVersion: number) => void} onUpgrade
-     * The problem is that the indexeddb update handler has to be synchronous and is the only place to change the schema.
-     * The mongodb database needs promises so we can't run a custom update handler as these would be incompatible
-     * The idea would be to create an array of the migrations per version / easier would be to specify a schema (then renames are probably not possible)
-     * @template T
-     * @returns {Promise<Database<T>>}
-     */
-    async database(name, version, onUpgrade) {
-        throw new Error("not implemented")
-    }
+    async abstract database<T extends DatabaseSchema>(name: string, version: number, onUpgrade: (database: Database<T>, oldVersion: number, newVersion: number) => void): Promise<Database<T>>;
 }
 
-/**
- * @abstract
- * @template T {DatabaseSchema}
- */
-export class Database {
+export abstract class Database<T extends DatabaseSchema> {
 
-
+    abstract createObjectStore(name: string, options: IDBObjectStoreParameters): DatabaseObjectStore;
 }
 
-/**
- * @abstract
- */
-export class DatabaseObjectStore {
+export abstract class DatabaseObjectStore {
 
+    abstract createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters): IDBIndex;
 }
 
-/**
- * 
- * @typedef DatabaseSchema
- * @property {DatabaseSchemaObjectStore[]} objectStores
- */
+export interface DatabaseSchema {
+    objectStores: DatabaseSchemaObjectStore[]
+}
 
- /**
-  * 
-  * @typedef DatabaseSchemaObjectStore
-  * @property {string} name
-  * @property {IDBObjectStoreParameters} options
-  * @property {DatabaseSchemaIndex[]} indexes
-  */
+export interface DatabaseSchemaObjectStore {
+    name: string
+    options: IDBObjectStoreParameters
+    indexes: DatabaseSchemaIndex[]
+}
 
-  /**
-   * @typedef DatabaseSchemaIndex
-   * @property {string} name 
-   * @property {string | string[]} keyPath 
-   * @property {IDBIndexParameters} [options]
-   */
+export interface DatabaseSchemaIndex {
+    name: string
+    keyPath: string | string[]
+    options?: IDBIndexParameters
+}

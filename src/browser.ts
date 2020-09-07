@@ -19,34 +19,19 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
-import { Database, DatabaseObjectStore, DatabaseConnection } from './interface'
+import { Database, DatabaseObjectStore, DatabaseConnection, DatabaseSchema } from './interface'
 
 class IndexedDatabaseConnection extends DatabaseConnection {
 
-    /**
-     * @private
-     */
-    constructor() {
+    private constructor() {
         super()
     }
 
-    /**
-     * @param {string} uri
-     * @returns {Promise<IndexedDatabaseConnection>}
-     */
-    static async create(uri) {
+    static async create(uri: string) {
         return new IndexedDatabaseConnection()
     }
 
-    /**
-     * 
-     * @param {any} name
-     * @param {any} version has to be at least 1
-     * @param {(database: IndexedDatabase, oldVersion: number, newVersion: number) => void} onUpgrade
-     * @template T
-     * @returns {Promise<Database<T>>}
-     */
-    async database(name, version, onUpgrade) {
+    async database<T extends DatabaseSchema>(name: string, version: number, onUpgrade: (database: Database<T>, oldVersion: number, newVersion: number) => void): Promise<Database<T>> {
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, version);
             
@@ -62,10 +47,10 @@ class IndexedDatabaseConnection extends DatabaseConnection {
             databaseOpenRequest.addEventListener("upgradeneeded", (event) => {                
                 let database = new IndexedDatabase(databaseOpenRequest.result)
                 try {
-                    onUpgrade(database, event.oldVersion, event.newVersion)
+                    onUpgrade(database, event.oldVersion, event.newVersion!)
                 } catch (error) {
                     console.log(error)
-                    databaseOpenRequest.transaction.abort()
+                    databaseOpenRequest.transaction!.abort()
                     reject(error)
                 }
                 // onsuccess gets called automatically
@@ -74,49 +59,29 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     }
 }
 
-/**
- * @template T {DatabaseSchema}
- */
-class IndexedDatabase extends Database {
+class IndexedDatabase<T extends DatabaseSchema> extends Database<T> {
+    database: IDBDatabase;
 
-    /**
-     * @param {IDBDatabase} database
-     */
-    constructor(database) {
+    constructor(database: IDBDatabase) {
         super();
         this.database = database
     }
 
-    /**
-     * @param {string} name
-     * @param {IDBObjectStoreParameters} options
-     * @returns {IndexedDatabaseObjectStore}
-     */
-    createObjectStore(name, options) {
+    createObjectStore(name: string, options: IDBObjectStoreParameters): IndexedDatabaseObjectStore {
         let objectStore = this.database.createObjectStore(name, options)
-
         return new IndexedDatabaseObjectStore(objectStore)
     }
 }
 
 class IndexedDatabaseObjectStore extends DatabaseObjectStore {
+    objectStore: IDBObjectStore;
     
-    /**
-     * @param {IDBObjectStore} objectStore
-     */
-    constructor(objectStore) {
+    constructor(objectStore: IDBObjectStore) {
         super();
         this.objectStore = objectStore
     }
 
-    /**
-     * 
-     * @param {string} name 
-     * @param {string | string[]} keyPath 
-     * @param {IDBIndexParameters} [options]
-     * @returns {IDBIndex}
-     */
-    createIndex(name, keyPath, options) {
+    createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters) {
         return this.objectStore.createIndex(name, keyPath, options)
     }
 }

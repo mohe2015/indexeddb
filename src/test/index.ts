@@ -23,9 +23,6 @@ async function run() {
     try {
         let databaseConnection = await create("localhost");
 
-        /**
-         * 
-         */
         let database = await databaseConnection.database("blub", 5, (database, oldVersion, newVersion) => {
             let objectStore = database.createObjectStore("a", { autoIncrement: true })
             let index = objectStore.createIndex("name", "name", { unique: true })
