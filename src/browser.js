@@ -23,22 +23,50 @@ class IndexedDBDatabase extends Database {
     
     /**
      * @private
-     * @param {string} name
-     * @param {number} version
      */
-    constructor(name, version) {
+    constructor() {
         super();
-        this.database = window.indexedDB.open(name, version);
     }
 
     /**
     * @param {any} name
-    * @param {any} version
+    * @param {any} version has to be at least 1
     * @returns Promise<IndexedDBDatabase>
     */
     static async create(name, version) {
-        let database = new IndexedDBDatabase(name, version);
-        await database.connect();
+        let database = new IndexedDBDatabase();
+        await database.connect(name, version);
         return database;
     }
+
+    /**
+     * @param {string} name
+     * @param {number} version
+     */
+    async connect(name, version) {
+        const promise = new Promise((resolve, reject) => {
+            const databaseOpenRequest = window.indexedDB.open(name, version);
+            
+            databaseOpenRequest.addEventListener("success", (event) => {
+                this.database = databaseOpenRequest.result
+                resolve(this);
+            })
+            databaseOpenRequest.addEventListener("error", (event) => {
+                console.error(event)
+                reject("failed to open database")
+            })
+            databaseOpenRequest.addEventListener("blocked", (event) => {
+                // TODO FIXME
+                console.error(event)
+                reject("database blocked")
+            })
+            databaseOpenRequest.addEventListener("upgradeneeded", (event) => {
+                // TODO FIXME
+                console.error(event)
+                reject("upgrade needed")
+            })
+        })
+    }
 }
+
+export const create = IndexedDBDatabase.create;

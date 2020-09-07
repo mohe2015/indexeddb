@@ -41,4 +41,10 @@ class MongoDBDatabase extends Database {
     await database.connect();
     return database;
   }
+
+  async connect() {
+    await this.database.connect();
+  }
 }
+
+export const create = MongoDBDatabase.create;

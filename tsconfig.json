@@ -3,6 +3,7 @@
     "module": "esnext",
     "target": "esnext",
     "moduleResolution": "node",
+    "lib": ["ESNext", "DOM"],
     "jsx": "preserve",
     "allowSyntheticDefaultImports": true,
     "importsNotUsedAsValues": "error",
