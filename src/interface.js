@@ -38,7 +38,7 @@ export class DatabaseConnection {
      * @abstract
      * @param {any} name the name of the database
      * @param {any} version has to be at least 1
-     * @param {(database: Database) => Promise<void>} onUpgrade
+     * @param {(database: Database, oldVersion: number, newVersion: number) => void} onUpgrade
      * @returns {Promise<Database>}
      */
     async database(name, version, onUpgrade) {

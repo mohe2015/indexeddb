@@ -42,7 +42,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
      * 
      * @param {any} name
      * @param {any} version has to be at least 1
-     * @param {(database: Database) => Promise<void>} onUpgrade
+     * @param {(database: IndexedDatabase, oldVersion: number, newVersion: number) => void} onUpgrade
      * @returns {Promise<IndexedDatabase>}
      */
     async database(name, version, onUpgrade) {
@@ -53,27 +53,21 @@ class IndexedDatabaseConnection extends DatabaseConnection {
                 resolve(new IndexedDatabase(databaseOpenRequest.result));
             })
             databaseOpenRequest.addEventListener("error", (event) => {
-                console.error(event)
-                reject("failed to open database")
+                reject(databaseOpenRequest.error)
             })
             databaseOpenRequest.addEventListener("blocked", (event) => {
-                // TODO FIXME
-                console.error(event)
-                reject("database blocked")
+                reject(new Error("database blocked"))
             })
-            databaseOpenRequest.addEventListener("upgradeneeded", async (event) => {
-                // TODO FIXME multiple versions update at once
-                
+            databaseOpenRequest.addEventListener("upgradeneeded", (event) => {                
                 let database = new IndexedDatabase(databaseOpenRequest.result)
-                console.log("upgradeneeded")
                 try {
-                    await onUpgrade(database) // TODO what if it throws
+                    onUpgrade(database, event.oldVersion, event.newVersion)
                 } catch (error) {
                     console.log(error)
                     databaseOpenRequest.transaction.abort()
-                    reject("upgrade failed")
+                    reject(error)
                 }
-                resolve(database)
+                // onsuccess gets called automatically
             })
         })
     }
@@ -92,6 +86,7 @@ class IndexedDatabase extends Database {
     /**
      * @param {string} name
      * @param {IDBObjectStoreParameters} options
+     * @returns {IndexedDatabaseObjectStore}
      */
     createObjectStore(name, options) {
         let objectStore = this.database.createObjectStore(name, options)
@@ -107,6 +102,17 @@ class IndexedDatabaseObjectStore extends DatabaseObjectStore {
     constructor(objectStore) {
         super();
         this.objectStore = objectStore
+    }
+
+    /**
+     * 
+     * @param {string} name 
+     * @param {string | string[]} keyPath 
+     * @param {IDBIndexParameters} [options]
+     * @returns {IDBIndex}
+     */
+    createIndex(name, keyPath, options) {
+        return this.objectStore.createIndex(name, keyPath, options)
     }
 }
 
