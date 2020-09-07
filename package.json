@@ -33,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/mohe2015/indexeddb/issues"
   },
-  "homepage": "https://github.com/mohe2015/indexeddb#readme"
+  "homepage": "https://github.com/mohe2015/indexeddb#readme",
+  "optionalDependencies": {
+    "mongodb": "^3.6.1"
+  }
 }
