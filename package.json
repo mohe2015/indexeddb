@@ -1,4 +1,11 @@
 {
+  "name": "@dev.mohe/indexeddb",
+  "version": "0.0.1",
+  "description": "> ✨ Bootstrapped with Create Snowpack App (CSA).",
+  "exports": {
+    "node": "./src/node.js",
+    "default": "./src/browser.js"
+  },
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",
@@ -16,5 +23,15 @@
     "prettier": "^2.0.5",
     "snowpack": "^2.10.0",
     "typescript": "^3.9.7"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mohe2015/indexeddb.git"
+  },
+  "author": "Moritz.Hedtke <Moritz.Hedtke@t-online.de>",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/mohe2015/indexeddb/issues"
+  },
+  "homepage": "https://github.com/mohe2015/indexeddb#readme"
 }
