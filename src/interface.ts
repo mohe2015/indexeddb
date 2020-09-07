@@ -37,7 +37,7 @@ export abstract class DatabaseObjectStore {
 
     abstract createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters): IDBIndex;
 }
-
+/*
 export interface DatabaseSchema {
     objectStores: DatabaseSchemaObjectStore[]
 }
@@ -53,3 +53,60 @@ export interface DatabaseSchemaIndex {
     keyPath: string | string[]
     options?: IDBIndexParameters
 }
+*/
+
+export interface DatabaseSchemaIndex {
+    //objectStore: string
+
+    autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
+    //name: string
+    keyPath: string | string[]
+    options?: IDBIndexParameters
+}
+
+export interface Migration {
+    addedIndexes: { [a: string]: DatabaseSchemaIndex; }
+    removedIndexes: string[]
+}
+
+let migration1 = {
+    addedIndexes: {
+        "test.name": {
+            keyPath: "name",
+        }
+    },
+    removedIndexes: []
+}
+
+let migration2 = {
+    addedIndexes: {
+        "test.value": {
+            keyPath: "value",
+        }
+    },
+    removedIndexes: []
+}
+
+let migration3 = {
+    addedIndexes: {},
+    removedIndexes: ["test.name"]
+}
+
+function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B) {
+    return Object.assign({}, state, migration)
+}
+
+function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)[]>(state: A, migration: B): Pick<A, Exclude<keyof A, B>> {
+    const a: Array<keyof A> = Object.keys(state)
+    const b: Exclude<keyof A, B>[] = a.filter((key: keyof A) => !migration.includes(key)) as Exclude<keyof A, B>[]
+    const c = b.reduce<Record<Exclude<keyof A, B>, DatabaseSchemaIndex>>((obj: Record<Exclude<keyof A, B>, DatabaseSchemaIndex>, key) => {
+        obj[key] = state[key];
+        return obj;
+    }, {} as Record<Exclude<keyof A, B>, DatabaseSchemaIndex>)
+    return c
+}
+
+const merged = merge({}, migration1.addedIndexes)
+const removed = minus(merged, migration3.removedIndexes)
+
+removed["test.name"]
