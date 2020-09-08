@@ -90,14 +90,15 @@ function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: 
 
 const merged = merge({}, migration1.addedIndexes)
 
-function test<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)>(dictionary: A, remove: B[]): Record<ExcludeStrict<keyof A, B>, DatabaseSchemaIndex> {
+function test<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)>(dictionary: A, remove: B[]): Pick<A, Exclude<keyof A, B>> {
+    let a: A["jo"] = dictionary["jo"]
+    
     let entries: [keyof A, DatabaseSchemaIndex][] = Object.entries(dictionary)
     let filteredEntries = entries.filter(entry => !(remove as Array<string>).includes(entry[0])) as [ExcludeStrict<keyof A, B>, DatabaseSchemaIndex][]
-    return Object.fromEntries(filteredEntries) as Record<ExcludeStrict<keyof A, B>, DatabaseSchemaIndex>
+    return Object.fromEntries(filteredEntries) as Pick<A, Exclude<keyof A, B>>
 }
 
 const removed = test(merged, ["test.name"])
-
 
 /*
 let migration3: Migration<typeof merged, "test.name"> = {
