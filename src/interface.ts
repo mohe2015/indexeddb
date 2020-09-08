@@ -72,18 +72,6 @@ export type Migration<A, B extends keyof A> = {
     removedIndexes: Readonly<ExtractStrict<keyof A, B>[]>
 }
 
-let migration1 = {
-    addedIndexes: {
-        "test.name": {
-            keyPath: "name",
-        },
-        "test.value": {
-            keyPath: "name",
-        }
-    },
-    removedIndexes: []
-}
-
 // https://github.com/microsoft/TypeScript/issues/32771
 // https://github.com/microsoft/TypeScript/issues/35101
 type Entries<T> = {
@@ -102,23 +90,39 @@ function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: 
     return Object.assign({}, state, migration)
 }
 
-const merged = merge({}, migration1.addedIndexes)
-
 function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof A)>(dictionary: A, remove: readonly B[]) {    
     let theEntries = entries<A>(dictionary)
     let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A, Exclude<keyof A, B>>>
     return fromEntries(filteredEntries)
 }
 
+function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A>(state: A, migration: Migration<A, B>) {
+    let merged = merge(state, migration.addedIndexes)
+    let removed = test(merged, migration.removedIndexes)
+    return removed
+}
+
+let migration1 = {
+    addedIndexes: {
+        "test.name": {
+            keyPath: "name",
+        },
+        "test.value": {
+            keyPath: "name",
+        }
+    },
+    removedIndexes: []
+}
+
+let merged = migrate({}, migration1)
+
 let migration2: Migration<typeof merged, "test.name"> = {
     addedIndexes: {},
     removedIndexes: ["test.name"] as const
 }
 
-const merged1 = merge(merged, migration2.addedIndexes)
+let merged1 = migrate(merged, migration2)
+
 
 // TODO FIXME state and migration need to be connected
-const removed = test(merged, migration2.removedIndexes)
-
-
 const thisshouldntwork = test(merged1, migration2.removedIndexes)
