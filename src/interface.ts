@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { assert as typeAssert, IsNever } from "@dev.mohe/conditional-type-checks";
+import type { IsNever } from "@dev.mohe/conditional-type-checks";
 
 /**
  * @abstract
@@ -39,23 +39,6 @@ export abstract class DatabaseObjectStore {
 
     abstract createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters): IDBIndex;
 }
-/*
-export interface DatabaseSchema {
-    objectStores: DatabaseSchemaObjectStore[]
-}
-
-export interface DatabaseSchemaObjectStore {
-    name: string
-    options: IDBObjectStoreParameters
-    indexes: DatabaseSchemaIndex[]
-}
-
-export interface DatabaseSchemaIndex {
-    name: string
-    keyPath: string | string[]
-    options?: IDBIndexParameters
-}
-*/
 
 type ExtractStrict<T, U extends T> = Extract<T, U>;
 type ExcludeStrict<T, U extends T> = Exclude<T, U>;
@@ -71,6 +54,8 @@ export interface DatabaseSchemaIndex {
     keyPath: string | string[]
     options?: IDBIndexParameters
 }
+
+export type DatabaseSchema = { [a: string]: DatabaseSchemaIndex; }
 
 export type Migration<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }> = {
     addedIndexes: C
@@ -106,8 +91,6 @@ function migrate<T extends IsNever<keyof A & keyof C>, A extends { [a: string]: 
     let removed = test(merged, migration.removedIndexes)
     return removed 
 }
-
-type test = ("sdffd" | "dfs") & ("sdfd" | "dsflsfi")
 
 let migration1 = {
     addedIndexes: {
