@@ -92,18 +92,11 @@ function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: 
     return Object.assign({}, state, migration)
 }
 
-
 const removed = test(merged, migration3.removedIndexes)
-
 
 type ExtractStrict<T, U extends T> = Extract<T, U>;
 
 function test<A extends Record<string, DatabaseSchemaIndex>, B extends string>(state: A, migration: readonly B[]): Pick<A, Exclude<keyof A, B>> {
-
-    return ""
-}
-
-function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)[]>(state: A, migration: B): Pick<A, Exclude<keyof A, B>> {
     const a: Array<keyof A> = Object.keys(state)
     const b: Exclude<keyof A, B>[] = a.filter((key: keyof A) => !migration.includes(key)) as Exclude<keyof A, B>[]
     const c = b.reduce<Record<Exclude<keyof A, B>, DatabaseSchemaIndex>>((obj: Record<Exclude<keyof A, B>, DatabaseSchemaIndex>, key) => {
