@@ -67,8 +67,8 @@ export interface DatabaseSchemaIndex {
     options?: IDBIndexParameters
 }
 
-export type Migration<A, B extends keyof A> = {
-    addedIndexes: { [a: string]: DatabaseSchemaIndex; }
+export type Migration<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }> = {
+    addedIndexes: C
     removedIndexes: Readonly<ExtractStrict<keyof A, B>[]>
 }
 
@@ -96,7 +96,7 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A>(state: A, migration: Migration<A, B>) {
+function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>) {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed
