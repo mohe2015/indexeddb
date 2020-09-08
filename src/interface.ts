@@ -121,4 +121,4 @@ const merged1 = merge(merged, migration2.addedIndexes)
 const removed = test(merged, migration2.removedIndexes)
 
 
-const thisshouldnswork = test(merged1, migration2)
+const thisshouldntwork = test(merged1, migration2.removedIndexes)
