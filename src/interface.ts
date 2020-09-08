@@ -76,17 +76,17 @@ function fromEntries<T>(entries: Entries<T>): T {
     return Object.fromEntries(entries) as any
 }
 
-function merge<A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
+function merge<A extends DatabaseSchema = DatabaseSchema, B extends DatabaseSchema = DatabaseSchema>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof A)>(dictionary: A, remove: readonly B[]) {    
+function test<A extends DatabaseSchema, B extends (keyof A)>(dictionary: A, remove: readonly B[]) {    
     let theEntries = entries<A>(dictionary)
     let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A, Exclude<keyof A, B>>>
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof A & keyof C>, A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends keyof A = keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(alwaysTrue: T, state: A, migration: Migration<A, C, B>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
+export function migrate<T extends IsNever<keyof A & keyof C>, A extends DatabaseSchema = DatabaseSchema, B extends keyof A = keyof A, C extends DatabaseSchema = DatabaseSchema>(alwaysTrue: T, state: A, migration: Migration<A, C, B>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed 
