@@ -92,7 +92,6 @@ function fromEntries<T>(entries: Entries<T>): T {
 }
 
 function merge<A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
-    typeAssert<IsNever<keyof A & keyof B>>(true);
     return Object.assign({}, state, migration)
 }
 
@@ -102,8 +101,7 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
-    typeAssert<IsNever<keyof typeof state & keyof typeof migration.addedIndexes>>(true);
+function migrate<T extends IsNever<keyof A & B>, A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends keyof A = keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(alwaysTrue: T, state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed 
@@ -124,16 +122,16 @@ let migration1 = {
 }
 
 let a = {}
-typeAssert<IsNever<keyof typeof a & keyof typeof migration1.addedIndexes>>(true);
-let merged = migrate(a, migration1)
+let merged = migrate(true, a, migration1)
 
+/*
 let migration2: Migration<typeof merged, "test.name", {}> = {
     addedIndexes: {},
     removedIndexes: ["test.name"] as const
-}
+}*/
 
-typeAssert<IsNever<keyof typeof merged & keyof typeof migration1.addedIndexes>>(true);
-let merged1 = migrate(merged, migration1)
+//typeAssert<IsNever<keyof typeof merged & keyof typeof migration1.addedIndexes>>(true);
+//let merged1 = migrate(merged, migration1)
 
 // TODO FIXME state and migration need to be connected
 // currently they only fail when the migration is incompatible
