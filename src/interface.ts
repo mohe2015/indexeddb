@@ -86,10 +86,10 @@ function test<A extends DatabaseSchema, B extends (keyof A)>(dictionary: A, remo
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof A & keyof C>, A extends DatabaseSchema = DatabaseSchema, B extends keyof A = keyof A, C extends DatabaseSchema = DatabaseSchema>(alwaysTrue: T, state: A, migration: Migration<A, C, B>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
-    let merged = merge(state, migration.addedIndexes)
-    let removed = test(merged, migration.removedIndexes)
-    return removed 
+export function migrate<T extends IsNever<keyof A & keyof C>, A extends DatabaseSchema = DatabaseSchema, B extends keyof A = keyof A, C extends DatabaseSchema = DatabaseSchema>(alwaysTrue: T, state: A, migration: Migration<A, C, B>): Id<Pick<A, Exclude<keyof A, Extract<keyof A, B>>> & C> {
+    let removed = test(state, migration.removedIndexes)
+    let merged = merge(removed, migration.addedIndexes)
+    return merged 
 }
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
