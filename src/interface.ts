@@ -110,9 +110,15 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-let migration3: Migration<typeof merged, "test.name"> = {
+let migration2: Migration<typeof merged, "test.name"> = {
     addedIndexes: {},
     removedIndexes: ["test.name"] as const
 }
 
-const removed = test(merged, migration3.removedIndexes)
+const merged1 = merge(merged, migration2.addedIndexes)
+
+// TODO FIXME state and migration need to be connected
+const removed = test(merged, migration2.removedIndexes)
+
+
+const thisshouldnswork = test(merged1, migration2)
