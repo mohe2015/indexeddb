@@ -16,6 +16,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import { assert as typeAssert, IsNever } from "@dev.mohe/conditional-type-checks";
+
 /**
  * @abstract
  */
@@ -90,6 +92,7 @@ function fromEntries<T>(entries: Entries<T>): T {
 }
 
 function merge<A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
+    typeAssert<IsNever<keyof A & keyof B>>(true);
     return Object.assign({}, state, migration)
 }
 
@@ -100,10 +103,13 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
 }
 
 function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
+    typeAssert<IsNever<keyof typeof state & keyof typeof migration.addedIndexes>>(true);
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed 
 }
+
+type test = ("sdffd" | "dfs") & ("sdfd" | "dsflsfi")
 
 let migration1 = {
     addedIndexes: {
@@ -117,14 +123,19 @@ let migration1 = {
     removedIndexes: []
 }
 
-let merged = migrate({}, migration1)
+let a = {}
+typeAssert<IsNever<keyof typeof a & keyof typeof migration1.addedIndexes>>(true);
+let merged = migrate(a, migration1)
 
 let migration2: Migration<typeof merged, "test.name", {}> = {
     addedIndexes: {},
     removedIndexes: ["test.name"] as const
 }
 
-let merged1 = migrate(merged, migration2)
+typeAssert<IsNever<keyof typeof merged & keyof typeof migration1.addedIndexes>>(true);
+let merged1 = migrate(merged, migration1)
 
 // TODO FIXME state and migration need to be connected
-let merged3 = migrate(merged, migration1)
+// currently they only fail when the migration is incompatible
+
+// https://developers.google.com/closure/compiler/docs/api-tutorial3

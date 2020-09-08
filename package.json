@@ -14,7 +14,9 @@
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
     "docs": "typedoc --allowJs src/"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@dev.mohe/conditional-type-checks": "^2.0.0"
+  },
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.1",
     "@types/canvas-confetti": "^1.0.0",
