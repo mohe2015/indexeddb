@@ -84,18 +84,30 @@ let migration1 = {
     removedIndexes: []
 }
 
+// https://github.com/microsoft/TypeScript/issues/32771
+// https://github.com/microsoft/TypeScript/issues/35101
+type Entries<T> = {
+    [K in keyof T]: [K, T[K]]
+}[keyof T][]
+  
+function entries<T>(obj: T): Entries<T> {
+    return Object.entries(obj) as any;
+}
+
+function fromEntries<T>(entries: Entries<T>): T {
+    return Object.fromEntries(entries) as any
+}
+
 function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
 const merged = merge({}, migration1.addedIndexes)
 
-function test<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)>(dictionary: A, remove: B[]): Pick<A, Exclude<keyof A, B>> {
-    let a: A["jo"] = dictionary["jo"]
-    
-    let entries: [keyof A, DatabaseSchemaIndex][] = Object.entries(dictionary)
-    let filteredEntries = entries.filter(entry => !(remove as Array<string>).includes(entry[0])) as [ExcludeStrict<keyof A, B>, DatabaseSchemaIndex][]
-    return Object.fromEntries(filteredEntries) as Pick<A, Exclude<keyof A, B>>
+function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof A)>(dictionary: A, remove: B[]) {    
+    let theEntries = entries<A>(dictionary)
+    let filteredEntries = theEntries.filter(entry => !(remove as Array<string>).includes(entry[0])) as Entries<Pick<A, Exclude<keyof A, B>>>
+    return fromEntries(filteredEntries)
 }
 
 const removed = test(merged, ["test.name"])
