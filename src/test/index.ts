@@ -26,6 +26,7 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let migration1 = {
+            baseSchema: {},
             addedIndexes: {
                 "test.name": {
                     keyPath: "name",
@@ -39,7 +40,8 @@ async function run() {
         
         let merged = migrate(true, {}, migration1)
         
-        let migration2: Migration<typeof merged, {}, "test.name"> = {
+        let migration2 = {
+            baseSchema: merged,
             addedIndexes: {},
             removedIndexes: ["test.name"] as const
         }

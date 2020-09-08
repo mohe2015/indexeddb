@@ -58,6 +58,7 @@ export interface DatabaseSchemaIndex {
 export type DatabaseSchema = { [a: string]: DatabaseSchemaIndex; }
 
 export type Migration<A extends DatabaseSchema, C extends DatabaseSchema, B extends keyof A> = {
+    baseSchema: A
     addedIndexes: C
     removedIndexes: Readonly<ExtractStrict<keyof A, B>[]>
 }
