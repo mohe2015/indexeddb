@@ -1,3 +1,5 @@
+import type { Migration } from "../interface.js";
+import { migrate } from "../interface.js";
 /*
 @dev.mohe/indexeddb - Make a database interface available that works in the browser and in nodejs
 Copyright (C) 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
@@ -23,10 +25,28 @@ async function run() {
     try {
         let databaseConnection = await create("localhost");
 
-        let database = await databaseConnection.database("blub", 5, (database, oldVersion, newVersion) => {
-            let objectStore = database.createObjectStore("a", { autoIncrement: true })
-            let index = objectStore.createIndex("name", "name", { unique: true })
-        })
+        let migration1 = {
+            addedIndexes: {
+                "test.name": {
+                    keyPath: "name",
+                },
+                "test.value": {
+                    keyPath: "name",
+                }
+            },
+            removedIndexes: []
+        }
+        
+        let merged = migrate(true, {}, migration1)
+        
+        let migration2: Migration = {
+            addedIndexes: {},
+            removedIndexes: ["test.name"] as const
+        }
+        
+        let merged1 = migrate(true, merged, migration2)
+
+        let database = await databaseConnection.database("blub", 5, merged1)
         console.log(database)
 
     } catch (error) {

@@ -86,35 +86,10 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-function migrate<T extends IsNever<keyof A & keyof C>, A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends keyof A = keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(alwaysTrue: T, state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
+export function migrate<T extends IsNever<keyof A & keyof C>, A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends keyof A = keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(alwaysTrue: T, state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed 
 }
-
-let migration1 = {
-    addedIndexes: {
-        "test.name": {
-            keyPath: "name",
-        },
-        "test.value": {
-            keyPath: "name",
-        }
-    },
-    removedIndexes: []
-}
-
-let a = {}
-let merged = migrate(true, a, migration1)
-
-let migration2: Migration<typeof merged, "test.name", {}> = {
-    addedIndexes: {},
-    removedIndexes: ["test.name"] as const
-}
-
-let merged1 = migrate(true, merged, migration2)
-
-// TODO FIXME state and migration need to be connected
-// currently they only fail when the migration is incompatible
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
