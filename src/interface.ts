@@ -86,7 +86,7 @@ function fromEntries<T>(entries: Entries<T>): T {
     return Object.fromEntries(entries) as any
 }
 
-function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
+function merge<A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
@@ -96,7 +96,7 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>) {
+function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>) {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed
@@ -116,13 +116,12 @@ let migration1 = {
 
 let merged = migrate({}, migration1)
 
-let migration2: Migration<typeof merged, "test.name"> = {
+let migration2: Migration<typeof merged, "test.name", {}> = {
     addedIndexes: {},
     removedIndexes: ["test.name"] as const
 }
 
 let merged1 = migrate(merged, migration2)
 
-
 // TODO FIXME state and migration need to be connected
-const thisshouldntwork = test(merged1, migration2.removedIndexes)
+//const thisshouldntwork = test(merged1, migration2.removedIndexes)
