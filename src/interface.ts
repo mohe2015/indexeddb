@@ -64,9 +64,9 @@ export interface DatabaseSchemaIndex {
     options?: IDBIndexParameters
 }
 
-export interface Migration<T = string[]> {
+export type Migration<A> = {
     addedIndexes: { [a: string]: DatabaseSchemaIndex; }
-    removedIndexes: T[]
+    removedIndexes: Readonly<ExtractStrict<keyof A, keyof A>[]>
 }
 
 let migration1 = {
@@ -83,21 +83,24 @@ let migration1 = {
 
 const merged = merge({}, migration1.addedIndexes)
 
-let migration3: Migration<(keyof typeof merged)> = {
+let migration3: Migration<typeof merged> = {
     addedIndexes: {},
-    removedIndexes: ["test.name"]
+    removedIndexes: ["test.name"] as const
 }
 
-const removed = test(merged, migration3.removedIndexes)
-
-function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B) {
+function merge<A extends { [a: string]: DatabaseSchemaIndex; }, B extends { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function test<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)[]>(state: A, migration: B): Exclude<keyof A, B>[] {
-    const a: Array<keyof A> = Object.keys(state)
-    const b: Exclude<keyof A, B>[] = a.filter((key: keyof A) => !migration.includes(key)) as Exclude<keyof A, B>[]
-    return b
+
+const removed = test(merged, migration3.removedIndexes)
+
+
+type ExtractStrict<T, U extends T> = Extract<T, U>;
+
+function test<A extends Record<string, DatabaseSchemaIndex>, B extends string>(state: A, migration: readonly B[]): Pick<A, Exclude<keyof A, B>> {
+
+    return ""
 }
 
 function minus<A extends Record<string, DatabaseSchemaIndex>, B extends (keyof A)[]>(state: A, migration: B): Pick<A, Exclude<keyof A, B>> {
