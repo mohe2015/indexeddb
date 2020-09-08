@@ -57,7 +57,7 @@ export interface DatabaseSchemaIndex {
 
 export type DatabaseSchema = { [a: string]: DatabaseSchemaIndex; }
 
-export type Migration<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }> = {
+export type Migration<A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B = keyof A> = {
     addedIndexes: C
     removedIndexes: Readonly<ExtractStrict<keyof A, B>[]>
 }
@@ -86,7 +86,7 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof A & keyof C>, A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends keyof A = keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(alwaysTrue: T, state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
+export function migrate<T extends IsNever<keyof A & keyof C>, A extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }, B extends keyof A = keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(alwaysTrue: T, state: A, migration: Migration<A, C, B>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
     return removed 

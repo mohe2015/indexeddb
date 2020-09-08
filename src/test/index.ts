@@ -39,7 +39,7 @@ async function run() {
         
         let merged = migrate(true, {}, migration1)
         
-        let migration2: Migration = {
+        let migration2: Migration<typeof merged, {}, "test.name"> = {
             addedIndexes: {},
             removedIndexes: ["test.name"] as const
         }
