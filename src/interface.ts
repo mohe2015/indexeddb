@@ -127,4 +127,4 @@ let migration2: Migration<typeof merged, "test.name", {}> = {
 let merged1 = migrate(merged, migration2)
 
 // TODO FIXME state and migration need to be connected
-//const thisshouldntwork = test(merged1, migration2.removedIndexes)
+let merged3 = migrate(merged, migration1)
