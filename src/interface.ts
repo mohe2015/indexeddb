@@ -58,6 +58,9 @@ export interface DatabaseSchemaIndex {
 type ExtractStrict<T, U extends T> = Extract<T, U>;
 type ExcludeStrict<T, U extends T> = Exclude<T, U>;
 
+// https://github.com/microsoft/TypeScript/issues/30312
+type Id<T extends object> = {} & { [P in keyof T]: T[P] }
+
 export interface DatabaseSchemaIndex {
     //objectStore: string
 
@@ -96,10 +99,10 @@ function test<A extends { [a: string]: DatabaseSchemaIndex; }, B extends (keyof 
     return fromEntries(filteredEntries)
 }
 
-function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>) {
+function migrate<A extends { [a: string]: DatabaseSchemaIndex; }, B extends keyof A, C extends { [a: string]: DatabaseSchemaIndex; } = { [a: string]: DatabaseSchemaIndex; }>(state: A, migration: Migration<A, B, C>): Id<Pick<A & C, Exclude<keyof A, Extract<keyof A, B>> | Exclude<keyof C, Extract<keyof A, B>>>> {
     let merged = merge(state, migration.addedIndexes)
     let removed = test(merged, migration.removedIndexes)
-    return removed
+    return removed 
 }
 
 let migration1 = {
