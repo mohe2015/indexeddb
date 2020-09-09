@@ -26,7 +26,11 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let migration1 = {
-            baseSchema: {},
+            version: 2,
+            baseSchema: {
+                version: 1,
+                indexes: {}
+            },
             addedIndexes: {
                 "test.name": {
                     keyPath: "name",
@@ -38,18 +42,19 @@ async function run() {
             removedIndexes: []
         }
         
-        let merged = migrate(true, {}, migration1)
+        let merged = migrate(true, migration1)
         
         let migration2 = {
+            version: 3,
             baseSchema: merged,
             addedIndexes: {},
             removedIndexes: ["test.name"] as const
         }
         
-        let merged1 = migrate(true, merged, migration2)
+        let merged1 = migrate(true, migration2)
 
-        let database = await databaseConnection.database("blub", 5, merged1)
-        console.log(database)
+        //let database = await databaseConnection.database("blub", 5, merged1)
+        //console.log(database)
 
     } catch (error) {
         console.error(error)

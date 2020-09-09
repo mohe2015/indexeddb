@@ -18,6 +18,7 @@
     "resolveJsonModule": true,
     "useDefineForClassFields": true,
     "keyofStringsOnly": true,
+    "noErrorTruncation": true,
     
     // You can't currently define paths in your 'extends' config,
     // so we have to set 'baseUrl' & 'paths' here.

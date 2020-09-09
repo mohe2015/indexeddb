@@ -55,12 +55,18 @@ export interface DatabaseSchemaIndex {
     options?: IDBIndexParameters
 }
 
-export type DatabaseSchema = { [a: string]: DatabaseSchemaIndex; }
+export type DatabaseIndexes = { [a: string]: DatabaseSchemaIndex; };
 
-export type Migration<A extends DatabaseSchema, C extends DatabaseSchema, B extends keyof A> = {
+export type DatabaseSchema = {
+    version: number
+    indexes: DatabaseIndexes
+}
+
+export type Migration<A extends DatabaseSchema, C extends DatabaseIndexes, B extends keyof A["indexes"]> = {
+    version: number
     baseSchema: A
     addedIndexes: C
-    removedIndexes: Readonly<ExtractStrict<keyof A, B>[]>
+    removedIndexes: Readonly<ExtractStrict<keyof A["indexes"], B>[]>
 }
 
 // https://github.com/microsoft/TypeScript/issues/32771
@@ -78,20 +84,26 @@ function fromEntries<T>(entries: Entries<T>): T {
     return Object.fromEntries(entries) as any
 }
 
-function merge<A extends DatabaseSchema, B extends DatabaseSchema>(state: A, migration: B): A & B {
+function merge<A extends DatabaseIndexes, B extends DatabaseIndexes>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function test<A extends DatabaseSchema, B extends (keyof A)>(dictionary: A, remove: readonly B[]) {    
-    let theEntries = entries<A>(dictionary)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A, Exclude<keyof A, B>>>
+function test<A extends DatabaseSchema, B extends (keyof A["indexes"])>(dictionary: A, remove: readonly B[]) {    
+    let theEntries = entries<A["indexes"]>(dictionary.indexes)
+    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A["indexes"], Exclude<keyof A["indexes"], B>>>
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof A & keyof C>, A extends DatabaseSchema, B extends keyof A, C extends DatabaseSchema>(alwaysTrue: T, state: A, migration: Migration<A, C, B>): Id<Pick<A, Exclude<keyof A, Extract<keyof A, B>>> & C> {
-    let removed = test(state, migration.removedIndexes)
+export function migrate<T extends IsNever<keyof A["indexes"] & keyof C>, A extends DatabaseSchema, B extends keyof A["indexes"], C extends DatabaseIndexes>(alwaysTrue: T, migration: Migration<A, C, B>): {
+    version: number,
+    indexes: Id<Pick<A["indexes"], Exclude<keyof A["indexes"], Extract<keyof A["indexes"], B>>> & C>
+} {
+    let removed = test(migration.baseSchema, migration.removedIndexes)
     let merged = merge(removed, migration.addedIndexes)
-    return merged 
+    return {
+        version: migration.version,
+        indexes: merged
+    } 
 }
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
