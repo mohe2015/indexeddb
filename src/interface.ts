@@ -64,9 +64,9 @@ export type DatabaseSchema<T extends DatabaseColumns> = {
     columns: T
 }
 
-export type Migration<COLUMNS extends DatabaseColumns, C extends DatabaseColumns, B extends keyof COLUMNS> = {
+export type Migration<COLUMNS extends DatabaseColumns, C extends DatabaseColumns, B extends keyof COLUMNS, N extends number> = {
     fromVersion: number
-    toVersion: number
+    toVersion: N
     baseSchema: DatabaseSchema<COLUMNS>
     addedColumns: C
     removedColumns: readonly B[] //Extract<keyof COLUMNS, B>[]
@@ -98,8 +98,8 @@ function test<B extends (keyof COLUMNS), COLUMNS extends DatabaseColumns>(dictio
 }
 
 // IsNever<keyof COLUMNS & keyof C>
-export function migrate<T extends boolean, B extends (keyof COLUMNS), C extends DatabaseColumns, COLUMNS extends DatabaseColumns>(alwaysTrue: T, migration: Migration<COLUMNS, C, B>): {
-    version: number,
+export function migrate<T extends boolean, B extends (keyof COLUMNS), C extends DatabaseColumns, COLUMNS extends DatabaseColumns, N extends number>(alwaysTrue: T, migration: Migration<COLUMNS, C, B, N>): {
+    version: N,
     columns: Id<Pick<COLUMNS, Exclude<keyof COLUMNS, B>> & C>
 } {
     if (!alwaysTrue) {
