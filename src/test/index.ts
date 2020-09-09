@@ -67,6 +67,8 @@ async function run() {
 
         let result = migrate(true, migration3)
 
+        let a: keyof (typeof result["columns"]) = null
+
        // let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
         //console.log(database)
 
