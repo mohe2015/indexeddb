@@ -888,6 +888,11 @@ isarray@~1.0.0:
   resolved "https://registry.yarnpkg.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha1-u5NdSFgsuhaMBoNJV6VKPgcSTxE=
 
+isbinaryfile@^4.0.6:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/isbinaryfile/-/isbinaryfile-4.0.6.tgz#edcb62b224e2b4710830b67498c8e4e5a4d2610b"
+  integrity sha512-ORrEy+SNVqUhrCaal4hA4fBzhggQQ+BaLntyPOdoEiwlKZW9BZiJXjg3RMiruE4tPEI3pyVPpySHQF/dKWperg==
+
 isexe@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
@@ -1500,10 +1505,10 @@ slash@^3.0.0:
   resolved "https://registry.yarnpkg.com/slash/-/slash-3.0.0.tgz#6539be870c165adbd5240220dbe361f1bc4d4634"
   integrity sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==
 
-snowpack@^2.10.2:
-  version "2.10.2"
-  resolved "https://registry.yarnpkg.com/snowpack/-/snowpack-2.10.2.tgz#6f8ff12e6cd188c1cc48d95a6751ed842613479b"
-  integrity sha512-tuWgujXk7lQMlt5Bq6HQC6CawwqVQ/HiPzWPOEtZjSw+J7XCG2mp9+0yy8Imc7H4wkkas6EqaeOYQMPm9zaXlg==
+snowpack@^2.10.3:
+  version "2.10.3"
+  resolved "https://registry.yarnpkg.com/snowpack/-/snowpack-2.10.3.tgz#e8cff3282072c6ade4cc2e53762bc8cd7f3888ac"
+  integrity sha512-g7uKpnJYx/8sVvmoqVuXBYOxN6YRZEu1CAw7yOYdR1FjmsiLb4T2HF7AGlkzVCFw5FDNg3IIwOM+6bxgPRSM+w==
   dependencies:
     "@babel/plugin-syntax-import-meta" "^7.10.4"
     "@rollup/plugin-alias" "^3.0.1"
@@ -1531,6 +1536,7 @@ snowpack@^2.10.2:
     got "^11.1.4"
     http-proxy "^1.18.1"
     is-builtin-module "^3.0.0"
+    isbinaryfile "^4.0.6"
     jsonschema "^1.2.5"
     kleur "^4.1.0"
     mime-types "^2.1.26"
