@@ -50,7 +50,7 @@ type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 export interface DatabaseSchemaColumn {
     //objectStore: string
 
-    primaryKey: boolean; // only one of this can be in a database but this simplifies merging
+    primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
     autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
     //name: string
     keyPath: string | string[]

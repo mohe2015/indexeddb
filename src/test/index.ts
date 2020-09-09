@@ -26,12 +26,13 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let migration1 = {
-            version: 2,
+            fromVersion: 1,
+            toVersion: 2,
             baseSchema: {
                 version: 1,
-                indexes: {}
+                columns: {}
             },
-            addedIndexes: {
+            addedColumns: {
                 "test.name": {
                     keyPath: "name",
                 },
@@ -39,30 +40,32 @@ async function run() {
                     keyPath: "name",
                 }
             },
-            removedIndexes: []
+            removedColumns: []
         }
         
         let migration2 = {
-            version: 3,
+            fromVersion: 2,
+            toVersion: 3,
             baseSchema: migrate(true, migration1),
-            addedIndexes: {},
+            addedColumns: {},
             removedIndexes: ["test.name"] as const
         }
         
         let migration3 = {
-            version: 3,
+            fromVersion: 3,
+            toVersion: 4,
             baseSchema: migrate(true, migration2),
-            addedIndexes: {
+            addedColumns: {
                 "test.valuee": {
                     keyPath: "name",
                 }
             },
-            removedIndexes: []
+            removedColumns: []
         }
 
         let result = migrate(true, migration3)
 
-        let database = await databaseConnection.database<typeof result>("blub", result, [migration1, migration2, migration3])
+        let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
         console.log(database)
 
     } catch (error) {
