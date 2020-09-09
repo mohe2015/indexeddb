@@ -63,6 +63,7 @@ export type DatabaseSchema = {
 }
 
 export type Migration<A extends DatabaseSchema, C extends DatabaseIndexes, B extends keyof A["indexes"]> = {
+    
     version: number
     baseSchema: A
     addedIndexes: C

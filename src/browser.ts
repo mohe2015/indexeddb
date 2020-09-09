@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
-import { Database, DatabaseObjectStore, DatabaseConnection, DatabaseSchema } from './interface'
+import { Database, DatabaseObjectStore, DatabaseConnection, DatabaseSchema, Migration, DatabaseIndexes } from './interface'
 
 class IndexedDatabaseConnection extends DatabaseConnection {
 
@@ -31,9 +31,9 @@ class IndexedDatabaseConnection extends DatabaseConnection {
         return new IndexedDatabaseConnection()
     }
 
-    async database<T extends DatabaseSchema>(name: string, version: number, onUpgrade: (database: Database<T>, oldVersion: number, newVersion: number) => void): Promise<Database<T>> {
+    async database<T extends DatabaseSchema, A extends DatabaseSchema, C extends DatabaseIndexes, B extends keyof A["indexes"]>(name: string, state: T, migrations: Migration<A, C, B>[]): Promise<Database<T>> {
         return new Promise((resolve, reject) => {
-            const databaseOpenRequest = window.indexedDB.open(name, version);
+            const databaseOpenRequest = window.indexedDB.open(name, state.version);
             
             databaseOpenRequest.addEventListener("success", (event) => {
                 resolve(new IndexedDatabase(databaseOpenRequest.result));
@@ -47,7 +47,10 @@ class IndexedDatabaseConnection extends DatabaseConnection {
             databaseOpenRequest.addEventListener("upgradeneeded", (event) => {                
                 let database = new IndexedDatabase(databaseOpenRequest.result)
                 try {
-                    onUpgrade(database, event.oldVersion, event.newVersion!)
+                    //onUpgrade(database, event.oldVersion, event.newVersion!)
+
+                    // TODO FIXME run migrations
+
                 } catch (error) {
                     console.log(error)
                     databaseOpenRequest.transaction!.abort()
