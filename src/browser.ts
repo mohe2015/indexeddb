@@ -49,6 +49,14 @@ class IndexedDatabaseConnection extends DatabaseConnection {
                 try {
                     //onUpgrade(database, event.oldVersion, event.newVersion!)
 
+                    let oldVersion = event.oldVersion
+
+                    for (const migration of migrations) {
+                        if (migration.fromVersion === oldVersion) {
+                            
+                        }
+                    }
+
                     // TODO FIXME run migrations
 
                 } catch (error) {

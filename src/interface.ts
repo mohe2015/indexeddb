@@ -63,8 +63,8 @@ export type DatabaseSchema = {
 }
 
 export type Migration<A extends DatabaseSchema, C extends DatabaseIndexes, B extends keyof A["indexes"]> = {
-    
-    version: number
+    fromVersion: number
+    toVersion: number
     baseSchema: A
     addedIndexes: C
     removedIndexes: Readonly<ExtractStrict<keyof A["indexes"], B>[]>
@@ -102,10 +102,13 @@ export function migrate<T extends IsNever<keyof A["indexes"] & keyof C>, A exten
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether an index is added twice.")
     }
+    if (migration.baseSchema.version !== migration.fromVersion) {
+        throw new Error("migration baseVersion doesn't match fromVersion!")
+    }
     let removed = test(migration.baseSchema, migration.removedIndexes)
     let merged = merge(removed, migration.addedIndexes)
     return {
-        version: migration.version,
+        version: migration.toVersion,
         indexes: merged
     } 
 }
