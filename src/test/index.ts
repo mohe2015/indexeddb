@@ -27,8 +27,8 @@ async function run() {
 
         let baseSchema = {
             version: 1,
-            columns: {} as const
-        }
+            columns: {}
+        } as const
 
         let migration1 = {
             fromVersion: 1,
@@ -41,17 +41,17 @@ async function run() {
                 "test.value": {
                     keyPath: "name",
                 }
-            } as const,
-            removedColumns: [] as const
-        }
+            },
+            removedColumns: []
+        } as const
         
         let migration2 = {
             fromVersion: 2,
             toVersion: 3,
             baseSchema: migrate(true, migration1),
             addedColumns: {},
-            removedColumns: ["test.name"] as const
-        }
+            removedColumns: ["test.name"]
+        } as const
         
         let migration3 = {
             fromVersion: 3,
@@ -63,7 +63,7 @@ async function run() {
                 }
             },
             removedColumns: []
-        }
+        } as const
 
         let result = migrate(true, migration3)
 
