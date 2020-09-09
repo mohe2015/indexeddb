@@ -1,4 +1,4 @@
-import type { Migration } from "../interface.js";
+import type { DatabaseColumns, DatabaseSchema, DatabaseSchemaColumn, Migration } from "../interface.js";
 import { migrate } from "../interface.js";
 /*
 @dev.mohe/indexeddb - Make a database interface available that works in the browser and in nodejs
@@ -25,13 +25,15 @@ async function run() {
     try {
         let databaseConnection = await create("localhost");
 
+        let baseSchema = {
+            version: 1,
+            columns: {} as const
+        }
+
         let migration1 = {
             fromVersion: 1,
             toVersion: 2,
-            baseSchema: {
-                version: 1,
-                columns: {}
-            },
+            baseSchema: baseSchema,
             addedColumns: {
                 "test.name": {
                     keyPath: "name",
@@ -39,8 +41,8 @@ async function run() {
                 "test.value": {
                     keyPath: "name",
                 }
-            },
-            removedColumns: []
+            } as const,
+            removedColumns: [] as const
         }
         
         let migration2 = {

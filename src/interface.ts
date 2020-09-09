@@ -47,7 +47,7 @@ type ExcludeStrict<T, U extends T> = Exclude<T, U>;
 type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
 // removing all columns would remove the object store (especially removing the primary key)
-export interface DatabaseSchemaColumn {
+export type DatabaseSchemaColumn = Readonly<{
     //objectStore: string
 
     primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
@@ -55,22 +55,22 @@ export interface DatabaseSchemaColumn {
     //name: string
     keyPath: string | string[]
     options?: IDBIndexParameters
-}
+}>
 
-export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
+export type DatabaseColumns = Readonly<{ [a: string]: DatabaseSchemaColumn; }>;
 
-export type DatabaseSchema<T extends DatabaseColumns> = {
+export type DatabaseSchema<T extends DatabaseColumns> = Readonly<{
     version: number
     columns: T
-}
+}>
 
-export type Migration<A extends DatabaseSchema<COLUMNS>, C extends DatabaseColumns, B extends keyof COLUMNS, COLUMNS extends DatabaseColumns> = {
+export type Migration<COLUMNS extends DatabaseColumns, A extends DatabaseSchema<COLUMNS>, C extends DatabaseColumns, B extends Readonly<keyof COLUMNS>> = Readonly<{
     fromVersion: number
     toVersion: number
     baseSchema: A
     addedColumns: C
     removedColumns: Readonly<ExtractStrict<keyof COLUMNS, B>[]>
-}
+}>
 
 // https://github.com/microsoft/TypeScript/issues/32771
 // https://github.com/microsoft/TypeScript/issues/35101
@@ -97,7 +97,7 @@ function test<B extends (keyof COLUMNS), COLUMNS extends DatabaseColumns>(dictio
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof COLUMNS & keyof C>, A extends DatabaseSchema<COLUMNS>, B extends keyof COLUMNS, C extends DatabaseColumns, COLUMNS extends DatabaseColumns>(alwaysTrue: T, migration: Migration<A, C, B, COLUMNS>): {
+export function migrate<T extends IsNever<keyof COLUMNS & keyof C>, A extends DatabaseSchema<COLUMNS>, B extends keyof COLUMNS, C extends DatabaseColumns, COLUMNS extends DatabaseColumns>(alwaysTrue: T, migration: Migration<COLUMNS, A, C, B>): {
     version: number,
     columns: Id<Pick<COLUMNS, Exclude<keyof COLUMNS, ExtractStrict<keyof COLUMNS, B>>> & C>
 } {
