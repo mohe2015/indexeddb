@@ -27,7 +27,7 @@ async function run() {
 
         let baseSchema = {
             version: 1,
-            columns: {}
+            objectStores: {}
         } as const
 
         let migration1 = {
@@ -35,11 +35,13 @@ async function run() {
             toVersion: 2,
             baseSchema: baseSchema,
             addedColumns: {
-                "test.name": {
-                    keyPath: "name",
-                },
-                "test.value": {
-                    keyPath: "name",
+                "test": {
+                    "name": {
+                        keyPath: "name",
+                    },
+                    "value": {
+                        keyPath: "name",
+                    }
                 }
             },
             removedColumns: []
@@ -50,7 +52,7 @@ async function run() {
             toVersion: 3,
             baseSchema: migrate(true, migration1),
             addedColumns: {},
-            removedColumns: ["test.name"]
+            removedColumns: ["test"]
         } as const
         
         let migration3 = {
@@ -58,8 +60,10 @@ async function run() {
             toVersion: 4,
             baseSchema: migrate(true, migration2),
             addedColumns: {
-                "test.valuee": {
-                    keyPath: "name",
+                "test": {
+                    "valuee": {
+                        keyPath: "name",
+                    }
                 }
             },
             removedColumns: []
@@ -67,7 +71,7 @@ async function run() {
 
         let result = migrate(true, migration3)
 
-        let a: keyof (typeof result["columns"]) = null
+        //let a: keyof (typeof result["columns"]) = null
 
        // let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
         //console.log(database)

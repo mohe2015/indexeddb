@@ -27,10 +27,10 @@ export abstract class DatabaseConnection {
         throw new Error("not implemented")
     }
 
-    async abstract database<T extends DatabaseSchema<COLUMNS>, COLUMNS extends DatabaseColumns>(name: string, version: number, onUpgrade: (database: Database<T, COLUMNS>, oldVersion: number, newVersion: number) => void): Promise<Database<T, COLUMNS>>;
+    async abstract database<T extends DatabaseSchema<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>(name: string, version: number, onUpgrade: (database: Database<T, OBJECTSTORES>, oldVersion: number, newVersion: number) => void): Promise<Database<T, OBJECTSTORES>>;
 }
 
-export abstract class Database<T extends DatabaseSchema<COLUMNS>, COLUMNS extends DatabaseColumns> {
+export abstract class Database<T extends DatabaseSchema<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores> {
 
     abstract createObjectStore(name: string, options: IDBObjectStoreParameters): DatabaseObjectStore;
 }
@@ -57,17 +57,19 @@ export type DatabaseSchemaColumn = {
     options?: IDBIndexParameters
 }
 
+export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
+
 export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
-export type DatabaseSchema<T extends DatabaseColumns> = {
+export type DatabaseSchema<T extends DatabaseObjectStores> = {
     version: number
-    columns: T
+    objectStores: T
 }
 
-export type Migration<COLUMNS extends DatabaseColumns, C extends DatabaseColumns, B extends keyof COLUMNS, N extends number> = {
+export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseColumns, B extends keyof OBJECTSTORES, N extends number> = {
     fromVersion: number
     toVersion: N
-    baseSchema: DatabaseSchema<COLUMNS>
+    baseSchema: DatabaseSchema<OBJECTSTORES>
     addedColumns: C
     removedColumns: readonly B[] //Extract<keyof COLUMNS, B>[]
 }
@@ -87,20 +89,20 @@ function fromEntries<T>(entries: Entries<T>): T {
     return Object.fromEntries(entries) as any
 }
 
-function merge<A extends DatabaseColumns, B extends DatabaseColumns>(state: A, migration: B): A & B {
+function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function test<B extends (keyof COLUMNS), COLUMNS extends DatabaseColumns>(dictionary: COLUMNS, remove: readonly B[]) {    
-    let theEntries = entries<COLUMNS>(dictionary)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<COLUMNS, Exclude<keyof COLUMNS, B>>>
+function test<B extends (keyof OBJECTSTORES), OBJECTSTORES extends DatabaseObjectStores>(dictionary: OBJECTSTORES, remove: readonly B[]) {    
+    let theEntries = entries<OBJECTSTORES>(dictionary)
+    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>>>
     return fromEntries(filteredEntries)
 }
 
 // IsNever<keyof COLUMNS & keyof C>
-export function migrate<T extends boolean, B extends (keyof COLUMNS), C extends DatabaseColumns, COLUMNS extends DatabaseColumns, N extends number>(alwaysTrue: T, migration: Migration<COLUMNS, C, B, N>): {
+export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, B, N>): {
     version: N,
-    columns: Id<Pick<COLUMNS, Exclude<keyof COLUMNS, B>> & C>
+    objectStores: Id<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>> & C>
 } {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether an index is added twice.")
@@ -108,11 +110,11 @@ export function migrate<T extends boolean, B extends (keyof COLUMNS), C extends 
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = test(migration.baseSchema.columns, migration.removedColumns)
+    let removed = test(migration.baseSchema.objectStores, migration.removedColumns)
     let merged = merge(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
-        columns: merged
+        objectStores: merged
     } 
 }
 
