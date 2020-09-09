@@ -42,16 +42,27 @@ async function run() {
             removedIndexes: []
         }
         
-        let merged = migrate(true, migration1)
-        
         let migration2 = {
             version: 3,
-            baseSchema: merged,
+            baseSchema: migrate(true, migration1),
             addedIndexes: {},
             removedIndexes: ["test.name"] as const
         }
         
         let merged1 = migrate(true, migration2)
+
+        let migration3 = {
+            version: 3,
+            baseSchema: merged1,
+            addedIndexes: {
+                "test.valuee": {
+                    keyPath: "name",
+                }
+            },
+            removedIndexes: []
+        }
+
+        let result = migrate(true, migration3)
 
         //let database = await databaseConnection.database("blub", 5, merged1)
         //console.log(database)

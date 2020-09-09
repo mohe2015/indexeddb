@@ -98,6 +98,9 @@ export function migrate<T extends IsNever<keyof A["indexes"] & keyof C>, A exten
     version: number,
     indexes: Id<Pick<A["indexes"], Exclude<keyof A["indexes"], Extract<keyof A["indexes"], B>>> & C>
 } {
+    if (!alwaysTrue) {
+        throw new Error("alwaysTrue needs to be true to check whether an index is added twice.")
+    }
     let removed = test(migration.baseSchema, migration.removedIndexes)
     let merged = merge(removed, migration.addedIndexes)
     return {
