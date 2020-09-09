@@ -46,6 +46,7 @@ type ExcludeStrict<T, U extends T> = Exclude<T, U>;
 // https://github.com/microsoft/TypeScript/issues/30312
 type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
+// removing all columns would remove the object store (especially removing the primary key)
 export interface DatabaseSchemaColumn {
     //objectStore: string
 
