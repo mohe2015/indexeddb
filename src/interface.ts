@@ -66,7 +66,7 @@ export type DatabaseSchema<T extends DatabaseObjectStores> = {
     objectStores: T
 }
 
-export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseColumns, B extends keyof OBJECTSTORES, N extends number> = {
+export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, B extends keyof OBJECTSTORES, N extends number> = {
     fromVersion: number
     toVersion: N
     baseSchema: DatabaseSchema<OBJECTSTORES>
