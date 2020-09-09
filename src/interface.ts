@@ -46,7 +46,7 @@ type ExcludeStrict<T, U extends T> = Exclude<T, U>;
 // https://github.com/microsoft/TypeScript/issues/30312
 type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
-export interface DatabaseSchemaIndex {
+export interface DatabaseSchemaColumn {
     //objectStore: string
 
     autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
@@ -55,19 +55,19 @@ export interface DatabaseSchemaIndex {
     options?: IDBIndexParameters
 }
 
-export type DatabaseIndexes = { [a: string]: DatabaseSchemaIndex; };
+export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
 export type DatabaseSchema = {
     version: number
-    indexes: DatabaseIndexes
+    columns: DatabaseColumns
 }
 
-export type Migration<A extends DatabaseSchema, C extends DatabaseIndexes, B extends keyof A["indexes"]> = {
+export type Migration<A extends DatabaseSchema, C extends DatabaseColumns, B extends keyof A["columns"]> = {
     fromVersion: number
     toVersion: number
     baseSchema: A
-    addedIndexes: C
-    removedIndexes: Readonly<ExtractStrict<keyof A["indexes"], B>[]>
+    addedColumns: C
+    removedColumns: Readonly<ExtractStrict<keyof A["columns"], B>[]>
 }
 
 // https://github.com/microsoft/TypeScript/issues/32771
@@ -85,19 +85,19 @@ function fromEntries<T>(entries: Entries<T>): T {
     return Object.fromEntries(entries) as any
 }
 
-function merge<A extends DatabaseIndexes, B extends DatabaseIndexes>(state: A, migration: B): A & B {
+function merge<A extends DatabaseColumns, B extends DatabaseColumns>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function test<A extends DatabaseSchema, B extends (keyof A["indexes"])>(dictionary: A, remove: readonly B[]) {    
-    let theEntries = entries<A["indexes"]>(dictionary.indexes)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A["indexes"], Exclude<keyof A["indexes"], B>>>
+function test<A extends DatabaseSchema, B extends (keyof A["columns"])>(dictionary: A, remove: readonly B[]) {    
+    let theEntries = entries<A["columns"]>(dictionary.columns)
+    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A["columns"], Exclude<keyof A["columns"], B>>>
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof A["indexes"] & keyof C>, A extends DatabaseSchema, B extends keyof A["indexes"], C extends DatabaseIndexes>(alwaysTrue: T, migration: Migration<A, C, B>): {
+export function migrate<T extends IsNever<keyof A["columns"] & keyof C>, A extends DatabaseSchema, B extends keyof A["columns"], C extends DatabaseColumns>(alwaysTrue: T, migration: Migration<A, C, B>): {
     version: number,
-    indexes: Id<Pick<A["indexes"], Exclude<keyof A["indexes"], Extract<keyof A["indexes"], B>>> & C>
+    columns: Id<Pick<A["columns"], Exclude<keyof A["columns"], Extract<keyof A["columns"], B>>> & C>
 } {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether an index is added twice.")
@@ -105,11 +105,11 @@ export function migrate<T extends IsNever<keyof A["indexes"] & keyof C>, A exten
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = test(migration.baseSchema, migration.removedIndexes)
-    let merged = merge(removed, migration.addedIndexes)
+    let removed = test(migration.baseSchema, migration.removedColumns)
+    let merged = merge(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
-        indexes: merged
+        columns: merged
     } 
 }
 
