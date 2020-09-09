@@ -65,8 +65,8 @@ async function run() {
 
         let result = migrate(true, migration3)
 
-        let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
-        console.log(database)
+       // let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
+        //console.log(database)
 
     } catch (error) {
         console.error(error)

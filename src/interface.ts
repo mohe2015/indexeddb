@@ -27,10 +27,10 @@ export abstract class DatabaseConnection {
         throw new Error("not implemented")
     }
 
-    async abstract database<T extends DatabaseSchema>(name: string, version: number, onUpgrade: (database: Database<T>, oldVersion: number, newVersion: number) => void): Promise<Database<T>>;
+    async abstract database<T extends DatabaseSchema<COLUMNS>, COLUMNS extends DatabaseColumns>(name: string, version: number, onUpgrade: (database: Database<T, COLUMNS>, oldVersion: number, newVersion: number) => void): Promise<Database<T, COLUMNS>>;
 }
 
-export abstract class Database<T extends DatabaseSchema> {
+export abstract class Database<T extends DatabaseSchema<COLUMNS>, COLUMNS extends DatabaseColumns> {
 
     abstract createObjectStore(name: string, options: IDBObjectStoreParameters): DatabaseObjectStore;
 }
@@ -59,17 +59,17 @@ export interface DatabaseSchemaColumn {
 
 export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
-export type DatabaseSchema = {
+export type DatabaseSchema<T extends DatabaseColumns> = {
     version: number
-    columns: DatabaseColumns
+    columns: T
 }
 
-export type Migration<A extends DatabaseSchema, C extends DatabaseColumns, B extends keyof A["columns"]> = {
+export type Migration<A extends DatabaseSchema<COLUMNS>, C extends DatabaseColumns, B extends keyof COLUMNS, COLUMNS extends DatabaseColumns> = {
     fromVersion: number
     toVersion: number
     baseSchema: A
     addedColumns: C
-    removedColumns: Readonly<ExtractStrict<keyof A["columns"], B>[]>
+    removedColumns: Readonly<ExtractStrict<keyof COLUMNS, B>[]>
 }
 
 // https://github.com/microsoft/TypeScript/issues/32771
@@ -91,15 +91,15 @@ function merge<A extends DatabaseColumns, B extends DatabaseColumns>(state: A, m
     return Object.assign({}, state, migration)
 }
 
-function test<A extends DatabaseSchema, B extends (keyof A["columns"])>(dictionary: A, remove: readonly B[]) {    
-    let theEntries = entries<A["columns"]>(dictionary.columns)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<A["columns"], Exclude<keyof A["columns"], B>>>
+function test<B extends (keyof COLUMNS), COLUMNS extends DatabaseColumns>(dictionary: COLUMNS, remove: readonly B[]) {    
+    let theEntries = entries<COLUMNS>(dictionary)
+    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<COLUMNS, Exclude<keyof COLUMNS, B>>>
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof A["columns"] & keyof C>, A extends DatabaseSchema, B extends keyof A["columns"], C extends DatabaseColumns>(alwaysTrue: T, migration: Migration<A, C, B>): {
+export function migrate<T extends IsNever<keyof COLUMNS & keyof C>, A extends DatabaseSchema<COLUMNS>, B extends keyof COLUMNS, C extends DatabaseColumns, COLUMNS extends DatabaseColumns>(alwaysTrue: T, migration: Migration<A, C, B, COLUMNS>): {
     version: number,
-    columns: Id<Pick<A["columns"], Exclude<keyof A["columns"], Extract<keyof A["columns"], B>>> & C>
+    columns: Id<Pick<COLUMNS, Exclude<keyof COLUMNS, ExtractStrict<keyof COLUMNS, B>>> & C>
 } {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether an index is added twice.")
@@ -107,7 +107,7 @@ export function migrate<T extends IsNever<keyof A["columns"] & keyof C>, A exten
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = test(migration.baseSchema, migration.removedColumns)
+    let removed = test(migration.baseSchema.columns, migration.removedColumns)
     let merged = merge(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
