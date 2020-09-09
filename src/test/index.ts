@@ -42,7 +42,7 @@ async function run() {
                     keyPath: "name",
                 }
             } as const,
-            removedColumns: [] as const
+            removedColumns: []
         }
         
         let migration2 = {
@@ -50,7 +50,7 @@ async function run() {
             toVersion: 3,
             baseSchema: migrate(true, migration1),
             addedColumns: {},
-            removedIndexes: ["test.name"] as const
+            removedColumns: ["test.name"]
         }
         
         let migration3 = {

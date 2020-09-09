@@ -47,7 +47,7 @@ type ExcludeStrict<T, U extends T> = Exclude<T, U>;
 type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
 // removing all columns would remove the object store (especially removing the primary key)
-export type DatabaseSchemaColumn = Readonly<{
+export type DatabaseSchemaColumn = {
     //objectStore: string
 
     primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
@@ -55,22 +55,22 @@ export type DatabaseSchemaColumn = Readonly<{
     //name: string
     keyPath: string | string[]
     options?: IDBIndexParameters
-}>
+}
 
-export type DatabaseColumns = Readonly<{ [a: string]: DatabaseSchemaColumn; }>;
+export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
-export type DatabaseSchema<T extends DatabaseColumns> = Readonly<{
+export type DatabaseSchema<T extends DatabaseColumns> = {
     version: number
     columns: T
-}>
+}
 
-export type Migration<COLUMNS extends DatabaseColumns, A extends DatabaseSchema<COLUMNS>, C extends DatabaseColumns, B extends Readonly<keyof COLUMNS>> = Readonly<{
+export type Migration<COLUMNS extends DatabaseColumns, C extends DatabaseColumns, B extends keyof COLUMNS> = {
     fromVersion: number
     toVersion: number
-    baseSchema: A
+    baseSchema: DatabaseSchema<COLUMNS>
     addedColumns: C
-    removedColumns: Readonly<ExtractStrict<keyof COLUMNS, B>[]>
-}>
+    removedColumns: ExtractStrict<keyof COLUMNS, B>[]
+}
 
 // https://github.com/microsoft/TypeScript/issues/32771
 // https://github.com/microsoft/TypeScript/issues/35101
@@ -91,13 +91,14 @@ function merge<A extends DatabaseColumns, B extends DatabaseColumns>(state: A, m
     return Object.assign({}, state, migration)
 }
 
-function test<B extends (keyof COLUMNS), COLUMNS extends DatabaseColumns>(dictionary: COLUMNS, remove: readonly B[]) {    
+function test<B extends (keyof COLUMNS), COLUMNS extends DatabaseColumns>(dictionary: COLUMNS, remove: B[]) {    
     let theEntries = entries<COLUMNS>(dictionary)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<COLUMNS, Exclude<keyof COLUMNS, B>>>
+    let filteredEntries = theEntries.filter(entry => !(remove as Array<string>).includes(entry[0])) as Entries<Pick<COLUMNS, Exclude<keyof COLUMNS, B>>>
     return fromEntries(filteredEntries)
 }
 
-export function migrate<T extends IsNever<keyof COLUMNS & keyof C>, A extends DatabaseSchema<COLUMNS>, B extends keyof COLUMNS, C extends DatabaseColumns, COLUMNS extends DatabaseColumns>(alwaysTrue: T, migration: Migration<COLUMNS, A, C, B>): {
+// IsNever<keyof COLUMNS & keyof C>
+export function migrate<T extends boolean, B extends keyof COLUMNS, C extends DatabaseColumns, COLUMNS extends DatabaseColumns>(alwaysTrue: T, migration: Migration<COLUMNS, C, B>): {
     version: number,
     columns: Id<Pick<COLUMNS, Exclude<keyof COLUMNS, ExtractStrict<keyof COLUMNS, B>>> & C>
 } {
