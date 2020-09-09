@@ -66,16 +66,21 @@ export type DatabaseSchema<T extends DatabaseObjectStores> = {
     objectStores: T
 }
 
-export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, B extends keyof OBJECTSTORES, N extends number> = {
+export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, N extends number, D extends NestedTest<OBJECTSTORES>> = {
     fromVersion: number
     toVersion: N
     baseSchema: DatabaseSchema<OBJECTSTORES>
     addedColumns: C
-    removedColumns: readonly B[] //Extract<keyof COLUMNS, B>[]
+    removedColumns: readonly D[] //Extract<keyof COLUMNS, B>[]
 }
 
 // https://github.com/microsoft/TypeScript/issues/32771
 // https://github.com/microsoft/TypeScript/issues/35101
+
+// T is the object
+type NestedTest<T> = {
+    [K in keyof T]: [K, keyof T[K]]
+}[keyof T]
 
 type Entries<T> = {
     [K in keyof T]: [K, T[K]]
@@ -93,14 +98,14 @@ function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(s
     return Object.assign({}, state, migration)
 }
 
-function test<B extends (keyof OBJECTSTORES), OBJECTSTORES extends DatabaseObjectStores>(dictionary: OBJECTSTORES, remove: readonly B[]) {    
+function test<D extends NestedTest<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>(dictionary: OBJECTSTORES, remove: readonly D[]) {    
     let theEntries = entries<OBJECTSTORES>(dictionary)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<string>).includes(entry[0])) as Entries<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>>>
+    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<[string, string]>).includes(entry[0])) as Entries<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>>>
     return fromEntries(filteredEntries)
 }
 
 // IsNever<keyof COLUMNS & keyof C>
-export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, B, N>): {
+export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends NestedTest<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
     version: N,
     objectStores: Id<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>> & C>
 } {
