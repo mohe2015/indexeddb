@@ -100,23 +100,15 @@ function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(s
     return Object.assign({}, state, migration)
 }
 
-function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>(_objectStores: OBJECTSTORES, removeObjectStores: readonly D[]): OBJECTSTORES {    
+function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>
+                (_objectStores: OBJECTSTORES, removeObjectStores: readonly D[]): 
+                Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, D>> {    
     let objectStores = JSON.parse(JSON.stringify(_objectStores))
     removeObjectStores.forEach(removeObjectStore => {
         let objectStore = objectStores[removeObjectStore[0]]
         removeObjectStore[1].forEach(removeColumn => delete objectStore[removeColumn])
     })
     return objectStores
-
-    //let objectStoreEntries: Entries<OBJECTSTORES> = entries<OBJECTSTORES>(objectStores) // [key, objectstore][]
-    // TODO FIXME
-    //let filteredEntries = objectStoreEntries.map(objectStoreEntry => {
-    //    let removeColumns = (removeObjectStores.find(removeObjectStore => removeObjectStore[0] === objectStoreEntry[0]) || [objectStoreEntry[0], []])[1] // TODO fixme remove should probably also be a dictionary
-    //    let innerEntries = entries<Entry<OBJECTSTORES>[keyof OBJECTSTORES][1]>(objectStoreEntry[1])
-    //    innerEntries.filter(column => removeColumns.includes(column[1]))
-    //
-    //})//.filter(entry => !(remove as ReadonlyArray<[string, string[]]>).includes(entry[0])) as Entries<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, D>>>
-    //return fromEntries(filteredEntries)
 }
 
 // IsNever<keyof COLUMNS & keyof C>
