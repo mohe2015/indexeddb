@@ -130,4 +130,17 @@ export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C ext
     } 
 }
 
+let state = {
+    readonly test: {
+        readonly name: {
+            readonly keyPath: "name"
+        },
+        readonly value: {
+            readonly keyPath: "name";
+        }
+    }
+}
+
+let fldsjf = test(state, [["test", ["name"]]])
+
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
