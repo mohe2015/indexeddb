@@ -71,16 +71,16 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
     toVersion: N
     baseSchema: DatabaseSchema<OBJECTSTORES>
     addedColumns: C
-    removedColumns: readonly D[] //Extract<keyof COLUMNS, B>[]
+    removedColumns: readonly D[]
 }
 
 // https://github.com/microsoft/TypeScript/issues/32771
 // https://github.com/microsoft/TypeScript/issues/35101
 
 // T is the object
-type RemoveObjectStoreColumns<T> = {
-    [K in keyof T]?: readonly (keyof T[K])[]
-}
+type RemoveObjectStoreColumns<TEMPLATE> = Readonly<{
+    [K in keyof TEMPLATE]?: readonly (keyof TEMPLATE[K])[]
+}>
 
 type Entry<T> = {
     [K in keyof T]: [key: K, value: T[K]]
@@ -105,14 +105,15 @@ function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES ext
                 {
                     [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], D[K]>>
                 } {    
-    let objectStores = JSON.parse(JSON.stringify(_objectStores))
-    removeObjectStores.forEach(removeObjectStore => {
-        let objectStore = objectStores[removeObjectStore[0]]
-        removeObjectStore[1].forEach(removeColumn => delete objectStore[removeColumn])
-    })
-    return objectStores
+    //let objectStores = JSON.parse(JSON.stringify(_objectStores))
+    //removeObjectStores.forEach(removeObjectStore => {
+    //    let objectStore = objectStores[removeObjectStore[0]]
+    //    removeObjectStore[1].forEach(removeColumn => delete objectStore[removeColumn])
+    //})
+    //return objectStores
+    return null as any
 }
-
+/*
 // IsNever<keyof COLUMNS & keyof C>
 export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
     version: N,
@@ -130,7 +131,7 @@ export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C ext
         version: migration.toVersion,
         objectStores: merged
     } 
-}
+}*/
 
 let state = {
     users: {
