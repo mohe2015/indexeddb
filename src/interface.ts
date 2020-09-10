@@ -79,8 +79,8 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
 
 // T is the object
 type RemoveObjectStoreColumns<T> = {
-    [K in keyof T]: [objectStoreName: K, removeColumnNames: (keyof T[K])[]]
-}[keyof T]
+    [K in keyof T]?: readonly (keyof T[K])[]
+}
 
 type Entry<T> = {
     [K in keyof T]: [key: K, value: T[K]]
@@ -101,9 +101,9 @@ function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(s
 }
 
 function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>
-                (_objectStores: OBJECTSTORES, removeObjectStores: readonly D[]): 
+                (_objectStores: OBJECTSTORES, removeObjectStores: D): 
                 {
-                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], D[K]>>
+                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof D[K]>>
                 } {    
     let objectStores = JSON.parse(JSON.stringify(_objectStores))
     removeObjectStores.forEach(removeObjectStore => {
@@ -151,6 +151,6 @@ let state = {
     }
 } as const
 
-let fldsjf = test(state, [["users", ["username"]]])
+let fldsjf = test(state, {"users": ["username"]} as const)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
