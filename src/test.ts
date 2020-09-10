@@ -22,7 +22,7 @@ let state = {
 let remove = {"users": ["username"]} as const
 
 
-function test<STATE extends { [a: string]: { [a: string]: any } }, REMOVE extends { [a: string]: readonly string[] }>
+function test<STATE extends { [a: string]: { [a: string]: any } }, REMOVE extends { [K in keyof STATE]?: readonly (keyof STATE[K])[] }>
                 (_objectStores: STATE, removeObjectStores: REMOVE): 
                 {
                     [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], REMOVE[K]>>
