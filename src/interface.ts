@@ -102,7 +102,9 @@ function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(s
 
 function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>
                 (_objectStores: OBJECTSTORES, removeObjectStores: readonly D[]): 
-                Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, D>> {    
+                {
+                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], D[K]>>
+                } {    
     let objectStores = JSON.parse(JSON.stringify(_objectStores))
     removeObjectStores.forEach(removeObjectStore => {
         let objectStore = objectStores[removeObjectStore[0]]
@@ -131,16 +133,24 @@ export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C ext
 }
 
 let state = {
-    readonly test: {
-        readonly name: {
-            readonly keyPath: "name"
+    users: {
+        username: {
+            keyPath: "username"
         },
-        readonly value: {
-            readonly keyPath: "name";
+        password: {
+            keyPath: "password"
+        }
+    },
+    posts: {
+        title: {
+            keyPath: "title"
+        },
+        content: {
+            keyPath: "content"
         }
     }
-}
+} as const
 
-let fldsjf = test(state, [["test", ["name"]]])
+let fldsjf = test(state, [["users", ["username"]]])
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
