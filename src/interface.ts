@@ -66,7 +66,7 @@ export type DatabaseSchema<T extends DatabaseObjectStores> = {
     objectStores: T
 }
 
-export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, N extends number, D extends NestedTest<OBJECTSTORES>> = {
+export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>> = {
     fromVersion: number
     toVersion: N
     baseSchema: DatabaseSchema<OBJECTSTORES>
@@ -78,13 +78,15 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
 // https://github.com/microsoft/TypeScript/issues/35101
 
 // T is the object
-type NestedTest<T> = {
-    [K in keyof T]: [K, keyof T[K]]
+type RemoveObjectStoreColumns<T> = {
+    [K in keyof T]: [objectStoreName: K, removeColumnNames: (keyof T[K])[]]
 }[keyof T]
 
-type Entries<T> = {
-    [K in keyof T]: [K, T[K]]
-}[keyof T][]
+type Entry<T> = {
+    [K in keyof T]: [key: K, value: T[K]]
+}[keyof T]
+
+type Entries<T> = Entry<T>[]
   
 function entries<T>(obj: T): Entries<T> {
     return Object.entries(obj) as any;
@@ -98,14 +100,20 @@ function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(s
     return Object.assign({}, state, migration)
 }
 
-function test<D extends NestedTest<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>(dictionary: OBJECTSTORES, remove: readonly D[]) {    
-    let theEntries = entries<OBJECTSTORES>(dictionary)
-    let filteredEntries = theEntries.filter(entry => !(remove as ReadonlyArray<[string, string]>).includes(entry[0])) as Entries<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>>>
+function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>(objectStores: OBJECTSTORES, removeObjectStores: readonly D[]) {    
+    let objectStoreEntries: Entries<OBJECTSTORES> = entries<OBJECTSTORES>(objectStores) // [key, objectstore][]
+    // TODO FIXME
+    let filteredEntries = objectStoreEntries.map(objectStoreEntry => {
+        let removeColumns = (removeObjectStores.find(removeObjectStore => removeObjectStore[0] === objectStoreEntry[0]) || [objectStoreEntry[0], []])[1] // TODO fixme remove should probably also be a dictionary
+        let innerEntries = entries<Entry<OBJECTSTORES>[keyof OBJECTSTORES][1]>(objectStoreEntry[1])
+        innerEntries.filter(column => removeColumns.includes(column[1]))
+
+    })//.filter(entry => !(remove as ReadonlyArray<[string, string[]]>).includes(entry[0])) as Entries<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, D>>>
     return fromEntries(filteredEntries)
 }
 
 // IsNever<keyof COLUMNS & keyof C>
-export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends NestedTest<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
+export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
     version: N,
     objectStores: Id<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>> & C>
 } {
