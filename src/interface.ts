@@ -103,7 +103,7 @@ function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(s
 function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>
                 (_objectStores: OBJECTSTORES, removeObjectStores: D): 
                 {
-                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof D[K]>>
+                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], D[K]>>
                 } {    
     let objectStores = JSON.parse(JSON.stringify(_objectStores))
     removeObjectStores.forEach(removeObjectStore => {
