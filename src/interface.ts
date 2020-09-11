@@ -27,10 +27,10 @@ export abstract class DatabaseConnection {
         throw new Error("not implemented")
     }
 
-    async abstract database<T extends DatabaseSchema<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>(name: string, version: number, onUpgrade: (database: Database<T, OBJECTSTORES>, oldVersion: number, newVersion: number) => void): Promise<Database<T, OBJECTSTORES>>;
+    async abstract database<T extends DatabaseSchema>(name: string, version: number, onUpgrade: (database: Database<T>, oldVersion: number, newVersion: number) => void): Promise<Database<T>>;
 }
 
-export abstract class Database<T extends DatabaseSchema<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores> {
+export abstract class Database<T extends DatabaseSchema> {
 }
 
 export abstract class DatabaseObjectStore {
@@ -59,6 +59,8 @@ export type DatabaseSchema = {
     version: number
     objectStores: DatabaseObjectStores // maybe generic
 }
+
+export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
 /*
 export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>> = {
     fromVersion: number
@@ -68,14 +70,14 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
     removedColumns: readonly D[]
 }
 */
-function mergeObjectStores<T extends IsNever<{ [K in keyof A]: keyof A[K] } & { [K in keyof B]: keyof B[K] }>, A extends DatabaseObjectStores, B extends DatabaseObjectStores>(alwaysTrue: T, state: A, migration: B): A & B {
+function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores, T extends IsNever<{ [K in keyof A]: keyof A[K] } & { [K in keyof B]: keyof B[K] }>>(alwaysTrue: T, state: A, migration: B): A & B {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
     }
     return Object.assign({}, state, migration)
 }
 
-function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }, T extends IsNever<Exclude<keyof REMOVE, keyof STATE>>>
+function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, T extends IsNever<Exclude<keyof REMOVE, keyof STATE>>>
                 (alwaysTrue: T, objectStores: STATE, removeObjectStores: REMOVE): 
                 {
                     [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], keyof REMOVE[K]>>
@@ -86,23 +88,17 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends { [K i
     return null as any // TODO FIXME
 }
 
-/*
-// 
-export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
-    version: N,
-    objectStores: Id<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>> & C>
-} {
-    
+export function migrate<STATE extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>>(state: STATE, removeColumns: REMOVE) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = test(migration.baseSchema.objectStores, migration.removedColumns)
-    let merged = merge(removed, migration.addedColumns)
+    let removed = mergeObjectStores(migration.baseSchema.objectStores, migration.removedColumns)
+    let merged = removeColumns(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
         objectStores: merged
     } 
-}*/
+}
 
 let state = {
     users: {
@@ -133,7 +129,7 @@ let addedColumns = {
 
 let newState = mergeObjectStores(true, state, addedColumns)
 
-let removedColumns = {"users": {"username": null}} as const
+let removedColumns = {"users": {"username": null}, "posts": {"title": null}} as const
 
 let fldsjf = removeColumns(true, newState, removedColumns)
 
