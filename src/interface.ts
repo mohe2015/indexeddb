@@ -61,15 +61,15 @@ export type DatabaseSchema = {
 }
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
-/*
-export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>> = {
+
+export type Migration<STATE extends DatabaseObjectStores, ADD extends DatabaseObjectStores, N extends number, REMOVE extends RemoveColumns<STATE>> = {
     fromVersion: number
     toVersion: N
-    baseSchema: DatabaseSchema<OBJECTSTORES>
-    addedColumns: C
-    removedColumns: readonly D[]
+    baseSchema: DatabaseSchema
+    addedColumns: ADD
+    removedColumns: REMOVE
 }
-*/
+
 function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores, T extends IsNever<{ [K in keyof A]: keyof A[K] } & { [K in keyof B]: keyof B[K] }>>(alwaysTrue: T, state: A, migration: B): A & B {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
