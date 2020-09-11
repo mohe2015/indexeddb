@@ -55,9 +55,9 @@ export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
 export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
 
-export type DatabaseSchema = {
+export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
     version: number
-    objectStores: DatabaseObjectStores // maybe generic
+    objectStores: DatabaseObjectStores
 }
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
@@ -92,8 +92,8 @@ export function migrate<STATE extends DatabaseSchema, ADD extends DatabaseObject
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = removeColumns(true, migration.baseSchema.objectStores, migration.removedColumns)
-    let merged = mergeObjectStores(true, removed, migration.addedColumns)
+    let merged = mergeObjectStores(true, migration.baseSchema.objectStores, migration.addedColumns)
+    let removed = removeColumns(true, merged, migration.removedColumns)
     return {
         version: migration.toVersion,
         objectStores: merged
