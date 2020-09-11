@@ -55,9 +55,9 @@ export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
 export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
 
-export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
+export type DatabaseSchema = { //<OBJECTSTORES extends DatabaseObjectStores> = {
     version: number
-    objectStores: DatabaseObjectStores
+    objectStores: DatabaseObjectStores // maybe generic
 }
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
@@ -65,7 +65,7 @@ export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K
 export type Migration<STATE extends DatabaseSchema, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>> = {
     fromVersion: number
     toVersion: number
-    baseSchema: DatabaseSchema
+    baseSchema: STATE
     addedColumns: ADD
     removedColumns: REMOVE
 }
