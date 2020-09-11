@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type { IsNever } from "@dev.mohe/conditional-type-checks";
+import { assert, IsNever } from "@dev.mohe/conditional-type-checks";
 
 /**
  * @abstract
@@ -37,6 +37,9 @@ export abstract class DatabaseObjectStore {
 
 }
 
+type ExtractStrict<T, U extends T> = Extract<T, U>;
+type ExcludeStrict<T, U extends T> = Exclude<T, U>;
+
 // removing all columns would remove the object store (especially removing the primary key)
 export type DatabaseSchemaColumn = {
     //objectStore: string
@@ -48,15 +51,15 @@ export type DatabaseSchemaColumn = {
     options?: IDBIndexParameters
 }
 
-export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
-
 export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
-export type DatabaseSchema<T extends DatabaseObjectStores> = {
-    version: number
-    objectStores: T
-}
+export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
 
+export type DatabaseSchema = {
+    version: number
+    objectStores: DatabaseObjectStores // maybe generic
+}
+/*
 export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>> = {
     fromVersion: number
     toVersion: N
@@ -64,18 +67,21 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
     addedColumns: C
     removedColumns: readonly D[]
 }
-
-function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
+*/
+function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function removeColumns<STATE extends { [a: string]: { [a: string]: any } }, REMOVE extends { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: any } }>
-                (_objectStores: STATE, removeObjectStores: REMOVE): 
+function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends { [K in keyof STATE]: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } | undefined }, T extends IsNever<ExcludeStrict<keyof REMOVE, keyof STATE>>>
+                (alwaysTrue: T, objectStores: STATE, removeObjectStores: REMOVE): 
                 {
                     [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], keyof REMOVE[K]>>
                 }
                 {
-                    return null as any
+                    if (!alwaysTrue) {
+                        throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
+                    }
+                    return null as any // TODO FIXME
                 }
 
 /*
@@ -84,9 +90,7 @@ export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C ext
     version: N,
     objectStores: Id<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>> & C>
 } {
-    if (!alwaysTrue) {
-        throw new Error("alwaysTrue needs to be true to check whether an index is added twice.")
-    }
+    
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
@@ -107,6 +111,9 @@ let state = {
             keyPath: "password"
         }
     },
+} as const
+
+let addedColumns = {
     posts: {
         title: {
             keyPath: "title"
@@ -117,8 +124,9 @@ let state = {
     }
 } as const
 
-let remove = {"users": {"username":null, "password": null}, "posts": {"title": null}} as const
+// TODO FIXME remove things that don't exist (object store level)
+let removedColumns = {"users": {"username":null}} as const
 
-let fldsjf = removeColumns(state, remove)
+let fldsjf = removeColumns(true, state, removedColumns)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
