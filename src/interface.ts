@@ -68,7 +68,7 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
     removedColumns: readonly D[]
 }
 */
-function mergeObjectStores<T extends IsNever<(keyof keyof A) & (keyof keyof B)>, A extends DatabaseObjectStores, B extends DatabaseObjectStores>(alwaysTrue: T, state: A, migration: B): A & B {
+function mergeObjectStores<T extends IsNever<{ [K in keyof A]: keyof A[K] } & { [K in keyof B]: keyof B[K] }>, A extends DatabaseObjectStores, B extends DatabaseObjectStores>(alwaysTrue: T, state: A, migration: B): A & B {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
     }
@@ -117,7 +117,7 @@ let state = {
 
 let addedColumns = {
     users: {
-        username: {
+        usegrname: {
             keyPath: "username"
         },
     },
@@ -130,11 +130,6 @@ let addedColumns = {
         }
     }
 } as const
-
-type bbb = { [K in keyof typeof state]: keyof (typeof state)[K] }
-type aaa = { [K in keyof typeof addedColumns]: keyof (typeof addedColumns)[K] }
-
-type ccc = bbb & aaa
 
 let newState = mergeObjectStores(true, state, addedColumns)
 
