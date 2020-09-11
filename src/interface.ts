@@ -88,7 +88,7 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends Remove
     return null as any // TODO FIXME
 }
 
-export function migrate<OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, MIGRATION extends Migration<OBJECTSTORES ,STATE, ADD, REMOVE>>(state: STATE, migration: MIGRATION) {
+export function migrate<OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE>>(migration: MIGRATION) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
@@ -133,6 +133,6 @@ let removedColumns = {"users": {"username": null}, "posts": {"title": null}} as 
 
 let fldsjf = removeColumns(true, newState, removedColumns)
 
-
+type flsdj = { [K in keyof typeof state]: keyof (typeof state)[K] } & { [K in keyof (typeof addedColumns)]: keyof (typeof addedColumns)[K] }
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
