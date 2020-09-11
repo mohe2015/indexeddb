@@ -31,20 +31,11 @@ export abstract class DatabaseConnection {
 }
 
 export abstract class Database<T extends DatabaseSchema<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores> {
-
-    abstract createObjectStore(name: string, options: IDBObjectStoreParameters): DatabaseObjectStore;
 }
 
 export abstract class DatabaseObjectStore {
 
-    abstract createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters): IDBIndex;
 }
-
-type ExtractStrict<T, U extends T> = Extract<T, U>;
-type ExcludeStrict<T, U extends T> = Exclude<T, U>;
-
-// https://github.com/microsoft/TypeScript/issues/30312
-type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
 // removing all columns would remove the object store (especially removing the primary key)
 export type DatabaseSchemaColumn = {
@@ -74,45 +65,19 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
     removedColumns: readonly D[]
 }
 
-// https://github.com/microsoft/TypeScript/issues/32771
-// https://github.com/microsoft/TypeScript/issues/35101
-
-// T is the object
-type RemoveObjectStoreColumns<TEMPLATE> = Readonly<{
-    [K in keyof TEMPLATE]?: readonly (keyof TEMPLATE[K])[]
-}>
-
-type Entry<T> = {
-    [K in keyof T]: [key: K, value: T[K]]
-}[keyof T]
-
-type Entries<T> = Entry<T>[]
-  
-function entries<T>(obj: T): Entries<T> {
-    return Object.entries(obj) as any;
-}
-
-function fromEntries<T>(entries: Entries<T>): T {
-    return Object.fromEntries(entries) as any
-}
-
 function merge<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function test<D extends RemoveObjectStoreColumns<OBJECTSTORES>, OBJECTSTORES extends DatabaseObjectStores>
-                (_objectStores: OBJECTSTORES, removeObjectStores: D): 
+function removeColumns<STATE extends { [a: string]: { [a: string]: any } }, REMOVE extends { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: any } }>
+                (_objectStores: STATE, removeObjectStores: REMOVE): 
                 {
-                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], D[K]>>
-                } {    
-    //let objectStores = JSON.parse(JSON.stringify(_objectStores))
-    //removeObjectStores.forEach(removeObjectStore => {
-    //    let objectStore = objectStores[removeObjectStore[0]]
-    //    removeObjectStore[1].forEach(removeColumn => delete objectStore[removeColumn])
-    //})
-    //return objectStores
-    return null as any
-}
+                    [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], keyof REMOVE[K]>>
+                }
+                {
+                    return null as any
+                }
+
 /*
 // IsNever<keyof COLUMNS & keyof C>
 export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
@@ -152,6 +117,8 @@ let state = {
     }
 } as const
 
-let fldsjf = test(state, {"users": ["username"]} as const)
+let remove = {"users": {"username":null, "password": null}, "posts": {"title": null}} as const
+
+let fldsjf = removeColumns(state, remove)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
