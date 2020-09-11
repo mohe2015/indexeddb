@@ -68,7 +68,10 @@ export type Migration<OBJECTSTORES extends DatabaseObjectStores, C extends Datab
     removedColumns: readonly D[]
 }
 */
-function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
+function mergeObjectStores<T extends IsNever<keyof A & keyof B>, A extends DatabaseObjectStores, B extends DatabaseObjectStores>(alwaysTrue: T, state: A, migration: B): A & B {
+    if (!alwaysTrue) {
+        throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
+    }
     return Object.assign({}, state, migration)
 }
 
@@ -76,16 +79,15 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends { [K i
                 (alwaysTrue: T, objectStores: STATE, removeObjectStores: REMOVE): 
                 {
                     [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], keyof REMOVE[K]>>
-                }
-                {
-                    if (!alwaysTrue) {
-                        throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
-                    }
-                    return null as any // TODO FIXME
-                }
+                } {
+    if (!alwaysTrue) {
+        throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
+    }
+    return null as any // TODO FIXME
+}
 
 /*
-// IsNever<keyof COLUMNS & keyof C>
+// 
 export function migrate<T extends boolean, B extends (keyof OBJECTSTORES), C extends DatabaseObjectStores, OBJECTSTORES extends DatabaseObjectStores, N extends number, D extends RemoveObjectStoreColumns<OBJECTSTORES>>(alwaysTrue: T, migration: Migration<OBJECTSTORES, C, N, D>): {
     version: N,
     objectStores: Id<Pick<OBJECTSTORES, Exclude<keyof OBJECTSTORES, B>> & C>
@@ -124,10 +126,12 @@ let addedColumns = {
     }
 } as const
 
-let newState = mergeObjectStores(state, addedColumns)
+let newState = mergeObjectStores(true, state, addedColumns)
 
 let removedColumns = {"users": {"username": null}} as const
 
 let fldsjf = removeColumns(true, newState, removedColumns)
+
+
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
