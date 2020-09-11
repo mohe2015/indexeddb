@@ -55,14 +55,14 @@ export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
 export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
 
-export type DatabaseSchema = { //<OBJECTSTORES extends DatabaseObjectStores> = {
+export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
     version: number
-    objectStores: DatabaseObjectStores // maybe generic
+    objectStores: OBJECTSTORES // maybe generic
 }
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
 
-export type Migration<STATE extends DatabaseSchema, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>> = {
+export type Migration<OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>> = {
     fromVersion: number
     toVersion: number
     baseSchema: STATE
@@ -88,7 +88,7 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends Remove
     return null as any // TODO FIXME
 }
 
-export function migrate<STATE extends DatabaseSchema, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, MIGRATION extends Migration<STATE, ADD, REMOVE>>(state: STATE, migration: MIGRATION) {
+export function migrate<OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, MIGRATION extends Migration<OBJECTSTORES ,STATE, ADD, REMOVE>>(state: STATE, migration: MIGRATION) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
