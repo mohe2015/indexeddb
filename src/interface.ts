@@ -16,7 +16,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { assert, IsNever } from "@dev.mohe/conditional-type-checks";
+import type { IsNever } from "@dev.mohe/conditional-type-checks";
 
 /**
  * @abstract
@@ -72,7 +72,7 @@ function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObj
     return Object.assign({}, state, migration)
 }
 
-function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends { [K in keyof STATE]: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } | undefined }, T extends IsNever<ExcludeStrict<keyof REMOVE, keyof STATE>>>
+function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }, T extends IsNever<Exclude<keyof REMOVE, keyof STATE>>>
                 (alwaysTrue: T, objectStores: STATE, removeObjectStores: REMOVE): 
                 {
                     [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], keyof REMOVE[K]>>
@@ -124,9 +124,10 @@ let addedColumns = {
     }
 } as const
 
-// TODO FIXME remove things that don't exist (object store level)
-let removedColumns = {"users": {"username":null}} as const
+let newState = mergeObjectStores(state, addedColumns)
 
-let fldsjf = removeColumns(true, state, removedColumns)
+let removedColumns = {"users": {"username": null}} as const
+
+let fldsjf = removeColumns(true, newState, removedColumns)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
