@@ -62,9 +62,9 @@ export type DatabaseSchema = {
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
 
-export type Migration<STATE extends DatabaseObjectStores, ADD extends DatabaseObjectStores, N extends number, REMOVE extends RemoveColumns<STATE>> = {
+export type Migration<STATE extends DatabaseSchema, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>> = {
     fromVersion: number
-    toVersion: N
+    toVersion: number
     baseSchema: DatabaseSchema
     addedColumns: ADD
     removedColumns: REMOVE
@@ -88,12 +88,12 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends Remove
     return null as any // TODO FIXME
 }
 
-export function migrate<STATE extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>>(state: STATE, removeColumns: REMOVE) {
+export function migrate<STATE extends DatabaseSchema, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, MIGRATION extends Migration<STATE, ADD, REMOVE>>(state: STATE, migration: MIGRATION) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = mergeObjectStores(migration.baseSchema.objectStores, migration.removedColumns)
-    let merged = removeColumns(removed, migration.addedColumns)
+    let removed = removeColumns(true, migration.baseSchema.objectStores, migration.removedColumns)
+    let merged = mergeObjectStores(true, removed, migration.addedColumns)
     return {
         version: migration.toVersion,
         objectStores: merged
