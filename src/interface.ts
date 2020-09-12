@@ -37,8 +37,8 @@ export abstract class DatabaseObjectStore {
 
 }
 
-type ExtractStrict<T, U extends T> = Extract<T, U>;
-type ExcludeStrict<T, U extends T> = Exclude<T, U>;
+export type ExtractStrict<T, U extends T> = Extract<T, U>;
+export type ExcludeStrict<T, U extends T> = Exclude<T, U>;
 
 // removing all columns would remove the object store (especially removing the primary key)
 export type DatabaseSchemaColumn = {

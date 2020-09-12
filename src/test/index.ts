@@ -19,46 +19,75 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { create } from "../browser.js";
+import { create } from "../browser";
+import type { IsExact, IsNever } from "@dev.mohe/conditional-type-checks";
+import type { ExtractStrict } from '../interface'
 
 async function run() {
     try {
         let databaseConnection = await create("localhost");
 
-        let baseSchema = {
-            version: 1,
-            objectStores: {}
+        let objectStores = {
+            test: { "name": {} },
+            blib: null
         } as const
 
-        let migration1 = {
+        let baseSchema = {
+            version: 1,
+            objectStores
+        } as const
+
+        let addedColumns = {
+            test: {
+                "name": {
+                    keyPath: "name",
+                },
+                "value": {
+                    keyPath: "name",
+                }
+            }
+        } as const
+
+        let removedColumns = {} as const
+
+        type aaa = { [K in (keyof (typeof objectStores) & keyof (typeof addedColumns))]: keyof (typeof objectStores)[K] } 
+        type bbb = { [K in (keyof (typeof objectStores) & keyof (typeof addedColumns))]: keyof (typeof addedColumns)[K] }
+
+        type ccc = aaa & bbb
+
+        type ddd = IsNever<ccc>
+        type eee = IsExact<ccc, {}>
+
+        type fff = (keyof (typeof objectStores) | keyof (typeof addedColumns))
+
+        type ggg = Pick<ccc, Extract<keyof ccc, fff>>
+        
+        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2>  = {
+            noDuplicateColumnsAlwaysTrue: true,
+            noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 1,
             toVersion: 2,
-            baseSchema: baseSchema,
-            addedColumns: {
-                "test": {
-                    "name": {
-                        keyPath: "name",
-                    },
-                    "value": {
-                        keyPath: "name",
-                    }
-                }
-            },
-            removedColumns: []
+            baseSchema,
+            addedColumns,
+            removedColumns,
         } as const
         
         let migration2 = {
+            noDuplicateColumnsAlwaysTrue: true,
+            noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 2,
             toVersion: 3,
-            baseSchema: migrate(true, migration1),
+            baseSchema: migrate(migration1),
             addedColumns: {},
-            removedColumns: [["test", ["name"]]]
+            removedColumns: {"test": {"name": null}}
         } as const
         
         let migration3 = {
+            noDuplicateColumnsAlwaysTrue: true,
+            noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 3,
             toVersion: 4,
-            baseSchema: migrate(true, migration2),
+            baseSchema: migrate(migration2),
             addedColumns: {
                 "test": {
                     "valuee": {
@@ -66,10 +95,10 @@ async function run() {
                     }
                 }
             },
-            removedColumns: []
+            removedColumns: {}
         } as const
 
-        let result = migrate(true, migration3)
+        let result = migrate(migration3)
 
         //let a: keyof (typeof result["columns"]) = null
 
