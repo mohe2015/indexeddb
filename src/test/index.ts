@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { create } from "../browser";
 import type { IsExact, IsNever } from "@dev.mohe/conditional-type-checks";
-import type { ExtractStrict, dictionaryIntersection } from '../interface'
+import type { magicNeverToEmpty, dictionaryIntersection } from '../interface'
 
 // {} is okay, nonempty object is not okayj, never is okay
 
@@ -35,7 +35,14 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
-            
+            test: {
+                namee: {
+                    keyPath: "name",
+                },
+                valuee: {
+                    keyPath: "value",
+                }
+            },
         } as const
 
         let baseSchema = {
@@ -59,10 +66,10 @@ async function run() {
 
         let removedColumns = {} as const
 
-        let aa: dictionaryIntersection<typeof objectStores, typeof addedColumns> = {} 
+        let aa: magicNeverToEmpty<dictionaryIntersection<typeof objectStores, typeof addedColumns>, keyof (typeof objectStores) & keyof (typeof addedColumns)> = true
         
-        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2>  = {
-            noDuplicateColumnsAlwaysFalse: false,
+        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2>  = {
+            noDuplicateColumnsAlwaysFalse: true,
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 1,
             toVersion: 2,
@@ -76,7 +83,7 @@ async function run() {
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 2,
             toVersion: 3,
-            baseSchema: migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2, typeof migration1>(migration1),
+            baseSchema: migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2, typeof migration1>(migration1),
             addedColumns: {},
             removedColumns: {"test": {"name": null}}
         } as const

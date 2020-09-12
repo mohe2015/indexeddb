@@ -133,7 +133,7 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
                         FROMVERSION extends number,
                         TOVERSION extends number,
                         MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE, T, U, FROMVERSION, TOVERSION>>(migration: MIGRATION) {
-    if (migration.noDuplicateColumnsAlwaysFalse) {
+    if (!migration.noDuplicateColumnsAlwaysFalse) {
         throw new Error("noDuplicateColumnsAlwaysFalse needs to be false to check whether a duplicate column was added.")
     }
     if (!migration.noNonexistentRemovesAlwaysTrue) {
