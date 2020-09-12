@@ -52,13 +52,6 @@ async function run() {
         } as const
 
         let removedColumns = {} as const
-
-        type aaa = { [K in (keyof (typeof objectStores) & keyof (typeof addedColumns))]: keyof (typeof objectStores)[K] } 
-        type bbb = { [K in (keyof (typeof objectStores) & keyof (typeof addedColumns))]: keyof (typeof addedColumns)[K] }
-
-        type ccc = aaa & bbb // {test{name}}, never, {}
-
-        type ggg = IsExact<Pick<ccc, Extract<keyof ccc, (keyof (typeof objectStores) & keyof (typeof addedColumns))>>, {}>
         
         let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2>  = {
             noDuplicateColumnsAlwaysFalse: false,
@@ -75,7 +68,7 @@ async function run() {
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 2,
             toVersion: 3,
-            baseSchema: migrate(migration1),
+            baseSchema: migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2, typeof migration1>(migration1),
             addedColumns: {},
             removedColumns: {"test": {"name": null}}
         } as const
