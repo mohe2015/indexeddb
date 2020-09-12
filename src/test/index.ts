@@ -28,8 +28,8 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
-            teest: {
-                "namee": {
+            test: {
+                "naeme": {
                     keyPath: "name",
                 },
             }
@@ -58,12 +58,10 @@ async function run() {
 
         type ccc = aaa & bbb // {test{name}}, never, {}
 
-        type fff = (keyof (typeof objectStores) & keyof (typeof addedColumns))
-
-        type ggg = IsExact<Pick<ccc, Extract<keyof ccc, fff>>, {}> // {test{name}}, empty, {}
+        type ggg = IsExact<Pick<ccc, Extract<keyof ccc, (keyof (typeof objectStores) & keyof (typeof addedColumns))>>, {}>
         
-        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2>  = {
-            noDuplicateColumnsAlwaysTrue: true,
+        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2>  = {
+            noDuplicateColumnsAlwaysFalse: false,
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 1,
             toVersion: 2,
@@ -73,7 +71,7 @@ async function run() {
         } as const
         
         let migration2 = {
-            noDuplicateColumnsAlwaysTrue: true,
+            noDuplicateColumnsAlwaysFalse: false,
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 2,
             toVersion: 3,
@@ -83,7 +81,7 @@ async function run() {
         } as const
         
         let migration3 = {
-            noDuplicateColumnsAlwaysTrue: true,
+            noDuplicateColumnsAlwaysFalse: false,
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 3,
             toVersion: 4,
