@@ -62,7 +62,7 @@ export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
 
-export type Migration<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof STATE>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>> = {
+export type Migration<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof STATE>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>> = {
     noDuplicateColumnsAlwaysTrue: T // HACK this is a typescript hack - please help me removing it
     noNonexistentRemovesAlwaysTrue: U // HACK this is a typescript hack - please help me removing it
     fromVersion: number
@@ -90,7 +90,7 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends Remove
     return null as any // TODO FIXME
 }
 
-export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof STATE>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, MIGRATION extends Migration<T, U, OBJECTSTORES, STATE, ADD, REMOVE>>(migration: MIGRATION) {
+export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof STATE>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>, MIGRATION extends Migration<T, U, OBJECTSTORES, STATE, ADD, REMOVE>>(migration: MIGRATION) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
