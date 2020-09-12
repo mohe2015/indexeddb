@@ -29,7 +29,7 @@ async function run() {
 
         let objectStores = {
             test: {
-                "naeme": {
+                name: {
                     keyPath: "name",
                 },
             }
@@ -42,11 +42,11 @@ async function run() {
 
         let addedColumns = {
             test: {
-                "name": {
+                name: {
                     keyPath: "name",
                 },
-                "value": {
-                    keyPath: "name",
+                value: {
+                    keyPath: "value",
                 }
             }
         } as const
