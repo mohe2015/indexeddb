@@ -77,7 +77,7 @@ async function run() {
             addedColumns,
             removedColumns,
         } as const
-        
+        /*
         let migration2 = {
             noDuplicateColumnsAlwaysFalse: false,
             noNonexistentRemovesAlwaysTrue: true,
@@ -110,7 +110,7 @@ async function run() {
 
        // let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
         //console.log(database)
-
+*/
     } catch (error) {
         console.error(error)
         alert(error)

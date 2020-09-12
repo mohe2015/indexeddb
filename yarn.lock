@@ -1303,7 +1303,7 @@ postcss@^6.0.1:
     source-map "^0.6.1"
     supports-color "^5.4.0"
 
-prettier@^2.0.5:
+prettier@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.1.1.tgz#d9485dd5e499daa6cb547023b87a6cf51bee37d6"
   integrity sha512-9bY+5ZWCfqj3ghYBLxApy2zf6m+NJo5GzmLTpr9FsApsfjriNnS2dahWReHMi7qNPhhHl9SYHJs2cHZLgexNIw==
@@ -1675,10 +1675,10 @@ typedoc@^0.19.1:
     shelljs "^0.8.4"
     typedoc-default-themes "^0.11.1"
 
-typescript@^4.0.2:
-  version "4.0.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.0.2.tgz#7ea7c88777c723c681e33bf7988be5d008d05ac2"
-  integrity sha512-e4ERvRV2wb+rRZ/IQeb3jm2VxBsirQLpQhdxplZ2MEzGvDkkMmPglecnNDfSUBivMjP93vRbngYYDQqQ/78bcQ==
+typescript@^4.1.0-dev.20200911:
+  version "4.1.0-dev.20200911"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.0-dev.20200911.tgz#4eced2cfb93ec50d397e8089e45916befd1960bd"
+  integrity sha512-PK9OudvbrRBqgn8a31QoSM1IizFUYVihAd+/wJIEDllOV7EyOrdyWylcd9ai2NR9MWvWF5ECBVnRGXFNHu8NFw==
 
 uglify-js@^3.1.4:
   version "3.10.4"
