@@ -18,6 +18,12 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import type { IsExact, IsNever } from "@dev.mohe/conditional-type-checks";
 
+export declare type IsNeveer<T> = [T] extends [never] ? true : false;
+
+declare type test<T> = ((keyof [T]) extends [never] ? true : false)
+
+let dfs: test<never> = true
+
 /**
  * @abstract
  */
@@ -73,7 +79,7 @@ export type Migration<
                     STATE extends DatabaseSchema<OBJECTSTORES, FROMVERSION>,
                     ADD extends DatabaseObjectStores,
                     REMOVE extends RemoveColumns<OBJECTSTORES>,
-                    T extends magicNeverToEmpty<dictionaryIntersection<OBJECTSTORES, ADD>, keyof OBJECTSTORES & keyof ADD>,
+                    T extends test<dictionaryIntersection<OBJECTSTORES, ADD>>,
                     U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
                     FROMVERSION extends number,
                     TOVERSION extends number> = {
@@ -182,7 +188,7 @@ let addedColumns = {
 
 let removedColumns = {"users": {"username": null}} as const
 
-let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, {}, true, 1, 2> = {
+let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2> = {
     noDuplicateColumnsAlwaysFalse: false,
     noNonexistentRemovesAlwaysTrue: true,
     fromVersion: 1,
