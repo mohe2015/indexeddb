@@ -67,8 +67,8 @@ export type Migration<
                     STATE extends DatabaseSchema<OBJECTSTORES>,
                     ADD extends DatabaseObjectStores,
                     REMOVE extends RemoveColumns<OBJECTSTORES>,
-                    T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }> = IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>,
-                    U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>> = IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>> = {
+                    T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>,
+                    U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>> = {
     noDuplicateColumnsAlwaysTrue: T // HACK this is a typescript hack - please help me removing it
     noNonexistentRemovesAlwaysTrue: U // HACK this is a typescript hack - please help me removing it
     fromVersion: number
