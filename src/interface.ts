@@ -103,36 +103,43 @@ export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJ
 }
 
 let state = {
-    users: {
-        username: {
-            keyPath: "username"
+    version: 1,
+    objectStores: {
+        users: {
+            username: {
+                keyPath: "username"
+            },
+            password: {
+                keyPath: "password"
+            }
         },
-        password: {
-            keyPath: "password"
-        }
-    },
-} as const
-
-let addedColumns = {
-    users: {
-        usegrname: {
-            keyPath: "username"
-        },
-    },
-    posts: {
-        title: {
-            keyPath: "title"
-        },
-        content: {
-            keyPath: "content"
-        }
     }
 } as const
 
-let newState = mergeObjectStores(true, state, addedColumns)
+let migration = {
+    noDuplicateColumnsAlwaysTrue: true,
+    noNonexistentRemovesAlwaysTrue: true,
+    fromVersion: 1,
+    toVersion: 2,
+    baseSchema: state,
+    addedColumns: {
+        users: {
+            usegrname: {
+                keyPath: "usegrname"
+            },
+        },
+        posts: {
+            title: {
+                keyPath: "title"
+            },
+            content: {
+                keyPath: "content"
+            }
+        }
+    },
+    removedColumns: {"users": {"username": null}, "posts": {"title": null}}
+} as const
 
-let removedColumns = {"users": {"username": null}, "posts": {"title": null}} as const
-
-let fldsjf = removeColumns(true, newState, removedColumns)
+let result = migrate(migration)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
