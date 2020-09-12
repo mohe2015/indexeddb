@@ -28,7 +28,11 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
-            
+            teest: {
+                "namee": {
+                    keyPath: "name",
+                },
+            }
         } as const
 
         let baseSchema = {
@@ -52,22 +56,11 @@ async function run() {
         type aaa = { [K in (keyof (typeof objectStores) & keyof (typeof addedColumns))]: keyof (typeof objectStores)[K] } 
         type bbb = { [K in (keyof (typeof objectStores) & keyof (typeof addedColumns))]: keyof (typeof addedColumns)[K] }
 
-        type ccc = aaa & bbb
+        type ccc = aaa & bbb // {test{name}}, never, {}
 
-        type test = never | {}
+        type fff = (keyof (typeof objectStores) & keyof (typeof addedColumns))
 
-        let dsjlf: ccc = null
-
-        let u = dsjlf["test"] // never or "name" (union)
-
-        // object of nevers is never
-
-        type ddd = IsNever<ccc>
-        type eee = IsExact<ccc | {}, {}> // USE THIS?
-
-        type fff = (keyof (typeof objectStores) | keyof (typeof addedColumns))
-
-        type ggg = Pick<ccc, Extract<keyof ccc, fff>>
+        type ggg = IsExact<Pick<ccc, Extract<keyof ccc, fff>>, {}> // {test{name}}, empty, {}
         
         let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2>  = {
             noDuplicateColumnsAlwaysTrue: true,
