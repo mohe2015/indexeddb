@@ -92,9 +92,7 @@ function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends
                 {
                     [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>
                 } {
-    if (!alwaysTrue) {
-        throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
-    }
+    
     return null as any // TODO FIXME
 }
 
@@ -107,6 +105,12 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
                         FROMVERSION extends number,
                         TOVERSION extends number,
                         MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE, T, U, FROMVERSION, TOVERSION>>(migration: MIGRATION) {
+    if (!migration.noDuplicateColumnsAlwaysTrue) {
+        throw new Error("noDuplicateColumnsAlwaysTrue needs to be true to check whether a duplicate column was added.")
+    }
+    if (!migration.noNonexistentRemovesAlwaysTrue) {
+        throw new Error("noNonexistentRemovesAlwaysTrue needs to be true to check whether a nonexistent column was removed.")
+    }
     let removed = removeColumns(migration.noNonexistentRemovesAlwaysTrue, migration.baseSchema.objectStores, migration.removedColumns)
     let merged = mergeObjectStores(migration.noDuplicateColumnsAlwaysTrue, removed, migration.addedColumns)
     return {
@@ -160,5 +164,7 @@ let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedCol
 } as const
 
 let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2, typeof migration>(migration)
+
+console.log(result)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
