@@ -27,10 +27,10 @@ export abstract class DatabaseConnection {
         throw new Error("not implemented")
     }
 
-    async abstract database<T extends DatabaseSchema>(name: string, version: number, onUpgrade: (database: Database<T>, oldVersion: number, newVersion: number) => void): Promise<Database<T>>;
+    async abstract database<OBJECTSTORES extends DatabaseObjectStores, T extends DatabaseSchema<OBJECTSTORES>>(name: string, version: number, onUpgrade: (database: Database<OBJECTSTORES, T>, oldVersion: number, newVersion: number) => void): Promise<Database<OBJECTSTORES, T>>;
 }
 
-export abstract class Database<T extends DatabaseSchema> {
+export abstract class Database<OBJECTSTORES extends DatabaseObjectStores, T extends DatabaseSchema<OBJECTSTORES>> {
 }
 
 export abstract class DatabaseObjectStore {
@@ -62,7 +62,7 @@ export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
 
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
 
-export type Migration<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof STATE>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>> = {
+export type Migration<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>> = {
     noDuplicateColumnsAlwaysTrue: T // HACK this is a typescript hack - please help me removing it
     noNonexistentRemovesAlwaysTrue: U // HACK this is a typescript hack - please help me removing it
     fromVersion: number
@@ -79,10 +79,10 @@ function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObj
     return Object.assign({}, state, migration)
 }
 
-function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends RemoveColumns<STATE>, T extends IsNever<Exclude<keyof REMOVE, keyof STATE>>>
-                (alwaysTrue: T, objectStores: STATE, removeObjectStores: REMOVE): 
+function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>, T extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>>
+                (alwaysTrue: T, objectStores: OBJECTSTORES, removeObjectStores: REMOVE): 
                 {
-                    [K in keyof STATE]: Pick<STATE[K], Exclude<keyof STATE[K], keyof REMOVE[K]>>
+                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>
                 } {
     if (!alwaysTrue) {
         throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
@@ -90,11 +90,11 @@ function removeColumns<STATE extends DatabaseObjectStores, REMOVE extends Remove
     return null as any // TODO FIXME
 }
 
-export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof STATE>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>, MIGRATION extends Migration<T, U, OBJECTSTORES, STATE, ADD, REMOVE>>(migration: MIGRATION) {
+export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>, MIGRATION extends Migration<T, U, OBJECTSTORES, STATE, ADD, REMOVE>>(migration: MIGRATION) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
-    let removed = removeColumns(true, migration.baseSchema.objectStores, migration.removedColumns)
+    let removed = removeColumns(migration.noNonexistentRemovesAlwaysTrue, migration.baseSchema.objectStores, migration.removedColumns)
     let merged = mergeObjectStores(migration.noDuplicateColumnsAlwaysTrue, removed, migration.addedColumns)
     return {
         version: migration.toVersion,
@@ -134,7 +134,5 @@ let newState = mergeObjectStores(true, state, addedColumns)
 let removedColumns = {"users": {"username": null}, "posts": {"title": null}} as const
 
 let fldsjf = removeColumns(true, newState, removedColumns)
-
-type flsdj = { [K in keyof typeof state]: keyof (typeof state)[K] } & { [K in keyof (typeof addedColumns)]: keyof (typeof addedColumns)[K] }
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
