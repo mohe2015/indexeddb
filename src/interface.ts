@@ -66,7 +66,7 @@ export type keyValuesInBoth<A, B> = { [K in (keyof A & keyof B)]: keyof B[K] }
 
 export type dictionaryIntersection<A, B> = keyValuesInBoth<A, B> & keyValuesInBoth<B, A>
 
-export type magicNeverToEmpty<ccc, B> = IsExact<Pick<ccc, Extract<keyof ccc, B>>, {}>
+export type magicNeverToEmpty<ccc, B> = Pick<ccc, Extract<keyof ccc, B>>
 
 export type Migration<
                     OBJECTSTORES extends DatabaseObjectStores,
@@ -128,7 +128,7 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
                         STATE extends DatabaseSchema<OBJECTSTORES, FROMVERSION>,
                         ADD extends DatabaseObjectStores,
                         REMOVE extends RemoveColumns<OBJECTSTORES>,
-                        T extends magicNeverToEmpty<dictionaryIntersection<OBJECTSTORES, ADD>, keyof OBJECTSTORES & keyof ADD>,
+                        T extends dictionaryIntersection<OBJECTSTORES, ADD>,
                         U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
                         FROMVERSION extends number,
                         TOVERSION extends number,
@@ -166,7 +166,7 @@ let baseSchema = {
 
 let addedColumns = {
     users: {
-        usegrname: {
+        userrdaname: {
             keyPath: "usegrname"
         },
     },
@@ -182,7 +182,7 @@ let addedColumns = {
 
 let removedColumns = {"users": {"username": null}} as const
 
-let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2> = {
+let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, {}, true, 1, 2> = {
     noDuplicateColumnsAlwaysFalse: false,
     noNonexistentRemovesAlwaysTrue: true,
     fromVersion: 1,
@@ -192,7 +192,7 @@ let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedCol
     removedColumns
 } as const
 
-let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2, typeof migration>(migration)
+let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, never, true, 1, 2, typeof migration>(migration)
 
 console.log(result)
 

@@ -29,14 +29,13 @@ type a = Pick<never, keyof {}>
 type b = Pick<{}, keyof {}>
 type c = Pick<{test: null}, keyof {test: null}>
 
-
 async function run() {
     try {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
             test: {
-                namee: {
+                name: {
                     keyPath: "name",
                 },
                 valuee: {
@@ -45,7 +44,7 @@ async function run() {
             },
         } as const
 
-        let baseSchema = {
+        let baseSchema: DatabaseSchema<typeof objectStores, 1> = {
             version: 1,
             objectStores
         } as const
@@ -65,10 +64,8 @@ async function run() {
         } as const
 
         let removedColumns = {} as const
-
-        let aa: magicNeverToEmpty<dictionaryIntersection<typeof objectStores, typeof addedColumns>, keyof (typeof objectStores) & keyof (typeof addedColumns)> = true
         
-        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2>  = {
+        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, never, true, 1, 2> = {
             noDuplicateColumnsAlwaysFalse: true,
             noNonexistentRemovesAlwaysTrue: true,
             fromVersion: 1,
