@@ -28,8 +28,7 @@ async function run() {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
-            test: { "name": {} },
-            blib: null
+            
         } as const
 
         let baseSchema = {
@@ -55,8 +54,16 @@ async function run() {
 
         type ccc = aaa & bbb
 
+        type test = never | {}
+
+        let dsjlf: ccc = null
+
+        let u = dsjlf["test"] // never or "name" (union)
+
+        // object of nevers is never
+
         type ddd = IsNever<ccc>
-        type eee = IsExact<ccc, {}>
+        type eee = IsExact<ccc | {}, {}> // USE THIS?
 
         type fff = (keyof (typeof objectStores) | keyof (typeof addedColumns))
 
