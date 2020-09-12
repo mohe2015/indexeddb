@@ -21,18 +21,21 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { create } from "../browser";
 import type { IsExact, IsNever } from "@dev.mohe/conditional-type-checks";
-import type { ExtractStrict } from '../interface'
+import type { ExtractStrict, dictionaryIntersection } from '../interface'
+
+// {} is okay, nonempty object is not okayj, never is okay
+
+type a = Pick<never, keyof {}>
+type b = Pick<{}, keyof {}>
+type c = Pick<{test: null}, keyof {test: null}>
+
 
 async function run() {
     try {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
-            test: {
-                name: {
-                    keyPath: "name",
-                },
-            }
+            
         } as const
 
         let baseSchema = {
@@ -48,10 +51,15 @@ async function run() {
                 value: {
                     keyPath: "value",
                 }
+            },
+            adf: {
+
             }
         } as const
 
         let removedColumns = {} as const
+
+        let aa: dictionaryIntersection<typeof objectStores, typeof addedColumns> = {} 
         
         let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, false, true, 1, 2>  = {
             noDuplicateColumnsAlwaysFalse: false,

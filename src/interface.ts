@@ -62,11 +62,11 @@ export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores, VERSION ex
 
 export type RemoveColumns<OBJECTSTORES> = { [K in keyof OBJECTSTORES]?: { [K1 in keyof OBJECTSTORES[K]]?: DatabaseSchemaColumn | null } }
 
-type keyValuesInBoth<A, B> = { [K in (keyof A & keyof B)]: keyof B[K] }
+export type keyValuesInBoth<A, B> = { [K in (keyof A & keyof B)]: keyof B[K] }
 
-type dictionaryIntersection<A, B> = keyValuesInBoth<A, B> & keyValuesInBoth<B, A>
+export type dictionaryIntersection<A, B> = keyValuesInBoth<A, B> & keyValuesInBoth<B, A>
 
-type magicNeverToEmpty<ccc, B> = IsExact<Pick<ccc, Extract<keyof ccc, B>>, {}>
+export type magicNeverToEmpty<ccc, B> = IsExact<Pick<ccc, Extract<keyof ccc, B>>, {}>
 
 export type Migration<
                     OBJECTSTORES extends DatabaseObjectStores,
