@@ -81,7 +81,14 @@ export type Migration<
 }
 
 function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
-    return Object.assign({}, state, migration)
+    let copy: DatabaseObjectStores = {}
+    for (const [key, value] of Object.entries(state)) {
+        copy[key] = value
+    }
+    for (const [key, value] of Object.entries(migration)) {
+        copy[key] = Object.assign({}, state[key], value)
+    }
+    return copy as A & B
 }
 
 const objectMap = <T, Y>(obj: { [a: string]: T; }, mapFn: (value: T, key: string, index: number) => Y) =>
@@ -106,7 +113,7 @@ function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends
     return objectMap(objectStores, (value, key, index) => {
         let removeObjectStoreColumns = removeObjectStores[key]
         return objectFilter(value, (value, key, index) => {
-            return removeObjectStoreColumns !== undefined && removeObjectStoreColumns[key] === null
+            return removeObjectStoreColumns === undefined || removeObjectStoreColumns[key] === undefined
         })
     }) as { [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>; }
 }
@@ -127,6 +134,7 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
         throw new Error("noNonexistentRemovesAlwaysTrue needs to be true to check whether a nonexistent column was removed.")
     }
     let removed = removeColumns(migration.baseSchema.objectStores, migration.removedColumns)
+    console.log(removed)
     let merged = mergeObjectStores(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
