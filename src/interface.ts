@@ -27,7 +27,7 @@ export abstract class DatabaseConnection {
         throw new Error("not implemented")
     }
 
-    async abstract database<OBJECTSTORES extends DatabaseObjectStores, VERSION extends number, T extends DatabaseSchema<OBJECTSTORES, VERSION>>(name: string, version: number, onUpgrade: (database: Database<OBJECTSTORES, VERSION, T>, oldVersion: number, newVersion: number) => void): Promise<Database<OBJECTSTORES, VERSION, T>>;
+    abstract database<OBJECTSTORES extends DatabaseObjectStores, VERSION extends number, T extends DatabaseSchema<OBJECTSTORES, VERSION>>(name: string, version: number, onUpgrade: (database: Database<OBJECTSTORES, VERSION, T>, oldVersion: number, newVersion: number) => void): Promise<Database<OBJECTSTORES, VERSION, T>>;
 }
 
 export abstract class Database<OBJECTSTORES extends DatabaseObjectStores, VERSION extends number, T extends DatabaseSchema<OBJECTSTORES, VERSION>> {
