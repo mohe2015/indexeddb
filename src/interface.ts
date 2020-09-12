@@ -63,10 +63,10 @@ export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
 export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
 
 export type Migration<
-                    OBJECTSTORES extends DatabaseObjectStores = DatabaseObjectStores,
-                    STATE extends DatabaseSchema<OBJECTSTORES> = DatabaseSchema<OBJECTSTORES>,
-                    ADD extends DatabaseObjectStores = DatabaseObjectStores,
-                    REMOVE extends RemoveColumns<OBJECTSTORES> = RemoveColumns<OBJECTSTORES>,
+                    OBJECTSTORES extends DatabaseObjectStores,
+                    STATE extends DatabaseSchema<OBJECTSTORES>,
+                    ADD extends DatabaseObjectStores,
+                    REMOVE extends RemoveColumns<OBJECTSTORES>,
                     T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }> = IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>,
                     U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>> = IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>> = {
     noDuplicateColumnsAlwaysTrue: T // HACK this is a typescript hack - please help me removing it
@@ -108,42 +108,48 @@ export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJ
     } 
 }
 
-let state = {
-    version: 1,
-    objectStores: {
-        users: {
-            username: {
-                keyPath: "username"
-            },
-            password: {
-                keyPath: "password"
-            }
+let objectStores = {
+    users: {
+        username: {
+            keyPath: "username"
         },
+        password: {
+            keyPath: "password"
+        }
+    },
+} as const
+
+let baseSchema = {
+    version: 1,
+    objectStores
+} as const
+
+let addedColumns = {
+    users: {
+        usegrname: {
+            keyPath: "usegrname"
+        },
+    },
+    posts: {
+        title: {
+            keyPath: "title"
+        },
+        content: {
+            keyPath: "content"
+        }
     }
 } as const
 
-let migration: Migration = {
+let removedColumns = {"users": {"username": null}, "posts": {"title": null}} as const
+
+let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true> = {
     noDuplicateColumnsAlwaysTrue: true,
     noNonexistentRemovesAlwaysTrue: true,
     fromVersion: 1,
     toVersion: 2,
-    baseSchema: state,
-    addedColumns: {
-        users: {
-            usegrname: {
-                keyPath: "usegrname"
-            },
-        },
-        posts: {
-            title: {
-                keyPath: "title"
-            },
-            content: {
-                keyPath: "content"
-            }
-        }
-    },
-    removedColumns: {"users": {"username": null}, "posts": {"title": null}}
+    baseSchema,
+    addedColumns,
+    removedColumns
 } as const
 
 let result = migrate(migration)
