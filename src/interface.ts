@@ -80,20 +80,35 @@ export type Migration<
     removedColumns: REMOVE
 }
 
-function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores, T extends IsNever<{ [K in keyof A]: keyof A[K] } & { [K in keyof B]: keyof B[K] }>>(alwaysTrue: T, state: A, migration: B): A & B {
-    if (!alwaysTrue) {
-        throw new Error("alwaysTrue needs to be true to check whether a nonexistent column was removed.")
-    }
+function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
     return Object.assign({}, state, migration)
 }
 
-function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>, T extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>>
-                (alwaysTrue: T, objectStores: OBJECTSTORES, removeObjectStores: REMOVE): 
+const objectMap = <T, Y>(obj: { [a: string]: T; }, mapFn: (value: T, key: string, index: number) => Y) =>
+  Object.fromEntries(
+    Object.entries(obj).map(
+      ([k, v], i) => [k, mapFn(v, k, i)]
+    )
+  )
+
+const objectFilter = <T>(obj: { [a: string]: T; }, filterFn: (value: T, key: string, index: number) => boolean) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(
+      ([k, v], i) => filterFn(v, k, i)
+    )
+  )
+
+function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>>
+                (objectStores: OBJECTSTORES, removeObjectStores: REMOVE): 
                 {
                     [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>
                 } {
-    
-    return null as any // TODO FIXME
+    return objectMap(objectStores, (value, key, index) => {
+        let removeObjectStoreColumns = removeObjectStores[key]
+        return objectFilter(value, (value, key, index) => {
+            return removeObjectStoreColumns !== undefined && removeObjectStoreColumns[key] === null
+        })
+    }) as { [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>; }
 }
 
 export function migrate<OBJECTSTORES extends DatabaseObjectStores,
@@ -111,8 +126,8 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
     if (!migration.noNonexistentRemovesAlwaysTrue) {
         throw new Error("noNonexistentRemovesAlwaysTrue needs to be true to check whether a nonexistent column was removed.")
     }
-    let removed = removeColumns(migration.noNonexistentRemovesAlwaysTrue, migration.baseSchema.objectStores, migration.removedColumns)
-    let merged = mergeObjectStores(migration.noDuplicateColumnsAlwaysTrue, removed, migration.addedColumns)
+    let removed = removeColumns(migration.baseSchema.objectStores, migration.removedColumns)
+    let merged = mergeObjectStores(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
         objectStores: merged
