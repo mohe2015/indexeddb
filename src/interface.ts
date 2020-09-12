@@ -96,7 +96,13 @@ function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends
     return null as any // TODO FIXME
 }
 
-export function migrate<T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>, U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>, OBJECTSTORES extends DatabaseObjectStores, STATE extends DatabaseSchema<OBJECTSTORES>, ADD extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>, MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE, T, U>>(migration: MIGRATION) {
+export function migrate<OBJECTSTORES extends DatabaseObjectStores,
+                        STATE extends DatabaseSchema<OBJECTSTORES>,
+                        ADD extends DatabaseObjectStores,
+                        REMOVE extends RemoveColumns<OBJECTSTORES>,
+                        T extends IsNever<{ [K in keyof OBJECTSTORES]: keyof OBJECTSTORES[K] } & { [K in keyof ADD]: keyof ADD[K] }>,
+                        U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
+                        MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE, T, U>>(migration: MIGRATION) {
     if (migration.baseSchema.version !== migration.fromVersion) {
         throw new Error("migration baseVersion doesn't match fromVersion!")
     }
@@ -152,6 +158,6 @@ let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedCol
     removedColumns
 } as const
 
-let result = migrate(migration)
+let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, typeof migration>(migration)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
