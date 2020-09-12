@@ -60,7 +60,7 @@ export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores> = {
     objectStores: OBJECTSTORES // maybe generic
 }
 
-export type RemoveColumns<STATE> = { [K in keyof STATE]?: { [K1 in keyof STATE[K]]?: DatabaseSchemaColumn | null } }
+export type RemoveColumns<OBJECTSTORES> = { [K in keyof OBJECTSTORES]?: { [K1 in keyof OBJECTSTORES[K]]?: DatabaseSchemaColumn | null } }
 
 export type Migration<
                     OBJECTSTORES extends DatabaseObjectStores,
@@ -140,7 +140,7 @@ let addedColumns = {
     }
 } as const
 
-let removedColumns = {"users": {"username": null}, "posts": {"title": null}} as const
+let removedColumns = {"users": {"username": null}} as const
 
 let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true> = {
     noDuplicateColumnsAlwaysTrue: true,
