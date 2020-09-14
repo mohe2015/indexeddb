@@ -16,14 +16,6 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import type { IsExact, IsNever } from "@dev.mohe/conditional-type-checks";
-
-export declare type IsNeveer<T> = [T] extends [never] ? true : false;
-
-declare type test<T> = ((keyof [T]) extends [never] ? true : false)
-
-let dfs: test<never> = true
-
 /**
  * @abstract
  */
@@ -79,12 +71,12 @@ export type Migration<
                     STATE extends DatabaseSchema<OBJECTSTORES, FROMVERSION>,
                     ADD extends DatabaseObjectStores,
                     REMOVE extends RemoveColumns<OBJECTSTORES>,
-                    T extends test<dictionaryIntersection<OBJECTSTORES, ADD>>,
-                    U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
+                   // T extends test<dictionaryIntersection<OBJECTSTORES, ADD>>,
+                   // U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
                     FROMVERSION extends number,
                     TOVERSION extends number> = {
-    noDuplicateColumnsAlwaysFalse: T // HACK this is a typescript hack - please help me removing it
-    noNonexistentRemovesAlwaysTrue: U // HACK this is a typescript hack - please help me removing it
+  //  noDuplicateColumnsAlwaysFalse: T // HACK this is a typescript hack - please help me removing it
+ //   noNonexistentRemovesAlwaysTrue: U // HACK this is a typescript hack - please help me removing it
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: STATE
@@ -134,17 +126,17 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
                         STATE extends DatabaseSchema<OBJECTSTORES, FROMVERSION>,
                         ADD extends DatabaseObjectStores,
                         REMOVE extends RemoveColumns<OBJECTSTORES>,
-                        T extends dictionaryIntersection<OBJECTSTORES, ADD>,
-                        U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
+                      //  T extends dictionaryIntersection<OBJECTSTORES, ADD>,
+                       // U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
                         FROMVERSION extends number,
                         TOVERSION extends number,
-                        MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE, T, U, FROMVERSION, TOVERSION>>(migration: MIGRATION) {
-    if (!migration.noDuplicateColumnsAlwaysFalse) {
-        throw new Error("noDuplicateColumnsAlwaysFalse needs to be false to check whether a duplicate column was added.")
-    }
-    if (!migration.noNonexistentRemovesAlwaysTrue) {
-        throw new Error("noNonexistentRemovesAlwaysTrue needs to be true to check whether a nonexistent column was removed.")
-    }
+                        MIGRATION extends Migration<OBJECTSTORES, STATE, ADD, REMOVE, FROMVERSION, TOVERSION>>(migration: MIGRATION) {
+    //if (!migration.noDuplicateColumnsAlwaysFalse) {
+    //    throw new Error("noDuplicateColumnsAlwaysFalse needs to be false to check whether a duplicate column was added.")
+    //}
+    //if (!migration.noNonexistentRemovesAlwaysTrue) {
+    //    throw new Error("noNonexistentRemovesAlwaysTrue needs to be true to check whether a nonexistent column was removed.")
+    //}
     let removed = removeColumns(migration.baseSchema.objectStores, migration.removedColumns)
     console.log(removed)
     let merged = mergeObjectStores(removed, migration.addedColumns)
@@ -188,9 +180,7 @@ let addedColumns = {
 
 let removedColumns = {"users": {"username": null}} as const
 
-let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2> = {
-    noDuplicateColumnsAlwaysFalse: false,
-    noNonexistentRemovesAlwaysTrue: true,
+let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2> = {
     fromVersion: 1,
     toVersion: 2,
     baseSchema,
@@ -198,7 +188,7 @@ let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedCol
     removedColumns
 } as const
 
-let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, never, true, 1, 2, typeof migration>(migration)
+let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2, typeof migration>(migration)
 
 console.log(result)
 
