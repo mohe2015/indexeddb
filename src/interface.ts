@@ -53,8 +53,23 @@ export type DatabaseColumns = { [a: string]: DatabaseSchemaColumn; };
 
 export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
 
-export type DatabaseSchema<OBJECTSTORES extends DatabaseObjectStores, VERSION extends number> = {
-    version: VERSION
+// {} -> initial database schema with version 1
+// maybe just say or null
+// first database schema has no migration?
+
+export type DatabaseSchema<
+                    OBJECTSTORES extends DatabaseObjectStores,
+                    OLD_OBJECTSTORES extends DatabaseObjectStores,
+                    STATE extends DatabaseSchema<OLD_OBJECTSTORES, FROMVERSION>,
+                    ADD extends DatabaseObjectStores,
+                    REMOVE extends RemoveColumns<OBJECTSTORES>,
+                   // T extends test<dictionaryIntersection<OBJECTSTORES, ADD>>,
+                   // U extends IsNever<Exclude<keyof REMOVE, keyof OBJECTSTORES>>,
+                    FROMVERSION extends number,
+                    TOVERSION extends number
+                    > = {
+    version: TOVERSION
+    migration: Migration
     objectStores: OBJECTSTORES // maybe generic
 }
 
@@ -142,54 +157,9 @@ export function migrate<OBJECTSTORES extends DatabaseObjectStores,
     let merged = mergeObjectStores(removed, migration.addedColumns)
     return {
         version: migration.toVersion,
+        migration,
         objectStores: merged
     } 
 }
-
-let objectStores = {
-    users: {
-        username: {
-            keyPath: "username"
-        },
-        password: {
-            keyPath: "password"
-        }
-    },
-} as const
-
-let baseSchema = {
-    version: 1,
-    objectStores
-} as const
-
-let addedColumns = {
-    users: {
-        userrdaname: {
-            keyPath: "usegrname"
-        },
-    },
-    posts: {
-        title: {
-            keyPath: "title"
-        },
-        content: {
-            keyPath: "content"
-        }
-    }
-} as const
-
-let removedColumns = {"users": {"username": null}} as const
-
-let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2> = {
-    fromVersion: 1,
-    toVersion: 2,
-    baseSchema,
-    addedColumns,
-    removedColumns
-} as const
-
-let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2, typeof migration>(migration)
-
-console.log(result)
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3

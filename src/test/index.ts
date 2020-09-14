@@ -1,4 +1,4 @@
-import type { DatabaseColumns, DatabaseSchema, DatabaseSchemaColumn, Migration } from "../interface.js";
+import type { Migration } from "../interface.js";
 import { migrate } from "../interface.js";
 /*
 @dev.mohe/indexeddb - Make a database interface available that works in the browser and in nodejs
@@ -20,94 +20,56 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // @ts-check
 
 import { create } from "../browser";
-import type { IsExact, IsNever } from "@dev.mohe/conditional-type-checks";
-import type { magicNeverToEmpty, dictionaryIntersection } from '../interface'
-
-// {} is okay, nonempty object is not okayj, never is okay
-
-type a = Pick<never, keyof {}>
-type b = Pick<{}, keyof {}>
-type c = Pick<{test: null}, keyof {test: null}>
 
 async function run() {
     try {
         let databaseConnection = await create("localhost");
 
         let objectStores = {
-            test: {
-                name: {
-                    keyPath: "name",
+            users: {
+                username: {
+                    keyPath: "username"
                 },
-                valuee: {
-                    keyPath: "value",
+                password: {
+                    keyPath: "password"
                 }
             },
         } as const
 
-        let baseSchema: DatabaseSchema<typeof objectStores, 1> = {
+        let baseSchema = {
             version: 1,
             objectStores
         } as const
 
         let addedColumns = {
-            test: {
-                name: {
-                    keyPath: "name",
+            users: {
+                userrdaname: {
+                    keyPath: "usegrname"
                 },
-                value: {
-                    keyPath: "value",
-                }
             },
-            adf: {
-
+            posts: {
+                title: {
+                    keyPath: "title"
+                },
+                content: {
+                    keyPath: "content"
+                }
             }
         } as const
 
-        let removedColumns = {} as const
-        
-        let migration1: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, never, true, 1, 2> = {
-            noDuplicateColumnsAlwaysFalse: true,
-            noNonexistentRemovesAlwaysTrue: true,
+        let removedColumns = {"users": {"username": null}} as const
+
+        let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2> = {
             fromVersion: 1,
             toVersion: 2,
             baseSchema,
             addedColumns,
-            removedColumns,
-        } as const
-        /*
-        let migration2 = {
-            noDuplicateColumnsAlwaysFalse: false,
-            noNonexistentRemovesAlwaysTrue: true,
-            fromVersion: 2,
-            toVersion: 3,
-            baseSchema: migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, true, true, 1, 2, typeof migration1>(migration1),
-            addedColumns: {},
-            removedColumns: {"test": {"name": null}}
-        } as const
-        
-        let migration3 = {
-            noDuplicateColumnsAlwaysFalse: false,
-            noNonexistentRemovesAlwaysTrue: true,
-            fromVersion: 3,
-            toVersion: 4,
-            baseSchema: migrate(migration2),
-            addedColumns: {
-                "test": {
-                    "valuee": {
-                        keyPath: "name",
-                    }
-                }
-            },
-            removedColumns: {}
+            removedColumns
         } as const
 
-        let result = migrate(migration3)
+        let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2, typeof migration>(migration)
 
-        //let a: keyof (typeof result["columns"]) = null
-
-       // let database = await databaseConnection.database("blub", result, [migration1, migration2, migration3])
-        //console.log(database)
-*/
+        console.log(result)
     } catch (error) {
         console.error(error)
         alert(error)
