@@ -18,6 +18,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
+// https://github.com/microsoft/TypeScript/issues/30825
+type OmitStrict<T, K extends keyof T> = T extends K ? Pick<T, Exclude<keyof T, K>> : never;
+
 export type TestMigration<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
@@ -34,7 +37,7 @@ export type TestSchemaWithoutMigration<VERSION extends number, OBJECTSTORES exte
 }
 
 export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores> = TestSchemaWithoutMigration<VERSION, {
-    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVED[K]>>
+    [K in keyof OBJECTSTORES]: never //OmitStrict<OBJECTSTORES[K], keyof REMOVED[K]>
 } & ADDED> & {
     migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OBJECTSTORES> | null
 }
@@ -68,7 +71,7 @@ function migrate<FROMVERSION extends number, TOVERSION extends number, ADDED ext
         migration,
         version: migration.toVersion,
         objectStores: null as any as {
-            [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVED[K]>>
+            [K in keyof OBJECTSTORES]: never// OmitStrict<OBJECTSTORES[K], keyof REMOVED[K]>
         } & ADDED // TODO FIXME this is actually a wrong implementation
     }
 }
@@ -122,3 +125,4 @@ let migration3: TestMigration<3, 4, typeof addedColumns3, {}, typeof schema3["ob
 }
 
 let schema4 = migrate(migration3)
+// Exclude<keyof REMOVE, keyof OBJECTSTORES>
