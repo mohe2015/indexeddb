@@ -90,11 +90,20 @@ let migration1: TestMigration<1, 2, typeof addedColumns1, {}, {}> = {
     removedColumns: {},
 }
 
-function migrate<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OLDOBJECTSTORES extends TestObjectStores>(migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES>): TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES> {
+function migrate<
+                    FROMVERSION extends number,
+                    TOVERSION extends number,
+                    ADDED extends TestObjectStores,
+                    REMOVED extends TestObjectStores,
+                    OLDOBJECTSTORES extends TestObjectStores,
+                    NEWOBJECTSTORES extends OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED = OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED
+                 >
+                 (migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES>)
+                 : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES> {
     return {
         migration,
         version: migration.toVersion,
-        objectStores: null as any as OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED // TODO FIXME this is actually a wrong implementation
+        objectStores: null as any as NEWOBJECTSTORES // TODO FIXME this is actually a wrong implementation
     }
 }
 
@@ -121,7 +130,7 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]>(migration2)
 
-schema3.objectStores.posts
+schema3.objectStores.users
 
 // THIS IS GETTING CLOSER
 type fs = OmitStrict<typeof schema2["objectStores"], keyof typeof removedColumns2>
