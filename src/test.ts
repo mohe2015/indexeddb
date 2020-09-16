@@ -189,13 +189,13 @@ let b = {
 
 function test<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores, 
 
-NEWOBJECTSTORES extends OmitStrict<OBJECTSTORES, keyof REMOVED> = OmitStrict<OBJECTSTORES, keyof REMOVED>
+NEWOBJECTSTORES extends OmitStrict<OBJECTSTORES, keyof REMOVED>
 
 >(objectStores: OBJECTSTORES, removed: REMOVED): any {
     return null as any as NEWOBJECTSTORES
 }
 
-test<typeof a, typeof b>(a, b)
+test<typeof a, typeof b, OmitStrict<typeof a, keyof typeof b>>(a, b)
 
 // THIS IS GETTING CLOSER
 type fs = OmitStrict<typeof a, keyof typeof b>
