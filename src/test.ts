@@ -140,8 +140,6 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]>(migration2)
 
-schema3.objectStores.users
-
 
 
 
@@ -150,7 +148,46 @@ schema3.objectStores.users
 
 // WHY
 
-function test<REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores,
+let a = {
+    users: {
+        name: {
+
+        },
+        password: {
+
+        }
+    },
+    posts: {
+        title: {
+
+        },
+        author: {
+
+        },
+        publishedAt: {
+
+        },
+        description: {
+
+        },
+        content: {
+
+        }
+    }
+}
+
+let b = {
+    userrs: {
+        name: {
+
+        },
+        passwordd: { // TODO FIXME misspelling not detected
+
+        }
+    }
+}
+
+function test<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores, 
 
 NEWOBJECTSTORES extends OmitStrict<OBJECTSTORES, keyof REMOVED> = OmitStrict<OBJECTSTORES, keyof REMOVED>
 
@@ -158,10 +195,10 @@ NEWOBJECTSTORES extends OmitStrict<OBJECTSTORES, keyof REMOVED> = OmitStrict<OBJ
     return null as any as NEWOBJECTSTORES
 }
 
-test<typeof schema2["objectStores"], typeof removedColumns2>(schema2["objectStores"], removedColumns2)
+test<typeof a, typeof b>(a, b)
 
 // THIS IS GETTING CLOSER
-type fs = OmitStrict<typeof schema2["objectStores"], keyof typeof removedColumns2>
+type fs = OmitStrict<typeof a, keyof typeof b>
 
 type fdsfs = OmitStrict<typeof schema2["objectStores"], "users">
 
