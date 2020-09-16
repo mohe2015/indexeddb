@@ -13,7 +13,9 @@ export type TestSchemaWithoutMigration<VERSION extends number, OBJECTSTORES exte
     objectStores: OBJECTSTORES
 }
 
-export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores> = TestSchemaWithoutMigration<VERSION, OBJECTSTORES & ADDED> & {
+export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores> = TestSchemaWithoutMigration<VERSION, {
+    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVED[K]>>
+} & ADDED> & {
     migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OBJECTSTORES> | null
 }
 
@@ -33,7 +35,7 @@ let addedColumns = {
     }
 }
 
-let migration: TestMigration<1, 2, typeof addedColumns, {}, {}> = {
+let migration1: TestMigration<1, 2, typeof addedColumns, {}, {}> = {
     fromVersion: initialSchema.version,
     toVersion: 2,
     baseSchema: initialSchema,
@@ -41,13 +43,35 @@ let migration: TestMigration<1, 2, typeof addedColumns, {}, {}> = {
     removedColumns: {},
 }
 
+
+
 function migrate<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores>(migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OBJECTSTORES>): TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OBJECTSTORES> {
     return {
         migration,
         version: migration.toVersion,
-        objectStores: Object.assign({}, migration.baseSchema.objectStores, migration.addedColumns) as OBJECTSTORES & ADDED // TODO FIXME this is actually a wrong implementation
+        objectStores: Object.assign({}, migration.baseSchema.objectStores, migration.addedColumns) as {
+            [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVED[K]>>
+        } & ADDED // TODO FIXME this is actually a wrong implementation
     }
 }
 
-let migrationResult = migrate(migration)
+let schema2 = migrate(migration1)
+
+let removedColumns = {
+    users: {
+        password: {
+
+        }
+    }
+}
+
+let migration2: TestMigration<2, 3, {}, typeof removedColumns, typeof schema2["objectStores"]> = {
+    fromVersion: 2,
+    toVersion: 3,
+    baseSchema: schema2,
+    removedColumns,
+    addedColumns: {}
+}
+
+let schema3 = migrate(migration2)
 
