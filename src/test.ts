@@ -50,3 +50,4 @@ function migrate<FROMVERSION extends number, TOVERSION extends number, ADDED ext
 }
 
 let migrationResult = migrate(migration)
+
