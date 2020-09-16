@@ -154,7 +154,7 @@ function test<REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectS
     return null as any
 }
 
-test(schema2["objectStores"], removedColumns2)
+test<typeof schema2["objectStores"], typeof removedColumns2>(schema2["objectStores"], removedColumns2)
 
 // THIS IS GETTING CLOSER
 type fs = OmitStrict<typeof schema2["objectStores"], keyof typeof removedColumns2>
