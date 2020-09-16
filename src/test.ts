@@ -120,7 +120,7 @@ function migrate<
 let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}>(migration1)
 
 let removedColumns2 = {
-    userjs: {
+    users: {
         name: {
 
         },
@@ -150,8 +150,12 @@ schema3.objectStores.users
 
 // WHY
 
-function test<REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores>(objectStores: OBJECTSTORES, removed: REMOVED): OmitStrict<OBJECTSTORES, keyof REMOVED> {
-    return null as any
+function test<REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores,
+
+NEWOBJECTSTORES extends OmitStrict<OBJECTSTORES, keyof REMOVED> = OmitStrict<OBJECTSTORES, keyof REMOVED>
+
+>(objectStores: OBJECTSTORES, removed: REMOVED): any {
+    return null as any as NEWOBJECTSTORES
 }
 
 test<typeof schema2["objectStores"], typeof removedColumns2>(schema2["objectStores"], removedColumns2)
