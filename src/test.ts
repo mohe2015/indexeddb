@@ -91,7 +91,10 @@ let schema2 = migrate(migration1)
 
 let removedColumns2 = {
     users: {
-        password: { // TODO FIXME misspelling not detected
+        name: {
+
+        },
+        passwordd: { // TODO FIXME misspelling not detected
 
         }
     }
