@@ -45,9 +45,7 @@ export type TestSchemaWithoutMigration<VERSION extends number, OBJECTSTORES exte
     objectStores: OBJECTSTORES
 }
 
-export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores> = TestSchemaWithoutMigration<VERSION, {
-    [K in keyof OBJECTSTORES]: OmitStrict<OBJECTSTORES[K], keyof REMOVED[K]>
-} & ADDED> & {
+export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores> = TestSchemaWithoutMigration<VERSION, OmitStrict<OBJECTSTORES, keyof REMOVED> & ADDED> & {
     migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OBJECTSTORES> | null
 }
 
@@ -62,6 +60,23 @@ let addedColumns1 = {
 
         },
         password: {
+
+        }
+    },
+    posts: {
+        title: {
+
+        },
+        author: {
+
+        },
+        publishedAt: {
+
+        },
+        description: {
+
+        },
+        content: {
 
         }
     }
@@ -79,9 +94,7 @@ function migrate<FROMVERSION extends number, TOVERSION extends number, ADDED ext
     return {
         migration,
         version: migration.toVersion,
-        objectStores: null as any as {
-            [K in keyof OBJECTSTORES]: OmitStrict<OBJECTSTORES[K], keyof REMOVED[K]>
-        } & ADDED // TODO FIXME this is actually a wrong implementation
+        objectStores: null as any as OmitStrict<OBJECTSTORES, keyof REMOVED> & ADDED // TODO FIXME this is actually a wrong implementation
     }
 }
 
@@ -108,35 +121,6 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 
 let schema3 = migrate(migration2)
 
-let addedColumns3 = {
-    posts: {
-        title: {
+schema3.objectStores.posts
 
-        },
-        author: {
-
-        },
-        publishedAt: {
-
-        },
-        description: {
-
-        },
-        content: {
-
-        }
-    }
-}
-
-let migration3: TestMigration<3, 4, typeof addedColumns3, {}, typeof schema3["objectStores"]> = {
-    fromVersion: 3,
-    toVersion: 4,
-    baseSchema: schema3,
-    addedColumns: addedColumns3,
-    removedColumns: {}
-}
-
-let schema4 = migrate(migration3)
-// Exclude<keyof REMOVE, keyof OBJECTSTORES>
-
-schema4.objectStores.users
+type fs = OmitStrict<{users: {}}, "usersf"> & {}
