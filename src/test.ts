@@ -187,15 +187,17 @@ let b = {
     }
 }
 
-function test<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores, 
-
-NEWOBJECTSTORES extends OmitStrict<OBJECTSTORES, keyof REMOVED>
-
->(objectStores: OBJECTSTORES, removed: REMOVED): any {
-    return null as any as NEWOBJECTSTORES
+// I'm pretty sure this means typescript doesnt check hidden types as error location reporting would be hard then and it could possibly be valid
+let test = function<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores>(objectStores: OBJECTSTORES, removed: REMOVED): OmitStrict<OBJECTSTORES, keyof REMOVED> {
+    return null as any as OmitStrict<OBJECTSTORES, keyof REMOVED>
 }
 
-test<typeof a, typeof b, OmitStrict<typeof a, keyof typeof b>>(a, b)
+let test1 = function<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores, NEW extends OmitStrict<OBJECTSTORES, keyof REMOVED>>(objectStores: OBJECTSTORES, removed: REMOVED): NEW {
+    return null as any as NEW
+}
+
+// THIS IS PROBABLY THE ONLY FEASIBLE WAY
+let c = test1<typeof a, typeof b, OmitStrict<typeof a, keyof typeof b>>(a, b)
 
 // THIS IS GETTING CLOSER
 type fs = OmitStrict<typeof a, keyof typeof b>
