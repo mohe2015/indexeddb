@@ -59,6 +59,7 @@ async function run() {
 
         let removedColumns = {"users": {"username": null}} as const
 
+        // current issue: https://github.com/microsoft/TypeScript/issues/14400
         let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2> = {
             fromVersion: 1,
             toVersion: 2,

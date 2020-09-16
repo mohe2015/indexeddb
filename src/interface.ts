@@ -55,7 +55,7 @@ export type DatabaseObjectStores = { [a: string]: DatabaseColumns; };
 
 // {} -> initial database schema with version 1
 // maybe just say or null
-// first database schema has no migration?
+// -> first database schema has no migration
 
 export type DatabaseSchema<
                     OBJECTSTORES extends DatabaseObjectStores,
@@ -69,7 +69,7 @@ export type DatabaseSchema<
                     TOVERSION extends number
                     > = {
     version: TOVERSION
-    migration: Migration
+    migration: Migration | null
     objectStores: OBJECTSTORES // maybe generic
 }
 
