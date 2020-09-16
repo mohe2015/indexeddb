@@ -3,19 +3,19 @@
 export type TestMigration<FROMVERSION extends number, TOVERSION extends number> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
-    baseSchema: TestSchemaWithoutMigration<TOVERSION>
+    baseSchema: TestSchemaWithoutMigration<FROMVERSION>
     addedColumns: TestObjectStores
     removedColumns: TestObjectStores
 }
 
 export type TestObjectStores = { [a: string]: any; };
 
-export type TestSchemaWithoutMigration<TOVERSION extends number> = {
-    version: TOVERSION,
+export type TestSchemaWithoutMigration<FROMVERSION extends number> = {
+    version: FROMVERSION,
     objectStores: TestObjectStores
 }
 
-export type TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number> = TestSchemaWithoutMigration<TOVERSION> & {
+export type TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number> = TestSchemaWithoutMigration<FROMVERSION> & {
     migration: TestMigration<FROMVERSION, TOVERSION> | null
 }
 
