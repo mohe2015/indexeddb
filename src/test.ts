@@ -1,11 +1,9 @@
-
-
-export type TestMigration<FROMVERSION extends number, TOVERSION extends number> = {
+export type TestMigration<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: TestSchemaWithoutMigration<FROMVERSION>
-    addedColumns: TestObjectStores
-    removedColumns: TestObjectStores
+    addedColumns: ADDED
+    removedColumns: REMOVED
 }
 
 export type TestObjectStores = { [a: string]: any; };
@@ -15,8 +13,8 @@ export type TestSchemaWithoutMigration<VERSION extends number> = {
     objectStores: TestObjectStores
 }
 
-export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number> = TestSchemaWithoutMigration<VERSION> & {
-    migration: TestMigration<FROMVERSION, TOVERSION> | null
+export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores> = TestSchemaWithoutMigration<VERSION> & {
+    migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED> | null
 }
 
 let initialSchema: TestSchemaWithoutMigration<1> = {
@@ -24,7 +22,7 @@ let initialSchema: TestSchemaWithoutMigration<1> = {
     objectStores: {}
 }
 
-let migration: TestMigration<1, 2> = {
+let migration: TestMigration<1, 2, {}, {}> = {
     fromVersion: initialSchema.version,
     toVersion: 2,
     baseSchema: initialSchema,
@@ -32,11 +30,12 @@ let migration: TestMigration<1, 2> = {
     removedColumns: {},
 }
 
-function migrate<FROMVERSION extends number, TOVERSION extends number>(migration: TestMigration<FROMVERSION, TOVERSION>): TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION> {
-    let schema: TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION> = {
+function migrate<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores>(migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED>): TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED> {
+    return {
         migration,
         version: migration.toVersion,
         objectStores: migration.addedColumns
     }
-    return schema
 }
+
+let migrationResult = migrate(migration)
