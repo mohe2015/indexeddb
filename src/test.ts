@@ -45,7 +45,17 @@ export type TestSchemaWithoutMigration<VERSION extends number, NEWOBJECTSTORES e
     objectStores: NEWOBJECTSTORES
 }
 
-export type TestSchemaWithMigration<VERSION extends number, FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OLDOBJECTSTORES extends TestObjectStores> = TestSchemaWithoutMigration<VERSION, OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED> & {
+export type TestSchemaWithMigration<
+                                        VERSION extends number,
+                                        FROMVERSION extends number,
+                                        TOVERSION extends number,
+                                        ADDED extends TestObjectStores,
+                                        REMOVED extends TestObjectStores,
+                                        OLDOBJECTSTORES extends TestObjectStores,
+                                        NEWOBJECTSTORES extends OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED = OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED
+                                    > =
+                                    TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
+        
     migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES> | null
 }
 
@@ -131,6 +141,20 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]>(migration2)
 
 schema3.objectStores.users
+
+
+
+
+
+
+
+// WHY
+
+function test<REMOVED extends TestObjectStores, OBJECTSTORES extends TestObjectStores>(objectStores: OBJECTSTORES, removed: REMOVED): OmitStrict<OBJECTSTORES, keyof REMOVED> {
+    return null as any
+}
+
+test(schema2["objectStores"], removedColumns2)
 
 // THIS IS GETTING CLOSER
 type fs = OmitStrict<typeof schema2["objectStores"], keyof typeof removedColumns2>
