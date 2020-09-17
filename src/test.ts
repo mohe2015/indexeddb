@@ -27,14 +27,27 @@ type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeys
 
 type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
-/*
-type Foo = {
-	a: number;
-	b: string;
-	c: boolean;
-};
-type FooWithoutA = OmitStrict<Foo, 'd' | 'c'>;
-*/
+type SafeMerge<A, B> =
+{
+    [K in Exclude<keyof A, keyof B>]: A[K]
+}
+&
+{
+    [K in Exclude<keyof B, keyof A>]: B[K]
+}
+&
+{
+    [K in keyof A & keyof B]: 
+        keyof A[K] & keyof B[K] extends never ?
+        {
+            [K1 in keyof A[K]]: A[K][K1]
+        }
+        &
+        {
+            [K1 in keyof B[K]]: B[K][K1]
+        }
+        : throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
+}
 
 export type TestMigration<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OLDOBJECTSTORES extends TestObjectStores> = {
     fromVersion: FROMVERSION
@@ -168,7 +181,7 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
     addedColumns: addedColumns2
 }
 
-let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], { // TODO FIXME extractstrict removes objectstores that need to be added again
+let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
     [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
 }
 &
@@ -190,35 +203,13 @@ let a = {
 
 let b = {
     posts: {
-        content: {
+        conteent: {
             
         },
         namfe: {}
     }
 }
 
-type SafeMerge<A, B> =
-{
-    [K in Exclude<keyof A, keyof B>]: A[K]
-}
-&
-{
-    [K in Exclude<keyof B, keyof A>]: B[K]
-}
-&
-{
-    [K in keyof A & keyof B]: 
-        keyof A[K] & keyof B[K] extends never ?
-        {
-            [K1 in keyof A[K]]: A[K][K1]
-        }
-        &
-        {
-            [K1 in keyof B[K]]: B[K][K1]
-        }
-        : throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
-}
-
 let fdsfione: SafeMerge<typeof a, typeof b> = null as any
 
-fdsfione.posts
+fdsfione.posts.
