@@ -46,7 +46,7 @@ type SafeMerge<A extends TestObjectStores, B extends TestObjectStores> =
         {
             [K1 in keyof B[K]]: B[K][K1]
         }
-        : throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
+        : never // throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
 }
 
 export type TestMigration<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OLDOBJECTSTORES extends TestObjectStores> = {
@@ -153,6 +153,7 @@ function migrate<
 
 let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, typeof addedColumns1>(migration1)
 
+
 let removedColumns2 = {
     users: {
         name: {
@@ -165,8 +166,8 @@ let removedColumns2 = {
 }
 
 let addedColumns2 = {
-    users: {
-        content: {
+    posts: {
+        title: {
 
         }
     }
@@ -187,7 +188,6 @@ let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectSt
 {
     [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>] : typeof schema2["objectStores"][K]
 }, typeof addedColumns2>>(migration2)
-
 
 let a = {
     posts: {
