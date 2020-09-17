@@ -60,7 +60,13 @@ export type TestSchemaWithMigration<
                                         OLDOBJECTSTORES extends TestObjectStores,
                                         NEWOBJECTSTORES extends {
                                             [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-                                        } & ADDED
+                                        }
+                                        &
+                                        {
+                                            [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
+                                        }
+                                        &
+                                        ADDED
                                     > =
                                     TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
         
@@ -116,7 +122,13 @@ function migrate<
                     OLDOBJECTSTORES extends TestObjectStores,
                     NEWOBJECTSTORES extends {
                         [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-                    } & ADDED
+                    }
+                    &
+                    {
+                        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
+                    }
+                    &
+                    ADDED
                  >
                  (migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES>)
                  : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES, NEWOBJECTSTORES> {
@@ -158,9 +170,13 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], { // TODO FIXME extractstrict removes objectstores that need to be added again
     [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
-} & typeof addedColumns2>(migration2)
-
-// TODO FIXME schema3.posts not available
+}
+&
+{
+    [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>] : typeof schema2["objectStores"][K]
+}
+&
+typeof addedColumns2>(migration2)
 
 
 let a = {
