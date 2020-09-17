@@ -159,7 +159,7 @@ let removedColumns2 = {
         name: {
 
         },
-        password: { // TODO FIXME misspelling not detected
+        password: {
 
         }
     }
