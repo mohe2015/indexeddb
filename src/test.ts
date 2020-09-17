@@ -27,7 +27,7 @@ type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeys
 
 type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
-type SafeMerge<A, B> =
+type SafeMerge<A extends TestObjectStores, B extends TestObjectStores> =
 {
     [K in Exclude<keyof A, keyof B>]: A[K]
 }
@@ -71,15 +71,15 @@ export type TestSchemaWithMigration<
                                         ADDED extends TestObjectStores,
                                         REMOVED extends TestObjectStores,
                                         OLDOBJECTSTORES extends TestObjectStores,
-                                        NEWOBJECTSTORES extends {
+                                        NEWOBJECTSTORES extends SafeMerge<{
                                             [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                                         }
                                         &
                                         {
                                             [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
                                         }
-                                        &
-                                        ADDED
+                                        ,          
+                                        ADDED>
                                     > =
                                     TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
         
@@ -133,15 +133,14 @@ function migrate<
                     ADDED extends TestObjectStores,
                     REMOVED extends TestObjectStores,
                     OLDOBJECTSTORES extends TestObjectStores,
-                    NEWOBJECTSTORES extends {
+                    NEWOBJECTSTORES extends SafeMerge<{
                         [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                     }
                     &
                     {
                         [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                    }
-                    &
-                    ADDED
+                    },
+                    ADDED>
                  >
                  (migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES>)
                  : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES, NEWOBJECTSTORES> {
@@ -181,15 +180,13 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
     addedColumns: addedColumns2
 }
 
-let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
+let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], SafeMerge<{
     [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
 }
 &
 {
     [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>] : typeof schema2["objectStores"][K]
-}
-&
-typeof addedColumns2>(migration2)
+}, typeof addedColumns2>>(migration2)
 
 
 let a = {
@@ -211,5 +208,3 @@ let b = {
 }
 
 let fdsfione: SafeMerge<typeof a, typeof b> = null as any
-
-fdsfione.posts.
