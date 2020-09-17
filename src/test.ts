@@ -21,6 +21,10 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // https://github.com/microsoft/TypeScript/issues/30825
 type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, Exclude<keyof ObjectType, KeysType>>;
 
+type PickStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExtractStrict<keyof ObjectType, KeysType>>;
+
+type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
+
 /*
 type Foo = {
 	a: number;
@@ -53,7 +57,7 @@ export type TestSchemaWithMigration<
                                         REMOVED extends TestObjectStores,
                                         OLDOBJECTSTORES extends TestObjectStores,
                                         NEWOBJECTSTORES extends {
-                                            [K in keyof OLDOBJECTSTORES]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+                                            [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                                         } & ADDED
                                     > =
                                     TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
@@ -109,7 +113,7 @@ function migrate<
                     REMOVED extends TestObjectStores,
                     OLDOBJECTSTORES extends TestObjectStores,
                     NEWOBJECTSTORES extends {
-                        [K in keyof OLDOBJECTSTORES]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+                        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                     } & ADDED
                  >
                  (migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES>)
@@ -121,9 +125,7 @@ function migrate<
     }
 }
 
-let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, {
-    [K in keyof {}]: OmitStrict<{}[K], keyof {}[K]>
-} & typeof addedColumns1>(migration1)
+let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, typeof addedColumns1>(migration1)
 
 let removedColumns2 = {
     users: {
@@ -134,7 +136,11 @@ let removedColumns2 = {
 
         }
     },
-    posts: {}
+    posts: {
+        title: {
+
+        }
+    }
 }
 
 let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]> = {
@@ -146,69 +152,6 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 }
 
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
-    [K in keyof typeof schema2["objectStores"]]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
+    [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
 } & {}>(migration2)
 
-
-// WHY
-
-let a = {
-    users: {
-        name: {
-
-        },
-        password: {
-
-        }
-    },
-    posts: {
-        title: {
-
-        },
-        author: {
-
-        },
-        publishedAt: {
-
-        },
-        description: {
-
-        },
-        content: {
-
-        }
-    }
-}
-
-let b = {
-    users: {
-        namee: {
-
-        },
-        passwordd: { // TODO FIXME misspelling not detected
-
-        }
-    }
-}
-
-// I'm pretty sure this means typescript doesnt check hidden types as error location reporting would be hard then and it could possibly be valid
-let test = function<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores>(objectStores: OBJECTSTORES, removed: REMOVED): OmitStrict<OBJECTSTORES, keyof REMOVED> {
-    return null as any as OmitStrict<OBJECTSTORES, keyof REMOVED>
-}
-
-let test1 = function<OBJECTSTORES extends TestObjectStores, REMOVED extends TestObjectStores, NEW extends OmitStrict<OBJECTSTORES, keyof REMOVED>>(objectStores: OBJECTSTORES, removed: REMOVED): NEW {
-    return null as any as NEW
-}
-
-// THIS IS PROBABLY THE ONLY FEASIBLE WAY
-// OH NO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-let c = test1<typeof a, typeof b, {
-    [K in keyof typeof a]: OmitStrict<typeof a[K], keyof typeof b[K]>
-}>(a, b)
-
-// THIS IS GETTING CLOSER
-type fs = OmitStrict<typeof a, keyof typeof b>
-
-type fdsfs = OmitStrict<typeof schema2["objectStores"], "users">
-
-type fsdf = keyof typeof removedColumns2
