@@ -52,7 +52,9 @@ export type TestSchemaWithMigration<
                                         ADDED extends TestObjectStores,
                                         REMOVED extends TestObjectStores,
                                         OLDOBJECTSTORES extends TestObjectStores,
-                                        NEWOBJECTSTORES extends OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED = OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED
+                                        NEWOBJECTSTORES extends {
+                                            [K in keyof OLDOBJECTSTORES]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+                                        } & ADDED
                                     > =
                                     TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
         
@@ -106,10 +108,12 @@ function migrate<
                     ADDED extends TestObjectStores,
                     REMOVED extends TestObjectStores,
                     OLDOBJECTSTORES extends TestObjectStores,
-                    NEWOBJECTSTORES extends OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED = OmitStrict<OLDOBJECTSTORES, keyof REMOVED> & ADDED
+                    NEWOBJECTSTORES extends {
+                        [K in keyof OLDOBJECTSTORES]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+                    } & ADDED
                  >
                  (migration: TestMigration<FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES>)
-                 : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES> {
+                 : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, ADDED, REMOVED, OLDOBJECTSTORES, NEWOBJECTSTORES> {
     return {
         migration,
         version: migration.toVersion,
@@ -117,7 +121,7 @@ function migrate<
     }
 }
 
-let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}>(migration1)
+let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, RemoveColumns<{}, {}> & typeof addedColumns1>(migration1)
 
 let removedColumns2 = {
     users: {
@@ -138,12 +142,7 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
     addedColumns: {}
 }
 
-let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]>(migration2)
-
-
-
-
-
+let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], RemoveColumns<typeof schema2["objectStores"], typeof removedColumns2> & {}>(migration2)
 
 
 // WHY
@@ -177,8 +176,8 @@ let a = {
 }
 
 let b = {
-    userrs: {
-        name: {
+    users: {
+        namee: {
 
         },
         passwordd: { // TODO FIXME misspelling not detected
@@ -197,7 +196,10 @@ let test1 = function<OBJECTSTORES extends TestObjectStores, REMOVED extends Test
 }
 
 // THIS IS PROBABLY THE ONLY FEASIBLE WAY
-let c = test1<typeof a, typeof b, OmitStrict<typeof a, keyof typeof b>>(a, b)
+// OH NO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+let c = test1<typeof a, typeof b, {
+    [K in keyof typeof a]: OmitStrict<typeof a[K], keyof typeof b[K]>
+}>(a, b)
 
 // THIS IS GETTING CLOSER
 type fs = OmitStrict<typeof a, keyof typeof b>
