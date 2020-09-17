@@ -185,7 +185,7 @@ let b = {
 type B = typeof b
 
 let c = {
-    elephants: {
+    posts: {
         name: {}
     }
 }
@@ -196,11 +196,21 @@ type test = keyof A & keyof B
 
 type jo = "posts" extends never ? 1 : 0
 
-type D<A, B> = [keyof A & keyof B] extends [never] ? {
-    [K in keyof A | keyof B]: {
-        
+type jod = {fdsf: {}} & never
+
+type D<A, B> = [keyof A & keyof B] extends [never] ?
+{
+    [K in keyof A]: { 
+        [K1 in (keyof A & keyof B)]: A[K1] & B[K1]
     }
-} : never
+}
+&
+{
+    [K in keyof B]: { 
+        [K1 in (keyof A & keyof B)]: A[K1] & B[K1]
+    }
+}
+: never
 
 type E = D<A, B>
 
