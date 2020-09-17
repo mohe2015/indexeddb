@@ -198,6 +198,21 @@ type jo = "posts" extends never ? 1 : 0
 
 type jod = {fdsf: {}} & never
 
+
+type D<A, B> = 
+{
+    [K in Exclude<keyof A, keyof B>]: 1
+}
+&
+{
+    [K in Exclude<keyof B, keyof A>]: 2
+}
+&
+{
+    [K in keyof A & keyof B]: 3
+}
+
+/*
 type D<A, B> = [keyof A & keyof B] extends [never] ?
 {
     [K in keyof A]: { 
@@ -210,7 +225,7 @@ type D<A, B> = [keyof A & keyof B] extends [never] ?
         [K1 in (keyof A & keyof B)]: A[K1] & B[K1]
     }
 }
-: never
+: never*/
 
 type E = D<A, B>
 
