@@ -75,9 +75,7 @@ export type DatabaseSchema<
 
 export type RemoveColumns<OBJECTSTORES> = { [K in keyof OBJECTSTORES]?: { [K1 in keyof OBJECTSTORES[K]]?: DatabaseSchemaColumn | null } }
 
-export type keyValuesInBoth<A, B> = { [K in (keyof A & keyof B)]: keyof B[K] }
-
-export type dictionaryIntersection<A, B> = keyValuesInBoth<A, B> & keyValuesInBoth<B, A>
+export type keyValuesInBoth<A, B> = { [K in (keyof A & keyof B)]: keyof A[K] & keyof B[K] }
 
 export type magicNeverToEmpty<ccc, B> = Pick<ccc, Extract<keyof ccc, B>>
 

@@ -21,6 +21,8 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // https://github.com/microsoft/TypeScript/issues/30825
 type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExcludeStrict<keyof ObjectType, KeysType>>;
 
+type PickStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExtractStrict<keyof ObjectType, KeysType>>;
+
 type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? never : ObjectKeysType;
 
 type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
@@ -199,7 +201,7 @@ type jo = "posts" extends never ? 1 : 0
 type jod = {fdsf: {}} & never
 
 
-type D<A, B> = 
+type SafeMerge<A, B> =
 {
     [K in Exclude<keyof A, keyof B>]: A[K]
 }
@@ -210,7 +212,7 @@ type D<A, B> =
 &
 {
     [K in keyof A & keyof B]: 
-        [keyof A[K] & keyof B[K]] extends [never] ?
+        keyof A[K] & keyof B[K] extends never ?
         {
             [K1 in keyof A[K]]: A[K][K1]
         }
@@ -221,25 +223,9 @@ type D<A, B> =
         : never
 }
 
-/*
-type D<A, B> = [keyof A & keyof B] extends [never] ?
-{
-    [K in keyof A]: { 
-        [K1 in (keyof A & keyof B)]: A[K1] & B[K1]
-    }
-}
-&
-{
-    [K in keyof B]: { 
-        [K1 in (keyof A & keyof B)]: A[K1] & B[K1]
-    }
-}
-: never*/
+type E = SafeMerge<A, B>
 
-type E = D<A, B>
-
-type F = D<A, C>
-
+type F = SafeMerge<A, C>
 
 type G = {posts:{dfsf:{}}} & E
 
