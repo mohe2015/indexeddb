@@ -19,9 +19,9 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 //type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
 // https://github.com/microsoft/TypeScript/issues/30825
-type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, Exclude<keyof ObjectType, KeysType>>;
+type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExcludeStrict<keyof ObjectType, KeysType>>;
 
-type PickStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExtractStrict<keyof ObjectType, KeysType>>;
+type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? never : ObjectKeysType;
 
 type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
@@ -162,3 +162,46 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
     [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
 } & typeof addedColumns2>(migration2)
+
+
+let a = {
+    posts: {
+        content: {
+
+        }
+    }
+}
+
+type A = typeof a
+
+let b = {
+    posts: {
+        content: {
+            
+        }
+    }
+}
+
+type B = typeof b
+
+let c = {
+    elephants: {
+        name: {}
+    }
+}
+
+type C = typeof c
+
+type test = keyof A & keyof B
+
+type jo = "posts" extends never ? 1 : 0
+
+type D<A, B> = [keyof A & keyof B] extends [never] ? {
+    [K in keyof A | keyof B]: {
+        
+    }
+} : never
+
+type E = D<A, B>
+
+type F = D<A, C>
