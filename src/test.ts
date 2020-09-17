@@ -121,17 +121,20 @@ function migrate<
     }
 }
 
-let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, RemoveColumns<{}, {}> & typeof addedColumns1>(migration1)
+let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, {
+    [K in keyof {}]: OmitStrict<{}[K], keyof {}[K]>
+} & typeof addedColumns1>(migration1)
 
 let removedColumns2 = {
     users: {
         name: {
 
         },
-        passwordd: { // TODO FIXME misspelling not detected
+        password: { // TODO FIXME misspelling not detected
 
         }
-    }
+    },
+    posts: {}
 }
 
 let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]> = {
@@ -142,7 +145,9 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
     addedColumns: {}
 }
 
-let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], RemoveColumns<typeof schema2["objectStores"], typeof removedColumns2> & {}>(migration2)
+let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
+    [K in keyof typeof schema2["objectStores"]]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
+} & {}>(migration2)
 
 
 // WHY
