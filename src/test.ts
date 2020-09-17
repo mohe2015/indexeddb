@@ -209,7 +209,16 @@ type D<A, B> =
 }
 &
 {
-    [K in keyof A & keyof B]: never
+    [K in keyof A & keyof B]: 
+        [keyof A[K] & keyof B[K]] extends [never] ?
+        {
+            [K1 in keyof A[K]]: A[K][K1]
+        }
+        &
+        {
+            [K1 in keyof B[K]]: B[K][K1]
+        }
+        : never
 }
 
 /*
@@ -232,6 +241,8 @@ type E = D<A, B>
 type F = D<A, C>
 
 
-type G = {posts:{dfsf:{}}} & F
+type G = {posts:{dfsf:{}}} & E
 
 let fdsfione: G = null as any
+
+fdsfione.posts
