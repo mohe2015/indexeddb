@@ -137,16 +137,11 @@ let removedColumns2 = {
         password: { // TODO FIXME misspelling not detected
 
         }
-    },
-    posts: {
-        title: {
-
-        }
     }
 }
 
 let addedColumns2 = {
-    posts: {
+    users: {
         content: {
 
         }
@@ -161,9 +156,11 @@ let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["
     addedColumns: addedColumns2
 }
 
-let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
+let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], { // TODO FIXME extractstrict removes objectstores that need to be added again
     [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
 } & typeof addedColumns2>(migration2)
+
+// TODO FIXME schema3.posts not available
 
 
 let a = {
@@ -175,33 +172,14 @@ let a = {
     }
 }
 
-type A = typeof a
-
 let b = {
     posts: {
-        conftent: {
+        content: {
             
         },
         namfe: {}
     }
 }
-
-type B = typeof b
-
-let c = {
-    posts: {
-        name: {}
-    }
-}
-
-type C = typeof c
-
-type test = keyof A & keyof B
-
-type jo = "posts" extends never ? 1 : 0
-
-type jod = {fdsf: {}} & never
-
 
 type SafeMerge<A, B> =
 {
@@ -225,12 +203,6 @@ type SafeMerge<A, B> =
         : throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
 }
 
-type E = SafeMerge<A, B>
-
-type F = SafeMerge<A, C>
-
-type G = {posts:{dfsf:{}}} & E
-
-let fdsfione: G = null as any
+let fdsfione: SafeMerge<typeof a, typeof b> = null as any
 
 fdsfione.posts
