@@ -143,15 +143,22 @@ let removedColumns2 = {
     }
 }
 
+let addedColumns2 = {
+    posts: {
+        content: {
+
+        }
+    }
+}
+
 let migration2: TestMigration<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"]> = {
     fromVersion: 2,
     toVersion: 3,
     baseSchema: schema2,
     removedColumns: removedColumns2,
-    addedColumns: {}
+    addedColumns: addedColumns2
 }
 
 let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectStores"], {
     [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
-} & {}>(migration2)
-
+} & typeof addedColumns2>(migration2)
