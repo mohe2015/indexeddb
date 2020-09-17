@@ -201,15 +201,15 @@ type jod = {fdsf: {}} & never
 
 type D<A, B> = 
 {
-    [K in Exclude<keyof A, keyof B>]: 1
+    [K in Exclude<keyof A, keyof B>]: A[K]
 }
 &
 {
-    [K in Exclude<keyof B, keyof A>]: 2
+    [K in Exclude<keyof B, keyof A>]: B[K]
 }
 &
 {
-    [K in keyof A & keyof B]: 3
+    [K in keyof A & keyof B]: never
 }
 
 /*
@@ -230,3 +230,8 @@ type D<A, B> = [keyof A & keyof B] extends [never] ?
 type E = D<A, B>
 
 type F = D<A, C>
+
+
+type G = {posts:{dfsf:{}}} & F
+
+let fdsfione: G = null as any
