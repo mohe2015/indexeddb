@@ -170,7 +170,8 @@ let a = {
     posts: {
         content: {
 
-        }
+        },
+        name: {}
     }
 }
 
@@ -178,9 +179,10 @@ type A = typeof a
 
 let b = {
     posts: {
-        content: {
+        conftent: {
             
-        }
+        },
+        namfe: {}
     }
 }
 
@@ -220,7 +222,7 @@ type SafeMerge<A, B> =
         {
             [K1 in keyof B[K]]: B[K][K1]
         }
-        : never
+        : throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
 }
 
 type E = SafeMerge<A, B>
