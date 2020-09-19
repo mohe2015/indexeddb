@@ -66,8 +66,6 @@ let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1> = {
     removedColumns: {},
 }
 
-
-
 let schema2 = migrate<1, 2, {}, {}, typeof addedColumns1, typeof addedColumns1>(migration1)
 
 let removedColumns2 = {
@@ -106,7 +104,6 @@ let schema3 = migrate<2, 3, typeof schema2["objectStores"], typeof removedColumn
 }
 &
 typeof addedColumns2>(migration2)
-
 
         console.log(schema3)
     } catch (error) {

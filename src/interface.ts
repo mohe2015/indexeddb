@@ -40,7 +40,7 @@ export type DatabaseObjectStore = { [a: string]: DatabaseColumn }
 
 export type DatabaseObjectStores = { [a: string]: DatabaseObjectStore; };
 
-export type DatabaseMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends DatabaseObjectStores, REMOVED extends DatabaseObjectStores, ADDED extends DatabaseObjectStores> = {
+export type DatabaseMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends DatabaseObjectStores, REMOVED extends DatabaseObjectStores, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
@@ -59,7 +59,7 @@ export type DatabaseSchemaWithMigration<
                                         TOVERSION extends number,
                                         OLDOBJECTSTORES extends DatabaseObjectStores,
                                         REMOVED extends DatabaseObjectStores,
-                                        ADDED extends DatabaseObjectStores,
+                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                                         AFTERREMOVED extends {
                                             [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                                         }
@@ -117,7 +117,7 @@ export function migrate<
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends DatabaseObjectStores,
                     REMOVED extends DatabaseObjectStores,
-                    ADDED extends DatabaseObjectStores,
+                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                     AFTERREMOVED extends {
                         [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                     }
@@ -172,5 +172,5 @@ export abstract class DatabaseConnection {
 }
 
 export abstract class Database {
-    
+
 }
