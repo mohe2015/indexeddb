@@ -40,7 +40,7 @@ export type ObjectStore = { [a: string]: DatabaseSchemaColumn }
 
 export type ObjectStores = { [a: string]: ObjectStore; };
 
-export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends ObjectStores> = {
+export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends ObjectStores, REMOVED extends ObjectStores, ADDED extends ObjectStores> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: SchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
@@ -58,15 +58,16 @@ export type SchemaWithMigration<
                                         FROMVERSION extends number,
                                         TOVERSION extends number,
                                         OLDOBJECTSTORES extends ObjectStores,
-                                        REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
+                                        REMOVED extends ObjectStores,
                                         ADDED extends ObjectStores,
-                                        NEWOBJECTSTORES extends {
+                                        AFTERREMOVED extends {
                                             [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                                         }
                                         &
                                         {
                                             [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                                        }
+                                        },
+                                        NEWOBJECTSTORES extends AFTERREMOVED
                                         &
                                         ADDED> =
                                     SchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
@@ -87,27 +88,20 @@ const objectFilter = <T>(obj: { [a: string]: T; }, filterFn: (value: T, key: str
     )
   )
 
-function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>>
-                (objectStores: OLDOBJECTSTORES, removeObjectStores: REMOVED): 
-                {
-                    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-                }
-                &
-                {
-                    [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                } {
+function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVED extends ObjectStores, AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+}
+&
+{
+    [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
+}>
+                (objectStores: OLDOBJECTSTORES, removeObjectStores: REMOVED): AFTERREMOVED {
     return objectMap(objectStores, (value, key, index) => {
         let removeObjectStoreColumns = removeObjectStores[key]
         return objectFilter(value, (value, key, index) => {
             return removeObjectStoreColumns === undefined || removeObjectStoreColumns[key] === undefined
         })
-    }) as {
-        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-    }
-    &
-    {
-        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-    }
+    }) as AFTERREMOVED
 }
 
 function mergeObjectStores<A extends ObjectStores, B extends ObjectStores>(state: A, migration: B): A & B {
@@ -125,29 +119,22 @@ export function migrate<
                     FROMVERSION extends number,
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends ObjectStores,
-                    REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
+                    REMOVED extends ObjectStores,
                     ADDED extends ObjectStores,
-                    NEWOBJECTSTORES extends {
+                    AFTERREMOVED extends {
                         [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                     }
                     &
                     {
                         [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                    }
-                    &
-                    ADDED>
+                    },
+                    NEWOBJECTSTORES extends AFTERREMOVED & ADDED>
                  (migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
-                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, NEWOBJECTSTORES> {
+                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, NEWOBJECTSTORES> {
     return {
         migration,
         version: migration.toVersion,
-        objectStores: mergeObjectStores<{
-            [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-        }
-        &
-        {
-            [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-        }, ADDED>(removeColumns<OLDOBJECTSTORES, REMOVED>(migration.baseSchema.objectStores, migration.removedColumns), migration.addedColumns)
+        objectStores: mergeObjectStores<AFTERREMOVED, ADDED>(removeColumns<OLDOBJECTSTORES, REMOVED, AFTERREMOVED>(migration.baseSchema.objectStores, migration.removedColumns), migration.addedColumns)
     }
 }
 
