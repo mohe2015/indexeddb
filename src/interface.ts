@@ -59,9 +59,17 @@ export type SchemaWithMigration<
                                         TOVERSION extends number,
                                         OLDOBJECTSTORES extends ObjectStores,
                                         REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
-                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> =
-                                    SchemaWithoutMigration<VERSION, OLDOBJECTSTORES> & {
-        
+                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+                                        NEWOBJECTSTORES extends {
+                                            [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+                                        }
+                                        &
+                                        {
+                                            [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
+                                        }
+                                        &
+                                        ADDED> =
+                                    SchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
     migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> | null
 }
 
@@ -118,9 +126,18 @@ export function migrate<
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends ObjectStores,
                     REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
-                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>>
+                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+                    NEWOBJECTSTORES extends {
+                        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+                    }
+                    &
+                    {
+                        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
+                    }
+                    &
+                    ADDED>
                  (migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
-                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> {
+                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, NEWOBJECTSTORES> {
     return {
         migration,
         version: migration.toVersion,
