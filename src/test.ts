@@ -132,7 +132,6 @@ function migrate<
 
 let schema2 = migrate<1, 2, typeof addedColumns1, {}, {}, typeof addedColumns1>(migration1)
 
-
 let removedColumns2 = {
     users: {
         name: {
@@ -146,7 +145,7 @@ let removedColumns2 = {
 
 let addedColumns2 = {
     posts: {
-        titlee: {
+        title: {
 
         }
     }
@@ -210,6 +209,14 @@ type WithoutKeysOf<A extends TestObjectStores> =
     [propName: string]: any;
 }
 
+type WithOnlyKeysOf<A extends TestObjectStores> =
+{
+    [K in keyof A]?: 
+    {
+        [K1 in keyof A[K]]?: any
+    }
+}
+
 let a = {
     posts: {
         content: {
@@ -219,11 +226,12 @@ let a = {
     }
 }
 
-let b: WithoutKeysOf<typeof a> = {
+let b: WithOnlyKeysOf<typeof a> = {
     posts: {
-        conteent: {
-            
+        content: {
         },
-        namfe: {}
-    }
+        name: {
+
+        }
+    },
 }
