@@ -27,7 +27,7 @@ type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeys
 
 type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
-export type TestMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends TestObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES> = WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES> = WithoutKeysOf<OLDOBJECTSTORES>> = {
+export type TestMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends TestObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: TestSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
@@ -47,8 +47,8 @@ export type TestSchemaWithMigration<
                                         FROMVERSION extends number,
                                         TOVERSION extends number,
                                         OLDOBJECTSTORES extends TestObjectStores,
-                                        REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES> = WithOnlyKeysOf<OLDOBJECTSTORES>,
-                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES> = WithoutKeysOf<OLDOBJECTSTORES>,
+                                        REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
+                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                                         NEWOBJECTSTORES extends  {
                                             [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                                         }
@@ -57,16 +57,7 @@ export type TestSchemaWithMigration<
                                             [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
                                         }
                                         &
-                                        ADDED = {
-                                            [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-                                        }
-                                        &
-                                        {
-                                            [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                                        }
-                                        &
-                                        ADDED
-                                    > =
+                                        ADDED> =
                                     TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
         
     migration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> | null
@@ -105,7 +96,7 @@ let addedColumns1 = {
     }
 }
 
-let migration1: TestMigration<1, 2, {}, {}> = {
+let migration1: TestMigration<1, 2, {}, {}, typeof addedColumns1> = {
     fromVersion: schema1.version,
     toVersion: 2,
     baseSchema: schema1,
@@ -117,8 +108,8 @@ function migrate<
                     FROMVERSION extends number,
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends TestObjectStores,
-                    REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES> = WithOnlyKeysOf<OLDOBJECTSTORES>,
-                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES> = WithoutKeysOf<OLDOBJECTSTORES>,
+                    REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
+                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                     NEWOBJECTSTORES extends {
                         [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                     }
@@ -127,16 +118,7 @@ function migrate<
                         [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
                     }
                     &
-                    ADDED = {
-                        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-                    }
-                    &
-                    {
-                        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                    }
-                    &
-                    ADDED
-                 >
+                    ADDED>
                  (migration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
                  : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, NEWOBJECTSTORES> {
     return {
@@ -146,7 +128,7 @@ function migrate<
     }
 }
 
-let schema2 = migrate<1, 2, {}>(migration1)
+let schema2 = migrate<1, 2, {}, {}, typeof addedColumns1, typeof addedColumns1>(migration1)
 
 let removedColumns2 = {
     users: {
@@ -167,7 +149,7 @@ let addedColumns2 = {
     }
 }
 
-let migration2: TestMigration<2, 3, typeof schema2["objectStores"]> = {
+let migration2: TestMigration<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2> = {
     fromVersion: 2,
     toVersion: 3,
     baseSchema: schema2,
@@ -175,7 +157,15 @@ let migration2: TestMigration<2, 3, typeof schema2["objectStores"]> = {
     addedColumns: addedColumns2
 }
 
-let schema3 = migrate<2, 3, typeof schema2["objectStores"]>(migration2)
+let schema3 = migrate<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2, {
+    [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
+}
+&
+{
+    [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: typeof schema2["objectStores"][K]
+}
+&
+typeof addedColumns2>(migration2)
 
 
 
