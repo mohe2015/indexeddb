@@ -91,14 +91,24 @@ const objectFilter = <T>(obj: { [a: string]: T; }, filterFn: (value: T, key: str
 function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVE extends WithOnlyKeysOf<OLDOBJECTSTORES>>
                 (objectStores: OLDOBJECTSTORES, removeObjectStores: REMOVE): 
                 {
-                    [K in keyof OLDOBJECTSTORES]: Pick<OLDOBJECTSTORES[K], Exclude<keyof OLDOBJECTSTORES[K], keyof REMOVE[K]>>
+                    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVE[K]>
+                }
+                &
+                {
+                    [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OLDOBJECTSTORES[K]
                 } {
     return objectMap(objectStores, (value, key, index) => {
         let removeObjectStoreColumns = removeObjectStores[key]
         return objectFilter(value, (value, key, index) => {
             return removeObjectStoreColumns === undefined || removeObjectStoreColumns[key] === undefined
         })
-    }) as { [K in keyof OLDOBJECTSTORES]: Pick<OLDOBJECTSTORES[K], Exclude<keyof OLDOBJECTSTORES[K], keyof REMOVE[K]>>; }
+    }) as {
+        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVE[K]>
+    }
+    &
+    {
+        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OLDOBJECTSTORES[K]
+    }
 }
 
 function mergeObjectStores<A extends ObjectStores, B extends ObjectStores>(state: A, migration: B): A & B {
