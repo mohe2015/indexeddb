@@ -87,14 +87,14 @@ const objectFilter = <T>(obj: { [a: string]: T; }, filterFn: (value: T, key: str
     )
   )
 
-function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVE extends WithOnlyKeysOf<OLDOBJECTSTORES>>
-                (objectStores: OLDOBJECTSTORES, removeObjectStores: REMOVE): 
+function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>>
+                (objectStores: OLDOBJECTSTORES, removeObjectStores: REMOVED): 
                 {
-                    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVE[K]>
+                    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                 }
                 &
                 {
-                    [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OLDOBJECTSTORES[K]
+                    [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
                 } {
     return objectMap(objectStores, (value, key, index) => {
         let removeObjectStoreColumns = removeObjectStores[key]
@@ -102,11 +102,11 @@ function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVE extends With
             return removeObjectStoreColumns === undefined || removeObjectStoreColumns[key] === undefined
         })
     }) as {
-        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVE[K]>
+        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
     }
     &
     {
-        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVE>]: OLDOBJECTSTORES[K]
+        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
     }
 }
 
@@ -141,7 +141,13 @@ export function migrate<
     return {
         migration,
         version: migration.toVersion,
-        objectStores: mergeObjectStores(removeColumns(migration.baseSchema.objectStores, migration.removedColumns), migration.addedColumns)
+        objectStores: mergeObjectStores<{
+            [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
+        }
+        &
+        {
+            [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
+        }, ADDED>(removeColumns<OLDOBJECTSTORES, REMOVED>(migration.baseSchema.objectStores, migration.removedColumns), migration.addedColumns)
     }
 }
 
