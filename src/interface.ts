@@ -27,6 +27,19 @@ export type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = Obj
 
 export type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
+// removing all columns would remove the object store (especially removing the primary key)
+export type DatabaseSchemaColumn = {
+    primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
+    autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
+    //name: string
+    keyPath?: string | string[]
+    options?: IDBIndexParameters
+}
+
+export type ObjectStore = { [a: string]: DatabaseSchemaColumn }
+
+export type ObjectStores = { [a: string]: ObjectStore; };
+
 export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
@@ -35,22 +48,9 @@ export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDO
     removedColumns: REMOVED
 }
 
-export type ObjectStore = { [a: string]: DatabaseSchemaColumn }
-
-export type ObjectStores = { [a: string]: ObjectStore; };
-
-export type SchemaWithoutMigration<VERSION extends number, OLDOBJECTSTORES extends ObjectStores> = {
+export type SchemaWithoutMigration<VERSION extends number, OBJECTSTORES extends ObjectStores> = {
     version: VERSION,
-    objectStores: OLDOBJECTSTORES
-}
-
-// removing all columns would remove the object store (especially removing the primary key)
-export type DatabaseSchemaColumn = {
-    primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
-    autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
-    //name: string
-    keyPath?: string | string[]
-    options?: IDBIndexParameters
+    objectStores: OBJECTSTORES
 }
 
 export type SchemaWithMigration<
@@ -118,16 +118,7 @@ export function migrate<
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends ObjectStores,
                     REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
-                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-                    NEWOBJECTSTORES extends {
-                        [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
-                    }
-                    &
-                    {
-                        [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                    }
-                    &
-                    ADDED>
+                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>>
                  (migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
                  : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> {
     return {
