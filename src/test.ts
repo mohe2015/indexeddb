@@ -167,30 +167,6 @@ let schema3 = migrate<2, 3, typeof schema2["objectStores"], typeof removedColumn
 &
 typeof addedColumns2>(migration2)
 
-
-
-type SafeMerge<A extends TestObjectStores, B extends TestObjectStores> =
-{
-    [K in Exclude<keyof A, keyof B>]: A[K]
-}
-&
-{
-    [K in Exclude<keyof B, keyof A>]: B[K]
-}
-&
-{
-    [K in keyof A & keyof B]: 
-        keyof A[K] & keyof B[K] extends never ?
-        {
-            [K1 in keyof A[K]]: A[K][K1]
-        }
-        &
-        {
-            [K1 in keyof B[K]]: B[K][K1]
-        }
-        : never // throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
-}
-
 // type which doesnt contain any nested keys from the other object store (for added
 type WithoutKeysOf<A extends TestObjectStores> =
 {
@@ -208,29 +184,19 @@ type WithoutKeysOf<A extends TestObjectStores> =
     [propName: string]: any;
 }
 
+// type DateProps<T> = ({ [P in keyof T]: T[P] extends Date ? P : never })[keyof T];
 type WithOnlyKeysOf<A extends TestObjectStores> =
 {
     [K in keyof A]?: 
     {
         [K1 in keyof A[K]]?: any
     }
-}
-
-let a = {
-    posts: {
-        content: {
-
-        },
-        name: {}
+    &
+    {
+        [propName: string]: null;
     }
 }
-
-let b: WithOnlyKeysOf<typeof a> = {
-    posts: {
-        content: {
-        },
-        name: {
-
-        }
-    },
+&
+{
+    [propName: string]: null;
 }
