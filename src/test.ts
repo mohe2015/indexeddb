@@ -184,19 +184,23 @@ type WithoutKeysOf<A extends TestObjectStores> =
     [propName: string]: any;
 }
 
-// type DateProps<T> = ({ [P in keyof T]: T[P] extends Date ? P : never })[keyof T];
+// TODO FIXME
+// https://github.com/microsoft/TypeScript/pull/29317
 type WithOnlyKeysOf<A extends TestObjectStores> =
 {
-    [K in keyof A]?: 
-    {
-        [K1 in keyof A[K]]?: any
-    }
-    &
-    {
-        [propName: string]: null;
-    }
+    [K in keyof A]?: (
+        {
+            [K1 in keyof A[K]]?: any;
+        }
+        |
+        {
+            [propName: string]: never;
+        }
+    )
 }
-&
+|
 {
-    [propName: string]: null;
+    [propName: string]: never;
 }
+
+let a: Exclude<string, "test"> = "test"
