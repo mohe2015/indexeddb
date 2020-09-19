@@ -24,6 +24,12 @@ import {
   DatabaseObjectStore,
   DatabaseConnection,
   DatabaseSchemaWithoutMigration as DatabaseSchema,
+  DatabaseObjectStores,
+  WithoutKeysOf,
+  DatabaseSchemaWithMigration,
+  ExcludeStrict,
+  ExtractStrict,
+  OmitStrict,
 } from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
@@ -35,9 +41,35 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     return new IndexedDatabaseConnection();
   }
 
-  async database<SCHEMA extends DatabaseObjectStore>(
+  async database<VERSION extends number,
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  SCHEMA extends DatabaseSchemaWithMigration<
+    VERSION,
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED
+  >>(
     name: string,
-  ): Promise<Database<SCHEMA>> {
+  ): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>> {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, state.version);
 
