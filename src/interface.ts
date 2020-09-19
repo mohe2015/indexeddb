@@ -231,9 +231,61 @@ export type WithOnlyKeysOf<A extends DatabaseObjectStores> = {
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
 
 export abstract class DatabaseConnection {
-  abstract database<SCHEMA extends DatabaseSchemaWithMigration>(name: string): Database<SCHEMA>;
+  abstract database<
+    VERSION extends number,
+    FROMVERSION extends number,
+    TOVERSION extends number,
+    OLDOBJECTSTORES extends DatabaseObjectStores,
+    REMOVED extends DatabaseObjectStores,
+    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+    AFTERREMOVED extends {
+      [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+        OLDOBJECTSTORES[K],
+        keyof REMOVED[K]
+      >;
+    } &
+      {
+        [K in ExcludeStrict<
+          keyof OLDOBJECTSTORES,
+          keyof REMOVED
+        >]: OLDOBJECTSTORES[K];
+      },
+    SCHEMA extends DatabaseSchemaWithMigration<
+      VERSION,
+      FROMVERSION,
+      TOVERSION,
+      OLDOBJECTSTORES,
+      REMOVED,
+      ADDED,
+      AFTERREMOVED
+    >
+  >(name: string): Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>;
 }
 
-export abstract class Database<SCHEMA extends DatabaseSchemaWithMigration> {
-
-}
+export abstract class Database<VERSION extends number,
+FROMVERSION extends number,
+TOVERSION extends number,
+OLDOBJECTSTORES extends DatabaseObjectStores,
+REMOVED extends DatabaseObjectStores,
+ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+AFTERREMOVED extends {
+  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+    OLDOBJECTSTORES[K],
+    keyof REMOVED[K]
+  >;
+} &
+  {
+    [K in ExcludeStrict<
+      keyof OLDOBJECTSTORES,
+      keyof REMOVED
+    >]: OLDOBJECTSTORES[K];
+  },
+SCHEMA extends DatabaseSchemaWithMigration<
+  VERSION,
+  FROMVERSION,
+  TOVERSION,
+  OLDOBJECTSTORES,
+  REMOVED,
+  ADDED,
+  AFTERREMOVED
+>> {}

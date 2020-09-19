@@ -23,7 +23,7 @@ import {
   Database,
   DatabaseObjectStore,
   DatabaseConnection,
-  DatabaseSchemaWithoutMigration as DatabaseSchema
+  DatabaseSchemaWithoutMigration as DatabaseSchema,
 } from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
@@ -74,7 +74,9 @@ class IndexedDatabaseConnection extends DatabaseConnection {
   }
 }
 
-class IndexedDatabase<SCHEMA extends DatabaseObjectStore> extends Database<SCHEMA> {
+class IndexedDatabase<SCHEMA extends DatabaseObjectStore> extends Database<
+  SCHEMA
+> {
   database: IDBDatabase;
 
   constructor(database: IDBDatabase) {
