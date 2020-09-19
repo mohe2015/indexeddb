@@ -100,15 +100,10 @@ class IndexedDatabaseConnection extends DatabaseConnection {
                 break;
               }
               
-              let oldState = currentMigration.baseSchema
-              if (oldState instanceof DatabaseSchemaWithMigration) {
-                
+              let oldState = currentMigration.baseSchema;
+              if ("migration" in oldState) {
+                oldState.
               }
-            }
-          }
-
-          for (const migration of schema.migration?.fromVersion) {
-            if (migration.fromVersion === oldVersion) {
             }
           }
 

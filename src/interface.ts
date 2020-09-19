@@ -66,15 +66,15 @@ export type DatabaseMigration<
   removedColumns: REMOVED;
 };
 
-export type DatabaseSchemaWithoutMigration<
+export interface DatabaseSchemaWithoutMigration<
   VERSION extends number,
   OBJECTSTORES extends DatabaseObjectStores
-> = {
+> {
   version: VERSION;
   objectStores: OBJECTSTORES;
 };
 
-export type DatabaseSchemaWithMigration<
+export interface DatabaseSchemaWithMigration<
   VERSION extends number,
   FROMVERSION extends number,
   TOVERSION extends number,
@@ -93,7 +93,7 @@ export type DatabaseSchemaWithMigration<
         keyof REMOVED
       >]: OLDOBJECTSTORES[K];
     }
-> = DatabaseSchemaWithoutMigration<VERSION, AFTERREMOVED & ADDED> & {
+> extends DatabaseSchemaWithoutMigration<VERSION, AFTERREMOVED & ADDED> {
   migration: DatabaseMigration<
     FROMVERSION,
     TOVERSION,
