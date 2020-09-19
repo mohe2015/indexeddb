@@ -137,8 +137,8 @@ let removedColumns2 = {
         },
         password: {
 
-        }
-    }
+        },
+    },
 }
 
 let addedColumns2 = {
@@ -146,7 +146,7 @@ let addedColumns2 = {
         titlee: {
 
         }
-    }
+    },
 }
 
 let migration2: TestMigration<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2> = {
