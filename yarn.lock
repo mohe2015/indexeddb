@@ -1803,9 +1803,9 @@ typedoc@^1.0.0-dev.3:
     shelljs "^0.8.4"
     shiki "^0.2.2"
 
-"typescript@https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/84651/artifacts?artifactName=tgz&fileId=F1E73F036BD00B0E703FB5AC26800759E4D8AAA8CB6B9FA6479472D55EF1703002&fileName=/typescript-4.1.0-insiders.20200909.tgz":
-  version "4.1.0-insiders.20200909"
-  resolved "https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/84651/artifacts?artifactName=tgz&fileId=F1E73F036BD00B0E703FB5AC26800759E4D8AAA8CB6B9FA6479472D55EF1703002&fileName=/typescript-4.1.0-insiders.20200909.tgz#836ca820cc28132f42c7d966eb802f1c7be66b2c"
+"typescript@https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/85710/artifacts?artifactName=tgz&fileId=08A5EC3BE4780859520BB416BFE0B51DDB7C552F415DA933BD0766A1E2060B9E02&fileName=/typescript-4.1.0-insiders.20200917.tgz":
+  version "4.1.0-insiders.20200917"
+  resolved "https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/85710/artifacts?artifactName=tgz&fileId=08A5EC3BE4780859520BB416BFE0B51DDB7C552F415DA933BD0766A1E2060B9E02&fileName=/typescript-4.1.0-insiders.20200917.tgz#17a08a2798ab7ccdd62dfb5ff95e53b064ec4f74"
 
 unique-filename@^1.1.1:
   version "1.1.1"
