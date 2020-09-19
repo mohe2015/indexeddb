@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import { create } from "../browser";
 import { TestSchemaWithoutMigration, migrate } from "../test";
-import type { TestMigration } from "../test";
+import type { TestMigration, ExcludeStrict, ExtractStrict, OmitStrict } from "../test";
 
 async function run() {
     try {
@@ -109,7 +109,7 @@ let schema3 = migrate<2, 3, typeof schema2["objectStores"], typeof removedColumn
 typeof addedColumns2>(migration2)
 
 
-        console.log(result)
+        console.log(schema3)
     } catch (error) {
         console.error(error)
         alert(error)

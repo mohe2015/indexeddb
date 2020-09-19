@@ -19,13 +19,13 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 //type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
 // https://github.com/microsoft/TypeScript/issues/30825
-type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExcludeStrict<keyof ObjectType, KeysType>>;
+export type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExcludeStrict<keyof ObjectType, KeysType>>;
 
-type PickStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExtractStrict<keyof ObjectType, KeysType>>;
+export type PickStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<ObjectType, ExtractStrict<keyof ObjectType, KeysType>>;
 
-type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? never : ObjectKeysType;
+export type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? never : ObjectKeysType;
 
-type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
+export type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
 export type TestMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends TestObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
     fromVersion: FROMVERSION
@@ -114,13 +114,5 @@ export type WithOnlyKeysOf<A extends TestObjectStores> =
         {
             [K1 in keyof A[K]]?: any;
         }
-        |
-        {
-            [propName: string]: never;
-        }
     )
-}
-|
-{
-    [propName: string]: never;
 }
