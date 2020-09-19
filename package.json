@@ -17,7 +17,7 @@
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.2",
     "@types/mongodb": "^3.5.27",
-    "@types/node": "^14.10.3",
+    "@types/node": "^14.11.1",
     "@types/snowpack-env": "^2.3.0",
     "prettier": "^2.1.2",
     "snowpack": "^2.11.1",
