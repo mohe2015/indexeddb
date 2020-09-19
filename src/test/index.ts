@@ -18,14 +18,14 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // @ts-check
 
 import { create } from "../browser";
-import { SchemaWithoutMigration, Migration, migrate, OmitStrict, ExtractStrict, ExcludeStrict } from "../interface";
+import { DatabaseSchemaWithoutMigration, DatabaseMigration, migrate, OmitStrict, ExtractStrict, ExcludeStrict } from "../interface";
 
 async function run() {
     try {
         let databaseConnection = await create("localhost");
 
         
-let schema1: SchemaWithoutMigration<1, {}> = {
+let schema1: DatabaseSchemaWithoutMigration<1, {}> = {
     version: 1,
     objectStores: {}
 }
@@ -58,7 +58,7 @@ let addedColumns1 = {
     }
 }
 
-let migration1: Migration<1, 2, {}, {}, typeof addedColumns1> = {
+let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1> = {
     fromVersion: schema1.version,
     toVersion: 2,
     baseSchema: schema1,
@@ -89,7 +89,7 @@ let addedColumns2 = {
     },
 }
 
-let migration2: Migration<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2> = {
+let migration2: DatabaseMigration<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2> = {
     fromVersion: 2,
     toVersion: 3,
     baseSchema: schema2,
