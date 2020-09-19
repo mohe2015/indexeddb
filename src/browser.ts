@@ -23,7 +23,7 @@ import {
   Database,
   DatabaseObjectStore,
   DatabaseConnection,
-  DatabaseSchemaWithoutMigration as DatabaseSchema,
+  DatabaseSchemaWithoutMigration,
   DatabaseObjectStores,
   WithoutKeysOf,
   DatabaseSchemaWithMigration,
@@ -68,10 +68,10 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     ADDED,
     AFTERREMOVED
   >>(
-    name: string,
+    name: string, schema: SCHEMA
   ): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>> {
     return new Promise((resolve, reject) => {
-      const databaseOpenRequest = window.indexedDB.open(name, state.version);
+      const databaseOpenRequest = window.indexedDB.open(name, schema.version);
 
       databaseOpenRequest.addEventListener('success', (event) => {
         resolve(new IndexedDatabase(databaseOpenRequest.result));
@@ -89,7 +89,25 @@ class IndexedDatabaseConnection extends DatabaseConnection {
 
           let oldVersion = event.oldVersion;
 
-          for (const migration of migrations) {
+          let outstandingMigrations = [];
+
+          let currentMigration = schema.migration
+
+          while (true) {
+            if (currentMigration) {
+              outstandingMigrations.push(schema.migration)
+              if (currentMigration.fromVersion === oldVersion) {
+                break;
+              }
+              
+              let oldState = currentMigration.baseSchema
+              if (oldState instanceof DatabaseSchemaWithMigration) {
+                
+              }
+            }
+          }
+
+          for (const migration of schema.migration?.fromVersion) {
             if (migration.fromVersion === oldVersion) {
             }
           }

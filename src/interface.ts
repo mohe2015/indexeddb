@@ -259,7 +259,7 @@ export abstract class DatabaseConnection {
       ADDED,
       AFTERREMOVED
     >
-  >(name: string): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>>;
+  >(name: string, schema: SCHEMA): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>>;
 }
 
 export abstract class Database<VERSION extends number,
