@@ -27,29 +27,8 @@ type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeys
 
 type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
-type SafeMerge<A extends TestObjectStores, B extends TestObjectStores> =
-{
-    [K in Exclude<keyof A, keyof B>]: A[K]
-}
-&
-{
-    [K in Exclude<keyof B, keyof A>]: B[K]
-}
-&
-{
-    [K in keyof A & keyof B]: 
-        keyof A[K] & keyof B[K] extends never ?
-        {
-            [K1 in keyof A[K]]: A[K][K1]
-        }
-        &
-        {
-            [K1 in keyof B[K]]: B[K][K1]
-        }
-        : never // throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
-}
 
-export type TestMigration<FROMVERSION extends number, TOVERSION extends number, ADDED extends TestObjectStores, REMOVED extends TestObjectStores, OLDOBJECTSTORES extends TestObjectStores> = {
+export type TestMigration<FROMVERSION extends number, TOVERSION extends number, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>, REMOVED extends TestObjectStores, OLDOBJECTSTORES extends TestObjectStores> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: TestSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
@@ -68,7 +47,7 @@ export type TestSchemaWithMigration<
                                         VERSION extends number,
                                         FROMVERSION extends number,
                                         TOVERSION extends number,
-                                        ADDED extends TestObjectStores,
+                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                                         REMOVED extends TestObjectStores,
                                         OLDOBJECTSTORES extends TestObjectStores,
                                         NEWOBJECTSTORES extends SafeMerge<{
@@ -78,7 +57,7 @@ export type TestSchemaWithMigration<
                                         {
                                             [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
                                         }
-                                        ,          
+                                        ,
                                         ADDED>
                                     > =
                                     TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
@@ -130,7 +109,7 @@ let migration1: TestMigration<1, 2, typeof addedColumns1, {}, {}> = {
 function migrate<
                     FROMVERSION extends number,
                     TOVERSION extends number,
-                    ADDED extends TestObjectStores,
+                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                     REMOVED extends TestObjectStores,
                     OLDOBJECTSTORES extends TestObjectStores,
                     NEWOBJECTSTORES extends SafeMerge<{
@@ -167,7 +146,7 @@ let removedColumns2 = {
 
 let addedColumns2 = {
     posts: {
-        title: {
+        titlee: {
 
         }
     }
@@ -189,6 +168,48 @@ let schema3 = migrate<2, 3, {}, typeof removedColumns2, typeof schema2["objectSt
     [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>] : typeof schema2["objectStores"][K]
 }, typeof addedColumns2>>(migration2)
 
+let fdsfione: SafeMerge<typeof a, typeof b> = null as any
+
+
+type SafeMerge<A extends TestObjectStores, B extends TestObjectStores> =
+{
+    [K in Exclude<keyof A, keyof B>]: A[K]
+}
+&
+{
+    [K in Exclude<keyof B, keyof A>]: B[K]
+}
+&
+{
+    [K in keyof A & keyof B]: 
+        keyof A[K] & keyof B[K] extends never ?
+        {
+            [K1 in keyof A[K]]: A[K][K1]
+        }
+        &
+        {
+            [K1 in keyof B[K]]: B[K][K1]
+        }
+        : never // throw `the following additions contain already existing columns: ${K}.${typeof B[K]}}`
+}
+
+// type which doesnt contain any nested keys from the other object store (for added
+type WithoutKeysOf<A extends TestObjectStores> =
+{
+    [K in keyof A]?: 
+    {
+        [K1 in keyof A[K]]?: never
+    }
+    &
+    {
+        [propName: string]: any;
+    }
+}
+&
+{
+    [propName: string]: any;
+}
+
 let a = {
     posts: {
         content: {
@@ -198,7 +219,7 @@ let a = {
     }
 }
 
-let b = {
+let b: WithoutKeysOf<typeof a> = {
     posts: {
         conteent: {
             
@@ -206,5 +227,3 @@ let b = {
         namfe: {}
     }
 }
-
-let fdsfione: SafeMerge<typeof a, typeof b> = null as any
