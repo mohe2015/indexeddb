@@ -63,48 +63,7 @@ export type TestSchemaWithMigration<
     migration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> | null
 }
 
-let schema1: TestSchemaWithoutMigration<1, {}> = {
-    version: 1,
-    objectStores: {}
-}
-
-let addedColumns1 = {
-    users: {
-        name: {
-
-        },
-        password: {
-
-        }
-    },
-    posts: {
-        title: {
-
-        },
-        author: {
-
-        },
-        publishedAt: {
-
-        },
-        description: {
-
-        },
-        content: {
-
-        }
-    }
-}
-
-let migration1: TestMigration<1, 2, {}, {}, typeof addedColumns1> = {
-    fromVersion: schema1.version,
-    toVersion: 2,
-    baseSchema: schema1,
-    addedColumns: addedColumns1,
-    removedColumns: {},
-}
-
-function migrate<
+export function migrate<
                     FROMVERSION extends number,
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends TestObjectStores,
@@ -128,47 +87,9 @@ function migrate<
     }
 }
 
-let schema2 = migrate<1, 2, {}, {}, typeof addedColumns1, typeof addedColumns1>(migration1)
-
-let removedColumns2 = {
-    users: {
-        name: {
-
-        },
-        password: {
-
-        },
-    },
-}
-
-let addedColumns2 = {
-    posts: {
-        titlee: {
-
-        }
-    },
-}
-
-let migration2: TestMigration<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2> = {
-    fromVersion: 2,
-    toVersion: 3,
-    baseSchema: schema2,
-    removedColumns: removedColumns2,
-    addedColumns: addedColumns2
-}
-
-let schema3 = migrate<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2, {
-    [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
-}
-&
-{
-    [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: typeof schema2["objectStores"][K]
-}
-&
-typeof addedColumns2>(migration2)
 
 // type which doesnt contain any nested keys from the other object store (for added
-type WithoutKeysOf<A extends TestObjectStores> =
+export type WithoutKeysOf<A extends TestObjectStores> =
 {
     [K in keyof A]?: 
     {
@@ -187,7 +108,7 @@ type WithoutKeysOf<A extends TestObjectStores> =
 // TODO FIXME
 // https://github.com/microsoft/TypeScript/pull/29317
 // https://github.com/microsoft/TypeScript/issues/38254
-type WithOnlyKeysOf<A extends TestObjectStores> =
+export type WithOnlyKeysOf<A extends TestObjectStores> =
 {
     [K in keyof A]?: (
         {
@@ -203,5 +124,3 @@ type WithOnlyKeysOf<A extends TestObjectStores> =
 {
     [propName: string]: never;
 }
-
-let a: Exclude<string, "test"> = "test"

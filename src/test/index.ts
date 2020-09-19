@@ -1,5 +1,3 @@
-import type { Migration } from "../interface.js";
-import { migrate } from "../interface.js";
 /*
 @dev.mohe/indexeddb - Make a database interface available that works in the browser and in nodejs
 Copyright (C) 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
@@ -20,55 +18,96 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 // @ts-check
 
 import { create } from "../browser";
+import { TestSchemaWithoutMigration, migrate } from "../test";
+import type { TestMigration } from "../test";
 
 async function run() {
     try {
         let databaseConnection = await create("localhost");
 
-        let objectStores = {
-            users: {
-                username: {
-                    keyPath: "username"
-                },
-                password: {
-                    keyPath: "password"
-                }
-            },
-        } as const
+        
+let schema1: TestSchemaWithoutMigration<1, {}> = {
+    version: 1,
+    objectStores: {}
+}
 
-        let baseSchema = {
-            version: 1,
-            objectStores
-        } as const
+let addedColumns1 = {
+    users: {
+        name: {
 
-        let addedColumns = {
-            users: {
-                userrdaname: {
-                    keyPath: "usegrname"
-                },
-            },
-            posts: {
-                title: {
-                    keyPath: "title"
-                },
-                content: {
-                    keyPath: "content"
-                }
-            }
-        } as const
+        },
+        password: {
 
-        let removedColumns = {"users": {"username": null}} as const
+        }
+    },
+    posts: {
+        title: {
 
-        // current issue: https://github.com/microsoft/TypeScript/issues/14400
-        let migration: Migration<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2> = {
-            fromVersion: 1,
-            toVersion: 2,
-            baseSchema,
-            addedColumns,
-            removedColumns
-        } as const
+        },
+        author: {
 
-        let result = migrate<typeof objectStores, typeof baseSchema, typeof addedColumns, typeof removedColumns, 1, 2, typeof migration>(migration)
+        },
+        publishedAt: {
+
+        },
+        description: {
+
+        },
+        content: {
+
+        }
+    }
+}
+
+let migration1: TestMigration<1, 2, {}, {}, typeof addedColumns1> = {
+    fromVersion: schema1.version,
+    toVersion: 2,
+    baseSchema: schema1,
+    addedColumns: addedColumns1,
+    removedColumns: {},
+}
+
+
+
+let schema2 = migrate<1, 2, {}, {}, typeof addedColumns1, typeof addedColumns1>(migration1)
+
+let removedColumns2 = {
+    users: {
+        name: {
+
+        },
+        password: {
+
+        },
+    },
+}
+
+let addedColumns2 = {
+    posts: {
+        titlee: {
+
+        }
+    },
+}
+
+let migration2: TestMigration<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2> = {
+    fromVersion: 2,
+    toVersion: 3,
+    baseSchema: schema2,
+    removedColumns: removedColumns2,
+    addedColumns: addedColumns2
+}
+
+let schema3 = migrate<2, 3, typeof schema2["objectStores"], typeof removedColumns2, typeof addedColumns2, {
+    [K in ExtractStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: OmitStrict<typeof schema2["objectStores"][K], keyof typeof removedColumns2[K]>
+}
+&
+{
+    [K in ExcludeStrict<keyof typeof schema2["objectStores"], keyof typeof removedColumns2>]: typeof schema2["objectStores"][K]
+}
+&
+typeof addedColumns2>(migration2)
+
 
         console.log(result)
     } catch (error) {
