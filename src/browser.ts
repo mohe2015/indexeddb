@@ -19,7 +19,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
-import { Database, DatabaseObjectStore, DatabaseConnection, DatabaseSchema, DatabaseMigration, DatabaseColumns } from './interface'
+import { Database, DatabaseObjectStore, DatabaseConnection, DatabaseSchemaWithoutMigration as DatabaseSchema, DatabaseMigration, DatabaseObjectStores } from './interface'
 
 class IndexedDatabaseConnection extends DatabaseConnection {
 
@@ -31,7 +31,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
         return new IndexedDatabaseConnection()
     }
 
-    async database<T extends DatabaseSchema, A extends DatabaseSchema, C extends DatabaseColumns, B extends keyof A["columns"]>(name: string, state: T, migrations: DatabaseMigration<A, C, B>[]): Promise<Database<T>> {
+    async database<T extends DatabaseSchemaWithoutMigration, A extends DatabaseSchemaWithoutMigration, C extends DatabaseColumns, B extends keyof A["columns"]>(name: string, state: T, migrations: DatabaseMigration<A, C, B>[]): Promise<Database<T>> {
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, state.version);
             
@@ -70,7 +70,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     }
 }
 
-class IndexedDatabase<T extends DatabaseSchema> extends Database<T> {
+class IndexedDatabase<T extends DatabaseSchemaWithoutMigration> extends Database<T> {
     database: IDBDatabase;
 
     constructor(database: IDBDatabase) {

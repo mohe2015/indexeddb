@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Db, MongoClient } from 'mongodb';
-import { Database, DatabaseConnection, DatabaseObjectStore, DatabaseSchema } from './interface';
+import { Database, DatabaseConnection, DatabaseObjectStore } from './interface';
 
 // https://docs.mongodb.com/drivers/node/
 

@@ -28,7 +28,7 @@ export type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = Obj
 export type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
 // removing all columns would remove the object store (especially removing the primary key)
-export type DatabaseSchemaColumn = {
+export type DatabaseColumn = {
     primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
     autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
     //name: string
@@ -36,7 +36,7 @@ export type DatabaseSchemaColumn = {
     options?: IDBIndexParameters
 }
 
-export type DatabaseObjectStore = { [a: string]: DatabaseSchemaColumn }
+export type DatabaseObjectStore = { [a: string]: DatabaseColumn }
 
 export type DatabaseObjectStores = { [a: string]: DatabaseObjectStore; };
 
@@ -165,3 +165,12 @@ export type WithOnlyKeysOf<A extends DatabaseObjectStores> =
 }
 
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
+
+export abstract class DatabaseConnection {
+    
+    abstract database(name: string): Database;
+}
+
+export abstract class Database {
+    
+}
