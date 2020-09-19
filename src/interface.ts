@@ -231,7 +231,9 @@ export type WithOnlyKeysOf<A extends DatabaseObjectStores> = {
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
 
 export abstract class DatabaseConnection {
-  abstract database(name: string): Database;
+  abstract database<SCHEMA extends DatabaseSchemaWithMigration>(name: string): Database<SCHEMA>;
 }
 
-export abstract class Database {}
+export abstract class Database<SCHEMA extends DatabaseSchemaWithMigration> {
+
+}

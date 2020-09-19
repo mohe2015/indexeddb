@@ -23,9 +23,7 @@ import {
   Database,
   DatabaseObjectStore,
   DatabaseConnection,
-  DatabaseSchemaWithoutMigration as DatabaseSchema,
-  DatabaseMigration,
-  DatabaseObjectStores,
+  DatabaseSchemaWithoutMigration as DatabaseSchema
 } from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
@@ -37,16 +35,9 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     return new IndexedDatabaseConnection();
   }
 
-  async database<
-    T extends DatabaseSchemaWithoutMigration,
-    A extends DatabaseSchemaWithoutMigration,
-    C extends DatabaseColumns,
-    B extends keyof A['columns']
-  >(
+  async database<SCHEMA extends DatabaseObjectStore>(
     name: string,
-    state: T,
-    migrations: DatabaseMigration<A, C, B>[],
-  ): Promise<Database<T>> {
+  ): Promise<Database<SCHEMA>> {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, state.version);
 
@@ -83,9 +74,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
   }
 }
 
-class IndexedDatabase<
-  T extends DatabaseSchemaWithoutMigration
-> extends Database<T> {
+class IndexedDatabase<SCHEMA extends DatabaseObjectStore> extends Database<SCHEMA> {
   database: IDBDatabase;
 
   constructor(database: IDBDatabase) {
@@ -93,15 +82,15 @@ class IndexedDatabase<
     this.database = database;
   }
 
-  createObjectStore(
+  /*createObjectStore(
     name: string,
     options: IDBObjectStoreParameters,
   ): IndexedDatabaseObjectStore {
     let objectStore = this.database.createObjectStore(name, options);
     return new IndexedDatabaseObjectStore(objectStore);
-  }
+  }*/
 }
-
+/*
 class IndexedDatabaseObjectStore extends DatabaseObjectStore {
   objectStore: IDBObjectStore;
 
@@ -118,5 +107,5 @@ class IndexedDatabaseObjectStore extends DatabaseObjectStore {
     return this.objectStore.createIndex(name, keyPath, options);
   }
 }
-
+*/
 export const create = IndexedDatabaseConnection.create;
