@@ -19,82 +19,104 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
-import { Database, DatabaseObjectStore, DatabaseConnection, DatabaseSchemaWithoutMigration as DatabaseSchema, DatabaseMigration, DatabaseObjectStores } from './interface'
+import {
+  Database,
+  DatabaseObjectStore,
+  DatabaseConnection,
+  DatabaseSchemaWithoutMigration as DatabaseSchema,
+  DatabaseMigration,
+  DatabaseObjectStores,
+} from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
+  private constructor() {
+    super();
+  }
 
-    private constructor() {
-        super()
-    }
+  static async create(uri: string) {
+    return new IndexedDatabaseConnection();
+  }
 
-    static async create(uri: string) {
-        return new IndexedDatabaseConnection()
-    }
+  async database<
+    T extends DatabaseSchemaWithoutMigration,
+    A extends DatabaseSchemaWithoutMigration,
+    C extends DatabaseColumns,
+    B extends keyof A['columns']
+  >(
+    name: string,
+    state: T,
+    migrations: DatabaseMigration<A, C, B>[],
+  ): Promise<Database<T>> {
+    return new Promise((resolve, reject) => {
+      const databaseOpenRequest = window.indexedDB.open(name, state.version);
 
-    async database<T extends DatabaseSchemaWithoutMigration, A extends DatabaseSchemaWithoutMigration, C extends DatabaseColumns, B extends keyof A["columns"]>(name: string, state: T, migrations: DatabaseMigration<A, C, B>[]): Promise<Database<T>> {
-        return new Promise((resolve, reject) => {
-            const databaseOpenRequest = window.indexedDB.open(name, state.version);
-            
-            databaseOpenRequest.addEventListener("success", (event) => {
-                resolve(new IndexedDatabase(databaseOpenRequest.result));
-            })
-            databaseOpenRequest.addEventListener("error", (event) => {
-                reject(databaseOpenRequest.error)
-            })
-            databaseOpenRequest.addEventListener("blocked", (event) => {
-                reject(new Error("database blocked"))
-            })
-            databaseOpenRequest.addEventListener("upgradeneeded", (event) => {                
-                let database = new IndexedDatabase(databaseOpenRequest.result)
-                try {
-                    //onUpgrade(database, event.oldVersion, event.newVersion!)
+      databaseOpenRequest.addEventListener('success', (event) => {
+        resolve(new IndexedDatabase(databaseOpenRequest.result));
+      });
+      databaseOpenRequest.addEventListener('error', (event) => {
+        reject(databaseOpenRequest.error);
+      });
+      databaseOpenRequest.addEventListener('blocked', (event) => {
+        reject(new Error('database blocked'));
+      });
+      databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
+        let database = new IndexedDatabase(databaseOpenRequest.result);
+        try {
+          //onUpgrade(database, event.oldVersion, event.newVersion!)
 
-                    let oldVersion = event.oldVersion
+          let oldVersion = event.oldVersion;
 
-                    for (const migration of migrations) {
-                        if (migration.fromVersion === oldVersion) {
-                            
-                        }
-                    }
+          for (const migration of migrations) {
+            if (migration.fromVersion === oldVersion) {
+            }
+          }
 
-                    // TODO FIXME run migrations
-
-                } catch (error) {
-                    console.log(error)
-                    databaseOpenRequest.transaction!.abort()
-                    reject(error)
-                }
-                // onsuccess gets called automatically
-            })
-        })
-    }
+          // TODO FIXME run migrations
+        } catch (error) {
+          console.log(error);
+          databaseOpenRequest.transaction!.abort();
+          reject(error);
+        }
+        // onsuccess gets called automatically
+      });
+    });
+  }
 }
 
-class IndexedDatabase<T extends DatabaseSchemaWithoutMigration> extends Database<T> {
-    database: IDBDatabase;
+class IndexedDatabase<
+  T extends DatabaseSchemaWithoutMigration
+> extends Database<T> {
+  database: IDBDatabase;
 
-    constructor(database: IDBDatabase) {
-        super();
-        this.database = database
-    }
+  constructor(database: IDBDatabase) {
+    super();
+    this.database = database;
+  }
 
-    createObjectStore(name: string, options: IDBObjectStoreParameters): IndexedDatabaseObjectStore {
-        let objectStore = this.database.createObjectStore(name, options)
-        return new IndexedDatabaseObjectStore(objectStore)
-    }
+  createObjectStore(
+    name: string,
+    options: IDBObjectStoreParameters,
+  ): IndexedDatabaseObjectStore {
+    let objectStore = this.database.createObjectStore(name, options);
+    return new IndexedDatabaseObjectStore(objectStore);
+  }
 }
 
 class IndexedDatabaseObjectStore extends DatabaseObjectStore {
-    objectStore: IDBObjectStore;
-    
-    constructor(objectStore: IDBObjectStore) {
-        super();
-        this.objectStore = objectStore
-    }
+  objectStore: IDBObjectStore;
 
-    createIndex(name: string, keyPath: string | string[], options?: IDBIndexParameters) {
-        return this.objectStore.createIndex(name, keyPath, options)
-    }
+  constructor(objectStore: IDBObjectStore) {
+    super();
+    this.objectStore = objectStore;
+  }
+
+  createIndex(
+    name: string,
+    keyPath: string | string[],
+    options?: IDBIndexParameters,
+  ) {
+    return this.objectStore.createIndex(name, keyPath, options);
+  }
 }
 
 export const create = IndexedDatabaseConnection.create;

@@ -35,10 +35,13 @@ class MongoDatabaseConnection extends DatabaseConnection {
     return new MongoDatabaseConnection(database);
   }
 
-  async database<T extends DatabaseSchema>(name: string, version: number): Promise<MongoDatabase<T>> {
-    let database = this.databaseConnection.db(name)
+  async database<T extends DatabaseSchema>(
+    name: string,
+    version: number,
+  ): Promise<MongoDatabase<T>> {
+    let database = this.databaseConnection.db(name);
     // TODO FIXME implement upgradeneeded manually
-    return new MongoDatabase(database)
+    return new MongoDatabase(database);
   }
 }
 
@@ -46,18 +49,19 @@ class MongoDatabase<T extends DatabaseSchema> extends Database<T> {
   database: Db;
 
   constructor(database: Db) {
-    super()
-    this.database = database
+    super();
+    this.database = database;
   }
 
-  async createObjectStore(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore> {
+  async createObjectStore(
+    name: string,
+    options: IDBObjectStoreParameters,
+  ): Promise<DatabaseObjectStore> {
     let collection = await this.database.createCollection(name, {
       autoIndexId: options.autoIncrement,
-    })
-    let index = await collection.createIndex(options.keyPath, {
-      
-    })
-    throw new Error("not implemented")
+    });
+    let index = await collection.createIndex(options.keyPath, {});
+    throw new Error('not implemented');
   }
 }
 
