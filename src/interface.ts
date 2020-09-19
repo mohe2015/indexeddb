@@ -57,11 +57,23 @@ export type DatabaseMigration<
   TOVERSION extends number,
   OLDOBJECTSTORES extends DatabaseObjectStores,
   REMOVED extends DatabaseObjectStores,
-  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    }
 > = {
   fromVersion: FROMVERSION;
   toVersion: TOVERSION;
-  baseSchema: DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>;
+  baseSchema: DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES> | DatabaseSchemaWithMigration<FROMVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED>; // TODO FIXME can also be databaseschemawithmigration
   addedColumns: ADDED;
   removedColumns: REMOVED;
 };
@@ -99,7 +111,8 @@ export interface DatabaseSchemaWithMigration<
     TOVERSION,
     OLDOBJECTSTORES,
     REMOVED,
-    ADDED
+    ADDED,
+    AFTERREMOVED
   > | null;
 };
 
@@ -184,7 +197,8 @@ export function migrate<
     TOVERSION,
     OLDOBJECTSTORES,
     REMOVED,
-    ADDED
+    ADDED,
+    AFTERREMOVED
   >,
 ): DatabaseSchemaWithMigration<
   TOVERSION,

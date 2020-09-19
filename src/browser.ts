@@ -95,14 +95,14 @@ class IndexedDatabaseConnection extends DatabaseConnection {
 
           while (true) {
             if (currentMigration) {
-              outstandingMigrations.push(schema.migration)
+              outstandingMigrations.push(currentMigration)
               if (currentMigration.fromVersion === oldVersion) {
                 break;
               }
               
               let oldState = currentMigration.baseSchema;
               if ("migration" in oldState) {
-                oldState.
+                oldState
               }
             }
           }
