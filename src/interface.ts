@@ -27,19 +27,19 @@ export type ExcludeStrict<ObjectKeysType, KeysType extends ObjectKeysType> = Obj
 
 export type ExtractStrict<ObjectKeysType, KeysType extends ObjectKeysType> = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
-export type TestMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends TestObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
+export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
-    baseSchema: TestSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
+    baseSchema: SchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
     addedColumns: ADDED
     removedColumns: REMOVED
 }
 
-export type TestObjectStore = { [a: string]: DatabaseSchemaColumn }
+export type ObjectStore = { [a: string]: DatabaseSchemaColumn }
 
-export type TestObjectStores = { [a: string]: TestObjectStore; };
+export type ObjectStores = { [a: string]: ObjectStore; };
 
-export type TestSchemaWithoutMigration<VERSION extends number, NEWOBJECTSTORES extends TestObjectStores> = {
+export type SchemaWithoutMigration<VERSION extends number, NEWOBJECTSTORES extends ObjectStores> = {
     version: VERSION,
     objectStores: NEWOBJECTSTORES
 }
@@ -53,11 +53,11 @@ export type DatabaseSchemaColumn = {
     options?: IDBIndexParameters
 }
 
-export type TestSchemaWithMigration<
+export type SchemaWithMigration<
                                         VERSION extends number,
                                         FROMVERSION extends number,
                                         TOVERSION extends number,
-                                        OLDOBJECTSTORES extends TestObjectStores,
+                                        OLDOBJECTSTORES extends ObjectStores,
                                         REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
                                         ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                                         NEWOBJECTSTORES extends  {
@@ -69,9 +69,9 @@ export type TestSchemaWithMigration<
                                         }
                                         &
                                         ADDED> =
-                                    TestSchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
+                                    SchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
         
-    migration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> | null
+    migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> | null
 }
 
 const objectMap = <T, Y>(obj: { [a: string]: T; }, mapFn: (value: T, key: string, index: number) => Y) =>
@@ -88,21 +88,21 @@ const objectFilter = <T>(obj: { [a: string]: T; }, filterFn: (value: T, key: str
     )
   )
 
-function removeColumns<OBJECTSTORES extends DatabaseObjectStores, REMOVE extends RemoveColumns<OBJECTSTORES>>
-                (objectStores: OBJECTSTORES, removeObjectStores: REMOVE): 
+function removeColumns<OLDOBJECTSTORES extends ObjectStores, REMOVE extends WithOnlyKeysOf<OLDOBJECTSTORES>>
+                (objectStores: OLDOBJECTSTORES, removeObjectStores: REMOVE): 
                 {
-                    [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>
+                    [K in keyof OLDOBJECTSTORES]: Pick<OLDOBJECTSTORES[K], Exclude<keyof OLDOBJECTSTORES[K], keyof REMOVE[K]>>
                 } {
     return objectMap(objectStores, (value, key, index) => {
         let removeObjectStoreColumns = removeObjectStores[key]
         return objectFilter(value, (value, key, index) => {
             return removeObjectStoreColumns === undefined || removeObjectStoreColumns[key] === undefined
         })
-    }) as { [K in keyof OBJECTSTORES]: Pick<OBJECTSTORES[K], Exclude<keyof OBJECTSTORES[K], keyof REMOVE[K]>>; }
+    }) as { [K in keyof OLDOBJECTSTORES]: Pick<OLDOBJECTSTORES[K], Exclude<keyof OLDOBJECTSTORES[K], keyof REMOVE[K]>>; }
 }
 
-function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObjectStores>(state: A, migration: B): A & B {
-    let copy: DatabaseObjectStores = {}
+function mergeObjectStores<A extends ObjectStores, B extends ObjectStores>(state: A, migration: B): A & B {
+    let copy: ObjectStores = {}
     for (const [key, value] of Object.entries(state)) {
         copy[key] = value
     }
@@ -115,7 +115,7 @@ function mergeObjectStores<A extends DatabaseObjectStores, B extends DatabaseObj
 export function migrate<
                     FROMVERSION extends number,
                     TOVERSION extends number,
-                    OLDOBJECTSTORES extends TestObjectStores,
+                    OLDOBJECTSTORES extends ObjectStores,
                     REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
                     ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
                     NEWOBJECTSTORES extends {
@@ -127,18 +127,18 @@ export function migrate<
                     }
                     &
                     ADDED>
-                 (migration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
-                 : TestSchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, NEWOBJECTSTORES> {
+                 (migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
+                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, NEWOBJECTSTORES> {
     return {
         migration,
         version: migration.toVersion,
-        objectStores: null as any as NEWOBJECTSTORES // TODO FIXME this is actually a wrong implementation
+        objectStores: mergeObjectStores(removeColumns(migration.baseSchema.objectStores, migration.removedColumns), migration.addedColumns)
     }
 }
 
 
 // type which doesnt contain any nested keys from the other object store (for added
-export type WithoutKeysOf<A extends TestObjectStores> =
+export type WithoutKeysOf<A extends ObjectStores> =
 {
     [K in keyof A]?: 
     {
@@ -157,7 +157,7 @@ export type WithoutKeysOf<A extends TestObjectStores> =
 // TODO FIXME
 // https://github.com/microsoft/TypeScript/pull/29317
 // https://github.com/microsoft/TypeScript/issues/38254
-export type WithOnlyKeysOf<A extends TestObjectStores> =
+export type WithOnlyKeysOf<A extends ObjectStores> =
 {
     [K in keyof A]?: (
         {
