@@ -40,7 +40,7 @@ export type ObjectStore = { [a: string]: DatabaseSchemaColumn }
 
 export type ObjectStores = { [a: string]: ObjectStore; };
 
-export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends WithoutKeysOf<OLDOBJECTSTORES>> = {
+export type Migration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends ObjectStores, REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>, ADDED extends ObjectStores> = {
     fromVersion: FROMVERSION
     toVersion: TOVERSION
     baseSchema: SchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
@@ -59,7 +59,7 @@ export type SchemaWithMigration<
                                         TOVERSION extends number,
                                         OLDOBJECTSTORES extends ObjectStores,
                                         REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
-                                        ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+                                        ADDED extends ObjectStores,
                                         NEWOBJECTSTORES extends {
                                             [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                                         }
@@ -126,7 +126,7 @@ export function migrate<
                     TOVERSION extends number,
                     OLDOBJECTSTORES extends ObjectStores,
                     REMOVED extends WithOnlyKeysOf<OLDOBJECTSTORES>,
-                    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+                    ADDED extends ObjectStores,
                     NEWOBJECTSTORES extends {
                         [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<OLDOBJECTSTORES[K], keyof REMOVED[K]>
                     }
