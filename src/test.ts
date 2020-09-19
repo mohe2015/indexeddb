@@ -186,6 +186,7 @@ type WithoutKeysOf<A extends TestObjectStores> =
 
 // TODO FIXME
 // https://github.com/microsoft/TypeScript/pull/29317
+// https://github.com/microsoft/TypeScript/issues/38254
 type WithOnlyKeysOf<A extends TestObjectStores> =
 {
     [K in keyof A]?: (
