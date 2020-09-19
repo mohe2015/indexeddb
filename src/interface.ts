@@ -66,11 +66,8 @@ export type SchemaWithMigration<
                                         &
                                         {
                                             [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                                        },
-                                        NEWOBJECTSTORES extends AFTERREMOVED
-                                        &
-                                        ADDED> =
-                                    SchemaWithoutMigration<VERSION, NEWOBJECTSTORES> & {
+                                        }> =
+                                    SchemaWithoutMigration<VERSION, AFTERREMOVED & ADDED> & {
     migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED> | null
 }
 
@@ -127,10 +124,9 @@ export function migrate<
                     &
                     {
                         [K in ExcludeStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OLDOBJECTSTORES[K]
-                    },
-                    NEWOBJECTSTORES extends AFTERREMOVED & ADDED>
+                    }>
                  (migration: Migration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED>)
-                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, NEWOBJECTSTORES> {
+                 : SchemaWithMigration<TOVERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED> {
     return {
         migration,
         version: migration.toVersion,
