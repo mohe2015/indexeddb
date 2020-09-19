@@ -14,19 +14,15 @@
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
     "docs": "typedoc --allowJs src/"
   },
-  "dependencies": {
-    "@dev.mohe/conditional-type-checks": "^2.0.0"
-  },
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.2",
-    "@types/canvas-confetti": "^1.0.0",
     "@types/mongodb": "^3.5.27",
     "@types/node": "^14.10.3",
     "@types/snowpack-env": "^2.3.0",
     "prettier": "^2.1.2",
     "snowpack": "^2.11.1",
     "typedoc": "^1.0.0-dev.3",
-    "typescript": "file:///home/moritz/Documents/indexeddb/TypeScript/typescript-4.1.0.tgz"
+    "typescript": "^4.1.0-dev.20200919"
   },
   "repository": {
     "type": "git",

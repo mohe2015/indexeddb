@@ -35,11 +35,6 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.10.4"
 
-"@dev.mohe/conditional-type-checks@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@dev.mohe/conditional-type-checks/-/conditional-type-checks-2.0.0.tgz#a6ff1064d04d7fde62ba7d0d1b1b6b1e80d74bca"
-  integrity sha512-qMzbpcd4evY7rwsqT/tBTmugANIc+cIcFDaitCTUwJ5QySvWoBt4zP4CDyBZyYuSGridHY3szbV2B5JptjzkWQ==
-
 "@npmcli/move-file@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@npmcli/move-file/-/move-file-1.0.1.tgz#de103070dac0f48ce49cf6693c23af59c0f70464"
@@ -157,11 +152,6 @@
     "@types/node" "*"
     "@types/responselike" "*"
 
-"@types/canvas-confetti@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@types/canvas-confetti/-/canvas-confetti-1.0.0.tgz#784fca12934ae3a8b50213672e7747b2efb0ffa7"
-  integrity sha512-Z3Eh7qlYdi9cvotmreZjqxaUSwpUYu/s2uzSvnGgktuHhpj8FHq6JSJLVYP3R4YNZN/d8nNOG5y2cKmautyDCQ==
-
 "@types/color-convert@*":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@types/color-convert/-/color-convert-1.9.0.tgz#bfa8203e41e7c65471e9841d7e306a7cd8b5172d"
@@ -211,15 +201,10 @@
     "@types/bson" "*"
     "@types/node" "*"
 
-"@types/node@*":
-  version "14.6.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.6.4.tgz#a145cc0bb14ef9c4777361b7bbafa5cf8e3acb5a"
-  integrity sha512-Wk7nG1JSaMfMpoMJDKUsWYugliB2Vy55pdjLpmLixeyMi7HizW2I/9QoxsPCkXl3dO+ZOVqPumKaDUv5zJu2uQ==
-
-"@types/node@^14.10.3":
-  version "14.10.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.10.3.tgz#5ae1f119c96643fc9b19b2d1a83bfa2ec3dbb7ea"
-  integrity sha512-zdN0hor7TLkjAdKTnYW+Y22oIhUUpil5ZD1V1OFq0CR0CLKw+NdR6dkziTfkWRLo6sKzisayoj/GNpNbe4LY9Q==
+"@types/node@*", "@types/node@^14.10.3":
+  version "14.11.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.11.1.tgz#56af902ad157e763f9ba63d671c39cda3193c835"
+  integrity sha512-oTQgnd0hblfLsJ6BvJzzSL+Inogp3lq9fGgqRkMB/ziKMgEUaFl801OncOzUmalfzt14N0oPHMK47ipl+wbTIw==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -755,9 +740,9 @@ glob@^7.0.0, glob@^7.1.1, glob@^7.1.3, glob@^7.1.4, glob@^7.1.6:
     path-is-absolute "^1.0.0"
 
 got@^11.1.4:
-  version "11.6.0"
-  resolved "https://registry.yarnpkg.com/got/-/got-11.6.0.tgz#4978c78f3cbc3a45ee95381f8bb6efd1db1f4638"
-  integrity sha512-ErhWb4IUjQzJ3vGs3+RR12NWlBDDkRciFpAkQ1LPUxi6OnwhGj07gQxjPsyIk69s7qMihwKrKquV6VQq7JNYLA==
+  version "11.7.0"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.7.0.tgz#a386360305571a74548872e674932b4ef70d3b24"
+  integrity sha512-7en2XwH2MEqOsrK0xaKhbWibBoZqy+f1RSUoIeF1BLcnf+pyQdDsljWMfmOh+QKJwuvDIiKx38GtPh5wFdGGjg==
   dependencies:
     "@sindresorhus/is" "^3.1.1"
     "@szmarczak/http-timer" "^4.0.5"
@@ -982,9 +967,9 @@ jsonschema@^1.2.5:
   integrity sha512-SqhURKZG07JyKKeo/ir24QnS4/BV7a6gQy93bUSe4lUdNp0QNpIz2c9elWJQ9dpc5cQYY6cvCzgRwy0MQCLyqA==
 
 keyv@^4.0.0:
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/keyv/-/keyv-4.0.1.tgz#9fe703cb4a94d6d11729d320af033307efd02ee6"
-  integrity sha512-xz6Jv6oNkbhrFCvCP7HQa8AaII8y8LRpoSm661NOKLr4uHuBwhX4epXrPQgF3+xdJnN4Esm5X0xwY4bOlALOtw==
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/keyv/-/keyv-4.0.3.tgz#4f3aa98de254803cafcd2896734108daa35e4254"
+  integrity sha512-zdGa2TOpSZPq5mU6iowDARnMBZgtCqJ11dJROFi6tg6kTn4nuUdU09lFyLFSaHrWqpIJ+EBq4E8/Dc0Vx5vLdA==
   dependencies:
     json-buffer "3.0.1"
 
@@ -1514,9 +1499,9 @@ rollup-pluginutils@^2.8.1:
     estree-walker "^0.6.1"
 
 rollup@^2.23.0:
-  version "2.26.11"
-  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.26.11.tgz#4fc31de9c7b83d50916fc8395f8c3d24730cdaae"
-  integrity sha512-xyfxxhsE6hW57xhfL1I+ixH8l2bdoIMaAecdQiWF3N7IgJEMu99JG+daBiSZQjnBpzFxa0/xZm+3pbCdAQehHw==
+  version "2.27.1"
+  resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.27.1.tgz#372744e1d36eba0fd942d997600c2fc2ca266305"
+  integrity sha512-GiWHQvnmMgBktSpY/1+nrGpwPsTw4b9P28og2uedfeq4JZ16rzAmnQ5Pm/E0/BEmDNia1ZbY7+qu3nBgNa19Hg==
   optionalDependencies:
     fsevents "~2.1.2"
 
@@ -1568,29 +1553,29 @@ shelljs@^0.8.4:
     interpret "^1.0.0"
     rechoir "^0.6.2"
 
-shiki-languages@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/shiki-languages/-/shiki-languages-0.2.4.tgz#7397dacff7894f41a8319e7b4cb8908eec2a0cc2"
-  integrity sha512-qvI1BNbmatp7UHuTNbI+9s9ugYz8XdDU3Mz++nUlUVtC8Y2PicRifXk5Wad2Ph1WQW5GTPy3pIZKqNlbM/IhVA==
+shiki-languages@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/shiki-languages/-/shiki-languages-0.2.5.tgz#5f25c7f37c592293b94796c18dbff6837b68a1f8"
+  integrity sha512-M3q1BFE2Qk/w72K9GM8kZaZ2yVSP4wd1gep9sYWaLJWQN4GhTuqC1oJrmX0JBX1PHECJqi39ZGYD39rQ6qrVvw==
   dependencies:
     vscode-textmate "^5.2.0"
 
-shiki-themes@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/shiki-themes/-/shiki-themes-0.2.4.tgz#7d40fd6a069ec70f65d359ca24cad3fde51697a6"
-  integrity sha512-gnMlNx4Fx62riETs+ElAX7+ol5cv3e1/SKxvKe7xL2J+6Q0u6TQlbDnhKMpheLW5dSMZ6xWsuGHkiJQV6h/cTg==
+shiki-themes@^0.2.5:
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/shiki-themes/-/shiki-themes-0.2.5.tgz#fc121ac2ba519d411cd2c016b7ea000eac22aa31"
+  integrity sha512-jL2IpczDT1B6vpmLvwq8PbIVgdWUZ+8C7A7sBDAH2dsoFEMSk4OxeGByaNKxFRZgx40wFDyCCriC2JIQDPnHBQ==
   dependencies:
     json5 "^2.1.0"
-    vscode-textmate "https://github.com/octref/vscode-textmate"
+    vscode-textmate "^5.2.0"
 
 shiki@^0.2.2:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/shiki/-/shiki-0.2.4.tgz#e43d90e1d49a9ca03021fcc6dfcb3b63bd136558"
-  integrity sha512-Dn924XZ563evpPGa1bVERLy0eJCxjNMcxmxqhyTjXY/4wgL6R2eS2vJyGM0GW7FMLcXetSTIqog+LaNCJiYFUw==
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/shiki/-/shiki-0.2.5.tgz#3321a3f145092018c86c4cca281817d2992785f2"
+  integrity sha512-TwiRLuon4m+TMZ8Qdx8VgtIj4edzxmFjW+I7IjI7xyf2b7WjTXrynuk4iDMCjdsb8zVd9oFCxqhfyNC8LGeDNQ==
   dependencies:
     onigasm "^2.2.1"
-    shiki-languages "^0.2.4"
-    shiki-themes "^0.2.4"
+    shiki-languages "^0.2.5"
+    shiki-themes "^0.2.5"
     vscode-textmate "^5.2.0"
 
 signal-exit@^3.0.2, signal-exit@^3.0.3:
@@ -1803,9 +1788,10 @@ typedoc@^1.0.0-dev.3:
     shelljs "^0.8.4"
     shiki "^0.2.2"
 
-"typescript@https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/85710/artifacts?artifactName=tgz&fileId=08A5EC3BE4780859520BB416BFE0B51DDB7C552F415DA933BD0766A1E2060B9E02&fileName=/typescript-4.1.0-insiders.20200917.tgz":
-  version "4.1.0-insiders.20200917"
-  resolved "https://typescript.visualstudio.com/cf7ac146-d525-443c-b23c-0d58337efebc/_apis/build/builds/85710/artifacts?artifactName=tgz&fileId=08A5EC3BE4780859520BB416BFE0B51DDB7C552F415DA933BD0766A1E2060B9E02&fileName=/typescript-4.1.0-insiders.20200917.tgz#17a08a2798ab7ccdd62dfb5ff95e53b064ec4f74"
+typescript@^4.1.0-dev.20200919:
+  version "4.1.0-dev.20200919"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.1.0-dev.20200919.tgz#e9c07ffe89be61f8339561a3e2b937dbfe76328a"
+  integrity sha512-idW2yjfTvTCWZv5PKqoCjO2o+/ZsujUPUyGf0qPXNkPdFUqAGAs1JR7iDhzerAP+w7KzELIhgcRBDgBWX3nKaQ==
 
 unique-filename@^1.1.1:
   version "1.1.1"
@@ -1837,10 +1823,6 @@ vscode-textmate@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/vscode-textmate/-/vscode-textmate-5.2.0.tgz#01f01760a391e8222fe4f33fbccbd1ad71aed74e"
   integrity sha512-Uw5ooOQxRASHgu6C7GVvUxisKXfSgW4oFlO+aa+PAkgmH89O3CXxEEzNRNtHSqtXFTl0nAC1uYj0GMSH27uwtQ==
-
-"vscode-textmate@https://github.com/octref/vscode-textmate":
-  version "4.0.1"
-  resolved "https://github.com/octref/vscode-textmate#e65aabe2227febda7beaad31dd0fca1228c5ddf3"
 
 which@^2.0.1:
   version "2.0.2"
