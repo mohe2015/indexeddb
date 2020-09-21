@@ -58,7 +58,7 @@ export type DatabaseMigration<
   OLDOBJECTSTORES extends DatabaseObjectStores,
   REMOVED extends DatabaseObjectStores,
   ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-    SCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
+  SCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
 > = {
   fromVersion: FROMVERSION;
   toVersion: TOVERSION;
@@ -179,7 +179,8 @@ export function migrate<
         keyof OLDOBJECTSTORES,
         keyof REMOVED
       >]: OLDOBJECTSTORES[K];
-    }
+    },
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
 >(
   migration: DatabaseMigration<
     FROMVERSION,
@@ -187,16 +188,16 @@ export function migrate<
     OLDOBJECTSTORES,
     REMOVED,
     ADDED,
-    AFTERREMOVED
+    OLDSCHEMA
   >,
 ): DatabaseSchemaWithMigration<
-  TOVERSION,
   FROMVERSION,
   TOVERSION,
   OLDOBJECTSTORES,
   REMOVED,
   ADDED,
-  AFTERREMOVED
+  AFTERREMOVED,
+  OLDSCHEMA
 > {
   return {
     migration,
@@ -253,16 +254,17 @@ export abstract class DatabaseConnection {
           keyof REMOVED
         >]: OLDOBJECTSTORES[K];
       },
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
     SCHEMA extends DatabaseSchemaWithMigration<
-      VERSION,
       FROMVERSION,
       TOVERSION,
       OLDOBJECTSTORES,
       REMOVED,
       ADDED,
-      AFTERREMOVED
+      AFTERREMOVED,
+      OLDSCHEMA
     >
-  >(name: string, schema: SCHEMA): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>>;
+  >(name: string, schema: SCHEMA): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>;
 }
 
 export abstract class Database<VERSION extends number,
@@ -283,12 +285,13 @@ AFTERREMOVED extends {
       keyof REMOVED
     >]: OLDOBJECTSTORES[K];
   },
-SCHEMA extends DatabaseSchemaWithMigration<
-  VERSION,
-  FROMVERSION,
-  TOVERSION,
-  OLDOBJECTSTORES,
-  REMOVED,
-  ADDED,
-  AFTERREMOVED
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+  SCHEMA extends DatabaseSchemaWithMigration<
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED,
+    OLDSCHEMA
 >> {}
