@@ -50,7 +50,7 @@ async function run() {
       },
     };
 
-    let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1> = {
+    let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1, typeof schema1> = {
       fromVersion: schema1.version,
       toVersion: 2,
       baseSchema: schema1,
@@ -64,7 +64,8 @@ async function run() {
       {},
       {},
       typeof addedColumns1,
-      typeof addedColumns1
+      typeof addedColumns1,
+      typeof schema1
     >(migration1);
 
     let removedColumns2 = {
@@ -85,7 +86,8 @@ async function run() {
       3,
       typeof schema2['objectStores'],
       typeof removedColumns2,
-      typeof addedColumns2
+      typeof addedColumns2,
+      typeof schema2
     > = {
       fromVersion: 2,
       toVersion: 3,
@@ -115,7 +117,8 @@ async function run() {
             keyof typeof removedColumns2
           >]: typeof schema2['objectStores'][K];
         } &
-        typeof addedColumns2
+        typeof addedColumns2,
+        typeof schema2
     >(migration2);
 
     console.log(schema3);
