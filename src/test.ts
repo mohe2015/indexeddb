@@ -39,7 +39,7 @@ interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OB
     add: ADD
 }
 
-interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> extends TestSchema<TOVERSION, OBJECTSTORES> {
+interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> extends TestSchema<TOVERSION, OBJECTSTORES & ADD> {
     migration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
 }
 
@@ -54,7 +54,7 @@ let migration1_2: TestMigration<1, 2, {}, {test: {}}> = {
     add: {test: {}}
 }
 
-let schema2: TestSchemaWithMigration<1, 2, > = {
+let schema2: TestSchemaWithMigration<1, 2, {}, {test: {}}> = {
     migration: migration1_2,
     version: 2,
     objectStores: {test: {}}
