@@ -60,4 +60,17 @@ let schema2: TestSchemaWithMigration<1, 2, {}, {test: {}}> = {
     objectStores: {test: {}}
 }
 
-schema2.objectStores
+let migration2_3: TestMigration<2, 3, {test: {}}, {jojo: {}}> = {
+    schema: schema2,
+    toVersion: 3,
+    add: {jojo: {}}
+}
+
+let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}> = {
+    migration: migration2_3,
+    version: 3,
+    objectStores: {test: {}, jojo: {}}
+}
+
+//
+schema3.migration.schema.migration
