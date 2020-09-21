@@ -1,0 +1,10 @@
+{
+  "name": "@dev.mohe/indexeddb-tests",
+  "version": "0.0.1",
+  "description": "tests for @dev.mohe/indexeddb",
+  "main": "index.js",
+  "repository": "git+https://github.com/mohe2015/indexeddb.git",
+  "author": "Moritz.Hedtke <Moritz.Hedtke@t-online.de>",
+  "license": "AGPL-3.0-or-later",
+  "private": false
+}
