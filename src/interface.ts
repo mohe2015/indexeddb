@@ -40,13 +40,15 @@ export type ExtractStrict<
 > = ObjectKeysType extends KeysType ? ObjectKeysType : never;
 
 // removing all columns would remove the object store (especially removing the primary key)
+
+// TODO FIXME maybe make this a union for primary key, index and normal column - this would improve type checking
 export type DatabaseColumn = {
   primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
   index?: boolean;
 
   autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
-  //name: string
-  keyPath?: string | string[];
+
+  keyPath: string | string[];
   options?: IDBIndexParameters;
 };
 
@@ -261,6 +263,11 @@ export type WithOnlyKeysOf<A extends DatabaseObjectStores> = {
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
 
 export abstract class DatabaseConnection {
+
+  // TODO FIXME implement deletion
+
+  // TODO FIXME implement listing databases
+
   abstract database<
     FROMVERSION extends number,
     TOVERSION extends number,

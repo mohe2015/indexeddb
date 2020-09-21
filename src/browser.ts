@@ -122,6 +122,9 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
                 if (column.primaryKey) {
                   console.log("delete object store: ", objectStoreName)
                   databaseOpenRequest.result.deleteObjectStore(objectStoreName)
+                } else if (column.index) {
+                  console.log(`delete index without removing data: ${objectStoreName}.${columnName}`)
+                  databaseOpenRequest.transaction!.objectStore(objectStoreName).deleteIndex(columnName)
                 } else {
                   console.log(`delete column without removing data ${objectStoreName}.${columnName}`)
                 }
@@ -136,8 +139,7 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
                     keyPath: column.keyPath
                   })
                 } else if (column.index) {
-                  // TODO FIXME
-
+                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.options)
                   console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
                 } else {
                   console.log(`add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
