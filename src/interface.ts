@@ -123,9 +123,10 @@ AFTERREMOVED extends {
       keyof REMOVED
     >]: OLDOBJECTSTORES[K];
   },
-  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
-  >(schema: DatabaseSchemaWithoutMigration<TOVERSION, AFTERREMOVED & ADDED>): schema is DatabaseSchemaWithMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA> {
-  return (schema as DatabaseSchemaWithMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA>).migration !== undefined;
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+  B extends DatabaseSchemaWithMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA>,
+  >(schema:  OLDSCHEMA | B): schema is B {
+  return (schema as B).migration !== undefined;
 }
 
 const objectMap = <T, Y>(
