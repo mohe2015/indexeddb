@@ -236,7 +236,6 @@ export type WithOnlyKeysOf<A extends DatabaseObjectStores> = {
 
 export abstract class DatabaseConnection {
   abstract database<
-    VERSION extends number,
     FROMVERSION extends number,
     TOVERSION extends number,
     OLDOBJECTSTORES extends DatabaseObjectStores,
@@ -264,10 +263,10 @@ export abstract class DatabaseConnection {
       AFTERREMOVED,
       OLDSCHEMA
     >
-  >(name: string, schema: SCHEMA): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>;
+  >(name: string, schema: SCHEMA): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>;
 }
 
-export abstract class Database<VERSION extends number,
+export abstract class Database<
 FROMVERSION extends number,
 TOVERSION extends number,
 OLDOBJECTSTORES extends DatabaseObjectStores,
@@ -294,4 +293,5 @@ AFTERREMOVED extends {
     ADDED,
     AFTERREMOVED,
     OLDSCHEMA
->> {}
+  >
+> {}

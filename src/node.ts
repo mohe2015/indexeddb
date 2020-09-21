@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
 import { Db, MongoClient } from 'mongodb';
-import { Database, DatabaseConnection, DatabaseObjectStore } from './interface';
+import { Database, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStores, DatabaseSchemaWithMigration, DatabaseSchemaWithoutMigration, ExcludeStrict, ExtractStrict, OmitStrict, WithoutKeysOf } from './interface';
 
 // https://docs.mongodb.com/drivers/node/
 
@@ -35,17 +35,73 @@ class MongoDatabaseConnection extends DatabaseConnection {
     return new MongoDatabaseConnection(database);
   }
 
-  async database<T extends DatabaseSchema>(
+  async database<
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+  SCHEMA extends DatabaseSchemaWithMigration<
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED,
+    OLDSCHEMA
+  >
+  >(
     name: string,
     version: number,
-  ): Promise<MongoDatabase<T>> {
+  ): Promise<MongoDatabase<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>> {
     let database = this.databaseConnection.db(name);
     // TODO FIXME implement upgradeneeded manually
     return new MongoDatabase(database);
   }
 }
 
-class MongoDatabase<T extends DatabaseSchema> extends Database<T> {
+class MongoDatabase<
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+    SCHEMA extends DatabaseSchemaWithMigration<
+      FROMVERSION,
+      TOVERSION,
+      OLDOBJECTSTORES,
+      REMOVED,
+      ADDED,
+      AFTERREMOVED,
+      OLDSCHEMA
+    >
+  > extends Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
   database: Db;
 
   constructor(database: Db) {

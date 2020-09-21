@@ -41,35 +41,37 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     return new IndexedDatabaseConnection();
   }
 
-  async database<VERSION extends number,
-  FROMVERSION extends number,
-  TOVERSION extends number,
-  OLDOBJECTSTORES extends DatabaseObjectStores,
-  REMOVED extends DatabaseObjectStores,
-  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-  AFTERREMOVED extends {
-    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
-      OLDOBJECTSTORES[K],
-      keyof REMOVED[K]
-    >;
-  } &
-    {
-      [K in ExcludeStrict<
-        keyof OLDOBJECTSTORES,
-        keyof REMOVED
-      >]: OLDOBJECTSTORES[K];
-    },
-  SCHEMA extends DatabaseSchemaWithMigration<
-    VERSION,
-    FROMVERSION,
-    TOVERSION,
-    OLDOBJECTSTORES,
-    REMOVED,
-    ADDED,
-    AFTERREMOVED
-  >>(
+  async database<
+    FROMVERSION extends number,
+    TOVERSION extends number,
+    OLDOBJECTSTORES extends DatabaseObjectStores,
+    REMOVED extends DatabaseObjectStores,
+    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+    AFTERREMOVED extends {
+      [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+        OLDOBJECTSTORES[K],
+        keyof REMOVED[K]
+      >;
+    } &
+      {
+        [K in ExcludeStrict<
+          keyof OLDOBJECTSTORES,
+          keyof REMOVED
+        >]: OLDOBJECTSTORES[K];
+      },
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+    SCHEMA extends DatabaseSchemaWithMigration<
+      FROMVERSION,
+      TOVERSION,
+      OLDOBJECTSTORES,
+      REMOVED,
+      ADDED,
+      AFTERREMOVED,
+      OLDSCHEMA
+    >
+  >(
     name: string, schema: SCHEMA
-  ): Promise<Database<VERSION, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, SCHEMA>> {
+  ): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>> {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, schema.version);
 
@@ -119,9 +121,33 @@ class IndexedDatabaseConnection extends DatabaseConnection {
   }
 }
 
-class IndexedDatabase<SCHEMA extends DatabaseObjectStore> extends Database<
-  SCHEMA
-> {
+class IndexedDatabase<FROMVERSION extends number,
+TOVERSION extends number,
+OLDOBJECTSTORES extends DatabaseObjectStores,
+REMOVED extends DatabaseObjectStores,
+ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+AFTERREMOVED extends {
+  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+    OLDOBJECTSTORES[K],
+    keyof REMOVED[K]
+  >;
+} &
+  {
+    [K in ExcludeStrict<
+      keyof OLDOBJECTSTORES,
+      keyof REMOVED
+    >]: OLDOBJECTSTORES[K];
+  },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+  SCHEMA extends DatabaseSchemaWithMigration<
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED,
+    OLDSCHEMA
+>> extends Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
   database: IDBDatabase;
 
   constructor(database: IDBDatabase) {
