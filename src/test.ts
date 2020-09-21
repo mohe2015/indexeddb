@@ -24,15 +24,15 @@ interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
 }
 
 // correct
-interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> {
-    fromSchema: TestSchema<FROMVERSION, OBJECTSTORES> | TestSchemaWithMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD> // the second part seems wrong
+interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any, SCHEMA extends TestSchema<FROMVERSION, OBJECTSTORES>> {
+    fromSchema: SCHEMA
     toVersion: TOVERSION
     add: ADD
 }
 
 // correct
-interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> extends TestSchema<TOVERSION, OBJECTSTORES & ADD> {
-    fromMigration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
+interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any, OLDSCHEMA extends TestSchema<FROMVERSION, OBJECTSTORES>> extends TestSchema<TOVERSION, OBJECTSTORES & ADD> {
+    fromMigration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD, OLDSCHEMA>
 }
 
 let schema1: TestSchema<1, {}> = {
@@ -40,32 +40,32 @@ let schema1: TestSchema<1, {}> = {
     objectStores: {}
 }
 
-let migration1_2: TestMigration<1, 2, {}, {test: {}}> = {
+let migration1_2: TestMigration<1, 2, {}, {test: {}}, typeof schema1> = {
     fromSchema: schema1,
     toVersion: 2,
     add: {test: {}}
 }
 
-let schema2: TestSchemaWithMigration<1, 2, {}, {test: {}}> = {
+let schema2: TestSchemaWithMigration<1, 2, {}, {test: {}}, typeof schema1> = {
     fromMigration: migration1_2,
     version: 2,
     objectStores: {test: {}}
 }
 
-let migration2_3: TestMigration<2, 3, {test: {}}, {jojo: {}}> = {
+let migration2_3: TestMigration<2, 3, {test: {}}, {jojo: {}}, typeof schema2> = {
     fromSchema: schema2,
     toVersion: 3,
     add: {jojo: {}}
 }
 
-let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}> = {
+let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}, typeof schema2> = {
     fromMigration: migration2_3,
     version: 3,
     objectStores: {test: {}, jojo: {}}
 }
 
-let schema = schema3.fromMigration.fromSchema.version
+let schema = schema3.fromMigration.fromSchema
 
 if ("fromMigration" in schema) {
-    schema.fromMigration.fromSchema.objectStores //
+    schema.fromMigration.fromSchema.objectStores
 }
