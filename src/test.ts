@@ -64,7 +64,7 @@ let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}> = {
     objectStores: {test: {}, jojo: {}}
 }
 
-let schema = schema3.fromMigration.fromSchema
+let schema = schema3.fromMigration.fromSchema.version
 
 if ("fromMigration" in schema) {
     schema.fromMigration.fromSchema.objectStores //
