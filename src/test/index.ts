@@ -25,25 +25,34 @@ import {
   OmitStrict,
   ExtractStrict,
   ExcludeStrict,
+  DatabaseObjectStores,
 } from '../interface';
 
 async function run() {
   try {
-    let schema1: DatabaseSchemaWithoutMigration<0, {}> = {
-      version: 0,
+    let schema1: DatabaseSchemaWithoutMigration<1, {}> = {
+      version: 1,
       objectStores: {},
     };
 
     let addedColumns1 = {
       users: {
         name: {
-          
+          primaryKeyOptions: {
+            autoIncrement: false,
+            keyPath: "name"
+          }
         },
         password: {
 
         },
       },
       posts: {
+        _id: { // this is technically invalid and should be fixed as it is an out of line primary key
+          primaryKeyOptions: {
+            autoIncrement: true
+          }
+        },
         title: {},
         author: {},
         publishedAt: {},
@@ -52,7 +61,7 @@ async function run() {
       },
     };
 
-    let migration1: DatabaseMigration<0, 2, {}, {}, typeof addedColumns1, typeof schema1> = {
+    let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1, typeof schema1> = {
       fromVersion: schema1.version,
       toVersion: 2,
       baseSchema: schema1,
@@ -61,7 +70,7 @@ async function run() {
     };
 
     let schema2 = migrate<
-      0,
+      1,
       2,
       {},
       {},
@@ -72,14 +81,20 @@ async function run() {
 
     let removedColumns2 = {
       users: {
-        name: {},
-        password: {},
+        name: {
+
+        },
+        password: {
+
+        },
       },
     };
 
     let addedColumns2 = {
       posts: {
-        titlee: {},
+        titlee: {
+
+        },
       },
     };
 

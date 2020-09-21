@@ -90,6 +90,7 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
         let database = new IndexedDatabase(databaseOpenRequest.result);
         try {
           let oldVersion = event.oldVersion;
+          if (oldVersion === 0) oldVersion = 1; // this is a bug in firefox - if the initial creation aborts firefox still sets the version to 1
 
           console.log("old version: ", oldVersion)
 
