@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { IndexedDatabaseConnection } from '../browser.js';
+import { create } from '../test-entrypoint.js';
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
@@ -142,7 +142,7 @@ async function run() {
 
     console.log(schema3);
 
-    let connection = await IndexedDatabaseConnection.create()
+    let connection = await create("localhost")
 
     console.log(connection)
 
