@@ -17,24 +17,6 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 export {}
 
-// correct
-interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
-    version: VERSION
-    objectStores: OBJECTSTORES
-}
-
-// correct
-interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends any, ADD extends any, SCHEMA extends TestSchema<FROMVERSION, OLDOBJECTSTORES>> {
-    fromSchema: SCHEMA
-    toVersion: TOVERSION
-    add: ADD
-}
-
-// correct
-interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends any, ADD extends any, OLDSCHEMA extends TestSchema<FROMVERSION, OLDOBJECTSTORES>> extends TestSchema<TOVERSION, OLDOBJECTSTORES & ADD> {
-    fromMigration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, ADD, OLDSCHEMA>
-}
-
 let schema1: TestSchema<1, {}> = {
     version: 1,
     objectStores: {}
