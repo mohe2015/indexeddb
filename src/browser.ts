@@ -136,10 +136,10 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
             for (const [objectStoreName, objectStore] of Object.entries<DatabaseObjectStore>(migration.addedColumns)) { 
               for (const [columnName, column] of Object.entries(objectStore)) {
                 if ("primaryKeyOptions" in column) {
-                  console.log("create object store: ", objectStoreName)
+                  console.log(`create object store: ${objectStoreName}`, column.primaryKeyOptions)
                   databaseOpenRequest.result.createObjectStore(objectStoreName, column.primaryKeyOptions)
                 } else if ("indexOptions" in column) {
-                  console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
+                  console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`, column.indexOptions)
                   databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.indexOptions)
                 } else {
                   if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
