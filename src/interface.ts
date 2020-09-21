@@ -42,6 +42,8 @@ export type ExtractStrict<
 // removing all columns would remove the object store (especially removing the primary key)
 export type DatabaseColumn = {
   primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
+  index?: boolean;
+
   autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
   //name: string
   keyPath?: string | string[];

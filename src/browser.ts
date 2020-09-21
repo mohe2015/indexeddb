@@ -89,8 +89,6 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
       databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
         let database = new IndexedDatabase(databaseOpenRequest.result);
         try {
-          //onUpgrade(database, event.oldVersion, event.newVersion!)
-
           let oldVersion = event.oldVersion;
 
           console.log("old version: ", oldVersion)
@@ -117,7 +115,32 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
           }
 
           // TODO FIXME run and also check validity
-          outstandingMigrations.reverse().forEach(migration => console.log("running migration: ", migration))
+          outstandingMigrations.reverse().forEach(migration => {
+            console.log("running migration: ", migration)
+            for (const [objectStoreName, objectStore] of Object.entries(migration.removedColumns)) {
+              for (const [columnName, column] of Object.entries(objectStore)) {
+                if (column.primaryKey) {
+                  console.log("delete object store: ", objectStoreName)
+                  databaseOpenRequest.result.deleteObjectStore(objectStoreName)
+                } else {
+                  console.log(`delete column without removing data ${objectStoreName}.${columnName}`)
+                }
+              }
+            }
+            for (const [objectStoreName, objectStore] of Object.entries<DatabaseObjectStore>(migration.addedColumns)) { 
+              for (const [columnName, column] of Object.entries(objectStore)) {
+                if (column.primaryKey) {
+                  console.log("create object store: ", objectStoreName)
+                  databaseOpenRequest.result.createObjectStore(objectStoreName, {
+                    autoIncrement: column.autoIncrement,
+                    keyPath: column.keyPath
+                  })
+                } else if (column.index) {
+                  // TODO FIXME
+                }
+              }
+            }
+          })
         } catch (error) {
           console.log(error);
           databaseOpenRequest.transaction!.abort();
