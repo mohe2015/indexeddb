@@ -36,37 +36,36 @@ class MongoDatabaseConnection extends DatabaseConnection {
   }
 
   async database<
-  FROMVERSION extends number,
-  TOVERSION extends number,
-  OLDOBJECTSTORES extends DatabaseObjectStores,
-  REMOVED extends DatabaseObjectStores,
-  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-  AFTERREMOVED extends {
-    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
-      OLDOBJECTSTORES[K],
-      keyof REMOVED[K]
-    >;
-  } &
-    {
-      [K in ExcludeStrict<
-        keyof OLDOBJECTSTORES,
-        keyof REMOVED
-      >]: OLDOBJECTSTORES[K];
-    },
-  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
-  SCHEMA extends DatabaseSchemaWithMigration<
-    FROMVERSION,
-    TOVERSION,
-    OLDOBJECTSTORES,
-    REMOVED,
-    ADDED,
-    AFTERREMOVED,
-    OLDSCHEMA
-  >
+    FROMVERSION extends number,
+    TOVERSION extends number,
+    OLDOBJECTSTORES extends DatabaseObjectStores,
+    REMOVED extends DatabaseObjectStores,
+    ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+    AFTERREMOVED extends {
+      [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+        OLDOBJECTSTORES[K],
+        keyof REMOVED[K]
+      >;
+    } &
+      {
+        [K in ExcludeStrict<
+          keyof OLDOBJECTSTORES,
+          keyof REMOVED
+        >]: OLDOBJECTSTORES[K];
+      },
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+    SCHEMA extends DatabaseSchemaWithMigration<
+      FROMVERSION,
+      TOVERSION,
+      OLDOBJECTSTORES,
+      REMOVED,
+      ADDED,
+      AFTERREMOVED,
+      OLDSCHEMA
+    >
   >(
-    name: string,
-    version: number,
-  ): Promise<MongoDatabase<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>> {
+    name: string, schema: SCHEMA
+  ): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>> {
     let database = this.databaseConnection.db(name);
     // TODO FIXME implement upgradeneeded manually
     return new MongoDatabase(database);
