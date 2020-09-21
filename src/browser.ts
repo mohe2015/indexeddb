@@ -137,6 +137,10 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
                   })
                 } else if (column.index) {
                   // TODO FIXME
+
+                  console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
+                } else {
+                  console.log(`add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
                 }
               }
             }
