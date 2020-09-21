@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { create } from '../browser';
+import { IndexedDatabaseConnection } from '../browser';
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
@@ -29,8 +29,6 @@ import {
 
 async function run() {
   try {
-    let databaseConnection = await create('localhost');
-
     let schema1: DatabaseSchemaWithoutMigration<1, {}> = {
       version: 1,
       objectStores: {},
@@ -96,7 +94,8 @@ async function run() {
       addedColumns: addedColumns2,
     };
 
-    let schema3 = migrate<
+    let schema3 = migrate
+    <
       2,
       3,
       typeof schema2['objectStores'],
@@ -119,9 +118,37 @@ async function run() {
         } &
         typeof addedColumns2,
         typeof schema2
-    >(migration2);
+    >
+    (migration2);
 
     console.log(schema3);
+
+    let connection = await IndexedDatabaseConnection.create()
+    let database = await connection.database<
+      2,
+      3,
+      typeof schema2['objectStores'],
+      typeof removedColumns2,
+      typeof addedColumns2,
+      {
+        [K in ExtractStrict<
+          keyof typeof schema2['objectStores'],
+          keyof typeof removedColumns2
+        >]: OmitStrict<
+          typeof schema2['objectStores'][K],
+          keyof typeof removedColumns2[K]
+        >;
+      } &
+        {
+          [K in ExcludeStrict<
+            keyof typeof schema2['objectStores'],
+            keyof typeof removedColumns2
+          >]: typeof schema2['objectStores'][K];
+        } &
+        typeof addedColumns2,
+        typeof schema2,
+        typeof schema3
+    >("test", schema3)
   } catch (error) {
     console.error(error);
     alert(error);

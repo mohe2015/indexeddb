@@ -21,7 +21,7 @@ import { Database, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStores
 
 // https://docs.mongodb.com/drivers/node/
 
-class MongoDatabaseConnection extends DatabaseConnection {
+export class MongoDatabaseConnection extends DatabaseConnection {
   databaseConnection: MongoClient;
 
   constructor(databaseConnection: MongoClient) {
@@ -72,7 +72,7 @@ class MongoDatabaseConnection extends DatabaseConnection {
   }
 }
 
-class MongoDatabase<
+export class MongoDatabase<
   FROMVERSION extends number,
   TOVERSION extends number,
   OLDOBJECTSTORES extends DatabaseObjectStores,

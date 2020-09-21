@@ -32,12 +32,12 @@ import {
   OmitStrict,
 } from './interface';
 
-class IndexedDatabaseConnection extends DatabaseConnection {
+export class IndexedDatabaseConnection extends DatabaseConnection {
   private constructor() {
     super();
   }
 
-  static async create(uri: string) {
+  static async create() {
     return new IndexedDatabaseConnection();
   }
 
@@ -121,7 +121,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
   }
 }
 
-class IndexedDatabase<FROMVERSION extends number,
+export class IndexedDatabase<FROMVERSION extends number,
 TOVERSION extends number,
 OLDOBJECTSTORES extends DatabaseObjectStores,
 REMOVED extends DatabaseObjectStores,
