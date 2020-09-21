@@ -1,3 +1,9 @@
+# Setup
+
+```
+(cd lib && yarn link)
+(cd tests && yarn link @dev.mohe/indexeddb)
+
 # New Project
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
