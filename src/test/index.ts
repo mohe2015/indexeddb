@@ -36,8 +36,12 @@ async function run() {
 
     let addedColumns1 = {
       users: {
-        name: {},
-        password: {},
+        name: {
+          
+        },
+        password: {
+
+        },
       },
       posts: {
         title: {},

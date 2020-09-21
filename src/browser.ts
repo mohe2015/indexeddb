@@ -114,7 +114,6 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
             }
           }
 
-          // TODO FIXME run and also check validity
           outstandingMigrations.reverse().forEach(migration => {
             console.log("running migration: ", migration)
             for (const [objectStoreName, objectStore] of Object.entries(migration.removedColumns)) {
@@ -126,6 +125,9 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
                   console.log(`delete index without removing data: ${objectStoreName}.${columnName}`)
                   databaseOpenRequest.transaction!.objectStore(objectStoreName).deleteIndex(columnName)
                 } else {
+                  if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
+                    throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                  }
                   console.log(`delete column without removing data ${objectStoreName}.${columnName}`)
                 }
               }
@@ -139,9 +141,12 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
                     keyPath: column.keyPath
                   })
                 } else if (column.index) {
-                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.options)
                   console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
+                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.options)
                 } else {
+                  if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
+                    throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                  }
                   console.log(`add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
                 }
               }
