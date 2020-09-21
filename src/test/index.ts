@@ -124,6 +124,9 @@ async function run() {
     console.log(schema3);
 
     let connection = await IndexedDatabaseConnection.create()
+
+    console.log(connection)
+
     let database = await connection.database<
       2,
       3,
@@ -148,7 +151,9 @@ async function run() {
         typeof addedColumns2,
         typeof schema2,
         typeof schema3
-    >("test", schema3)
+    >("test1", schema3)
+
+    console.log(database)
   } catch (error) {
     console.error(error);
     alert(error);

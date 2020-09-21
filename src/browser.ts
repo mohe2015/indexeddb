@@ -31,6 +31,7 @@ import {
   ExtractStrict,
   OmitStrict,
   isWithMutation,
+  DatabaseMigration,
 } from './interface';
 
 export class IndexedDatabaseConnection extends DatabaseConnection {
@@ -92,25 +93,30 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
 
           let oldVersion = event.oldVersion;
 
+          console.log("old version: ", oldVersion)
+
           let outstandingMigrations = [];
 
-          let currentMigration = schema.migration
+          let currentMigration: DatabaseMigration<number, number, DatabaseObjectStores, DatabaseObjectStores, WithoutKeysOf<DatabaseObjectStores>, OLDSCHEMA> = schema.migration
 
           while (true) {
             if (currentMigration) {
               outstandingMigrations.push(currentMigration)
+              console.log("added migration ", currentMigration)
               if (currentMigration.fromVersion === oldVersion) {
                 break;
               }
               
               let oldState = currentMigration.baseSchema;
               if (isWithMutation(oldState)) {
-                oldState.migration
+                currentMigration = oldState.migration
+              } else {
+                throw new Error("missing migrations")
               }
             }
           }
 
-          // TODO FIXME run migrations
+          outstandingMigrations.forEach(migration => console.log("running migration: ", migration))
         } catch (error) {
           console.log(error);
           databaseOpenRequest.transaction!.abort();
