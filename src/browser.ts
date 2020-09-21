@@ -118,10 +118,10 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
             console.log("running migration: ", migration)
             for (const [objectStoreName, objectStore] of Object.entries(migration.removedColumns)) {
               for (const [columnName, column] of Object.entries(objectStore)) {
-                if (column.primaryKey) {
+                if ("primaryKeyOptions" in column) {
                   console.log("delete object store: ", objectStoreName)
                   databaseOpenRequest.result.deleteObjectStore(objectStoreName)
-                } else if (column.index) {
+                } else if ("indexOptions" in column) {
                   console.log(`delete index without removing data: ${objectStoreName}.${columnName}`)
                   databaseOpenRequest.transaction!.objectStore(objectStoreName).deleteIndex(columnName)
                 } else {
@@ -134,15 +134,12 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
             }
             for (const [objectStoreName, objectStore] of Object.entries<DatabaseObjectStore>(migration.addedColumns)) { 
               for (const [columnName, column] of Object.entries(objectStore)) {
-                if (column.primaryKey) {
+                if ("primaryKeyOptions" in column) {
                   console.log("create object store: ", objectStoreName)
-                  databaseOpenRequest.result.createObjectStore(objectStoreName, {
-                    autoIncrement: column.autoIncrement,
-                    keyPath: column.keyPath
-                  })
-                } else if (column.index) {
+                  databaseOpenRequest.result.createObjectStore(objectStoreName, column.primaryKeyOptions)
+                } else if ("indexOptions" in column) {
                   console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
-                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.options)
+                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.indexOptions)
                 } else {
                   if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
                     throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)

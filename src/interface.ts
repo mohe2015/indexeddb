@@ -18,6 +18,15 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 //type Id<T extends object> = {} & { [P in keyof T]: T[P] }
 
+// idea for new version: maybe add the primary key settings to the object store and put columns into "columns" child.
+// then the primary key things could probably also be checked correctly
+
+// removing a object store should maybe work using a "removeObjectStores"
+
+// indexes maybe also in extra "addIndexes" and "removeIndexes"
+
+// but this all would probably make type inference way more complicated
+
 // https://github.com/microsoft/TypeScript/issues/30825
 export type OmitStrict<ObjectType, KeysType extends keyof ObjectType> = Pick<
   ObjectType,
@@ -41,16 +50,20 @@ export type ExtractStrict<
 
 // removing all columns would remove the object store (especially removing the primary key)
 
-// TODO FIXME maybe make this a union for primary key, index and normal column - this would improve type checking
-export type DatabaseColumn = {
-  primaryKey?: boolean; // only one of this can be in a database but this simplifies merging
-  index?: boolean;
+export type PrimaryKeyDatabaseColumn = {
+  primaryKeyOptions: IDBObjectStoreParameters
+}
 
-  autoIncrement?: boolean; // only one of this can be in a database but this simplifies merging
+export type IndexDatabaseColumn = {
+  keyPath: string | string[]
+  indexOptions: IDBIndexParameters
+}
 
-  keyPath: string | string[];
-  options?: IDBIndexParameters;
-};
+export type BaseDatabaseColumn = {
+  keyPath?: string | string[];
+}
+
+export type DatabaseColumn = PrimaryKeyDatabaseColumn | IndexDatabaseColumn | BaseDatabaseColumn
 
 export type DatabaseObjectStore = { [a: string]: DatabaseColumn };
 
