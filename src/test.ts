@@ -34,13 +34,13 @@ interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
 }
 
 interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> {
-    schema: TestSchema<FROMVERSION, OBJECTSTORES> | TestSchemaWithMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
+    fromSchema: TestSchema<FROMVERSION, OBJECTSTORES> | TestSchemaWithMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
     toVersion: TOVERSION
     add: ADD
 }
 
 interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> extends TestSchema<TOVERSION, OBJECTSTORES & ADD> {
-    migration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
+    fromMigration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
 }
 
 let schema1: TestSchema<1, {}> = {
@@ -49,31 +49,31 @@ let schema1: TestSchema<1, {}> = {
 }
 
 let migration1_2: TestMigration<1, 2, {}, {test: {}}> = {
-    schema: schema1,
+    fromSchema: schema1,
     toVersion: 2,
     add: {test: {}}
 }
 
 let schema2: TestSchemaWithMigration<1, 2, {}, {test: {}}> = {
-    migration: migration1_2,
+    fromMigration: migration1_2,
     version: 2,
     objectStores: {test: {}}
 }
 
 let migration2_3: TestMigration<2, 3, {test: {}}, {jojo: {}}> = {
-    schema: schema2,
+    fromSchema: schema2,
     toVersion: 3,
     add: {jojo: {}}
 }
 
 let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}> = {
-    migration: migration2_3,
+    fromMigration: migration2_3,
     version: 3,
     objectStores: {test: {}, jojo: {}}
 }
 
-let schema = schema3.migration.schema
+let schema = schema3.fromMigration.fromSchema
 
-if ("migration" in schema) {
-    schema // wrong
+if ("fromMigration" in schema) {
+    schema.fromMigration //
 }
