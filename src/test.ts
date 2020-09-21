@@ -28,34 +28,36 @@ schema (empty)
 */
 export {}
 
-interface TestSchema<VERSION extends number> {
+interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
     version: VERSION
-    objectStores: any
+    objectStores: OBJECTSTORES
 }
 
-interface TestMigration<FROMVERSION extends number, TOVERSION extends number> {
-    schema: TestSchema<FROMVERSION>
+interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> {
+    schema: TestSchema<FROMVERSION, OBJECTSTORES>
     toVersion: TOVERSION
-    add: any
+    add: ADD
 }
 
-interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number> extends TestSchema<TOVERSION> {
-    migration: TestMigration<FROMVERSION, TOVERSION>
+interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> extends TestSchema<TOVERSION, OBJECTSTORES> {
+    migration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
 }
 
-let schema1: TestSchema<1> = {
+let schema1: TestSchema<1, {}> = {
     version: 1,
     objectStores: {}
 }
 
-let migration1_2: TestMigration<1, 2> = {
+let migration1_2: TestMigration<1, 2, {}, {test: {}}> = {
     schema: schema1,
     toVersion: 2,
     add: {test: {}}
 }
 
-let schema2: TestSchemaWithMigration<1, 2> = {
+let schema2: TestSchemaWithMigration<1, 2, > = {
     migration: migration1_2,
     version: 2,
     objectStores: {test: {}}
 }
+
+schema2.objectStores
