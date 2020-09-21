@@ -29,8 +29,8 @@ import {
 
 async function run() {
   try {
-    let schema1: DatabaseSchemaWithoutMigration<1, {}> = {
-      version: 1,
+    let schema1: DatabaseSchemaWithoutMigration<0, {}> = {
+      version: 0,
       objectStores: {},
     };
 
@@ -48,7 +48,7 @@ async function run() {
       },
     };
 
-    let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1, typeof schema1> = {
+    let migration1: DatabaseMigration<0, 2, {}, {}, typeof addedColumns1, typeof schema1> = {
       fromVersion: schema1.version,
       toVersion: 2,
       baseSchema: schema1,
@@ -57,7 +57,7 @@ async function run() {
     };
 
     let schema2 = migrate<
-      1,
+      0,
       2,
       {},
       {},
@@ -151,7 +151,7 @@ async function run() {
         typeof addedColumns2,
         typeof schema2,
         typeof schema3
-    >("test1", schema3)
+    >("test11", schema3)
 
     console.log(database)
   } catch (error) {

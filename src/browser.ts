@@ -116,7 +116,8 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
             }
           }
 
-          outstandingMigrations.forEach(migration => console.log("running migration: ", migration))
+          // TODO FIXME run and also check validity
+          outstandingMigrations.reverse().forEach(migration => console.log("running migration: ", migration))
         } catch (error) {
           console.log(error);
           databaseOpenRequest.transaction!.abort();
