@@ -15,30 +15,22 @@ GNU Affero General -Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
-/*
-schema (empty)
-
--> migration (schema with migration)
-
--> newschema (old migration with old schema)
-
--> migration
-
--> newschema (old migration with old schema with old migration with old schema)
-*/
 export {}
 
+// correct
 interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
     version: VERSION
     objectStores: OBJECTSTORES
 }
 
+// correct
 interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> {
-    fromSchema: TestSchema<FROMVERSION, OBJECTSTORES> | TestSchemaWithMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
+    fromSchema: TestSchema<FROMVERSION, OBJECTSTORES> | TestSchemaWithMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD> // the second part seems wrong
     toVersion: TOVERSION
     add: ADD
 }
 
+// correct
 interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> extends TestSchema<TOVERSION, OBJECTSTORES & ADD> {
     fromMigration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
 }
@@ -75,5 +67,5 @@ let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}> = {
 let schema = schema3.fromMigration.fromSchema
 
 if ("fromMigration" in schema) {
-    schema.fromMigration //
+    schema.fromMigration.fromSchema.objectStores //
 }
