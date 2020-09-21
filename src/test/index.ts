@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { create } from '../test-entrypoint.js';
+import { create } from '@dev.mohe/indexeddb';
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
