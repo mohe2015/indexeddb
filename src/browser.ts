@@ -195,30 +195,25 @@ AFTERREMOVED extends {
     this.database = database;
   }
 
-  /*createObjectStore(
-    name: string,
-    options: IDBObjectStoreParameters,
-  ): IndexedDatabaseObjectStore {
-    let objectStore = this.database.createObjectStore(name, options);
-    return new IndexedDatabaseObjectStore(objectStore);
-  }*/
-}
+  transaction() {
 /*
-class IndexedDatabaseObjectStore extends DatabaseObjectStore {
-  objectStore: IDBObjectStore;
+const tx = db.transaction('keyval', 'readwrite');
+const store = tx.objectStore('keyval');
+const val = (await store.get('counter')) || 0;
+await store.put(val + 1, 'counter');
+await tx.done;
+*/
 
-  constructor(objectStore: IDBObjectStore) {
-    super();
-    this.objectStore = objectStore;
-  }
+    const transaction: IDBTransaction = this.database.transaction("users", "readwrite")
+    transaction.addEventListener("abort", (event) => {
 
-  createIndex(
-    name: string,
-    keyPath: string | string[],
-    options?: IDBIndexParameters,
-  ) {
-    return this.objectStore.createIndex(name, keyPath, options);
+    })
+    transaction.addEventListener("error", (event) => {
+
+    })
+    transaction.addEventListener("complete", (event) => {
+
+    })
   }
 }
-*/
 export const create = IndexedDatabaseConnection.create;
