@@ -30,11 +30,13 @@ export {}
 
 interface TestSchema<VERSION extends number> {
     version: VERSION
+    objectStores: any
 }
 
 interface TestMigration<FROMVERSION extends number, TOVERSION extends number> {
     schema: TestSchema<FROMVERSION>
     toVersion: TOVERSION
+    add: any
 }
 
 interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number> extends TestSchema<TOVERSION> {
@@ -42,15 +44,18 @@ interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends 
 }
 
 let schema1: TestSchema<1> = {
-    version: 1
+    version: 1,
+    objectStores: {}
 }
 
 let migration1_2: TestMigration<1, 2> = {
     schema: schema1,
-    toVersion: 2
+    toVersion: 2,
+    add: {test: {}}
 }
 
 let schema2: TestSchemaWithMigration<1, 2> = {
     migration: migration1_2,
-    version: 2
+    version: 2,
+    objectStores: {test: {}}
 }
