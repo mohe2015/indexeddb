@@ -6,6 +6,7 @@
     "node": "./src/node.js",
     "default": "./src/browser.js"
   },
+  "type": "module",
   "scripts": {
     "start": "snowpack dev",
     "build": "snowpack build",

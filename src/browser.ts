@@ -32,7 +32,7 @@ import {
   OmitStrict,
   isWithMutation,
   DatabaseMigration,
-} from './interface';
+} from './interface.js';
 
 export class IndexedDatabaseConnection extends DatabaseConnection {
   private constructor() {

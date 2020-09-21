@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { IndexedDatabaseConnection } from '../browser';
+import { IndexedDatabaseConnection } from '../browser.js';
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
@@ -26,7 +26,7 @@ import {
   ExtractStrict,
   ExcludeStrict,
   DatabaseObjectStores,
-} from '../interface';
+} from '../interface.js';
 
 async function run() {
   try {
