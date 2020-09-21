@@ -24,15 +24,15 @@ interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
 }
 
 // correct
-interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any, SCHEMA extends TestSchema<FROMVERSION, OBJECTSTORES>> {
+interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends any, ADD extends any, SCHEMA extends TestSchema<FROMVERSION, OLDOBJECTSTORES>> {
     fromSchema: SCHEMA
     toVersion: TOVERSION
     add: ADD
 }
 
 // correct
-interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any, OLDSCHEMA extends TestSchema<FROMVERSION, OBJECTSTORES>> extends TestSchema<TOVERSION, OBJECTSTORES & ADD> {
-    fromMigration: TestMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD, OLDSCHEMA>
+interface TestSchemaWithMigration<FROMVERSION extends number, TOVERSION extends number, OLDOBJECTSTORES extends any, ADD extends any, OLDSCHEMA extends TestSchema<FROMVERSION, OLDOBJECTSTORES>> extends TestSchema<TOVERSION, OLDOBJECTSTORES & ADD> {
+    fromMigration: TestMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, ADD, OLDSCHEMA>
 }
 
 let schema1: TestSchema<1, {}> = {
