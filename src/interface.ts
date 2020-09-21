@@ -105,6 +105,29 @@ export interface DatabaseSchemaWithMigration<
   >;
 };
 
+export function isWithMutation<
+FROMVERSION extends number,
+TOVERSION extends number,
+OLDOBJECTSTORES extends DatabaseObjectStores,
+REMOVED extends DatabaseObjectStores,
+ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+AFTERREMOVED extends {
+  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+    OLDOBJECTSTORES[K],
+    keyof REMOVED[K]
+  >;
+} &
+  {
+    [K in ExcludeStrict<
+      keyof OLDOBJECTSTORES,
+      keyof REMOVED
+    >]: OLDOBJECTSTORES[K];
+  },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
+  >(schema: DatabaseSchemaWithoutMigration<TOVERSION, AFTERREMOVED & ADDED>): schema is DatabaseSchemaWithMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA> {
+  return (schema as DatabaseSchemaWithMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA>).migration !== undefined;
+}
+
 const objectMap = <T, Y>(
   obj: { [a: string]: T },
   mapFn: (value: T, key: string, index: number) => Y,

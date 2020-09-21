@@ -30,6 +30,7 @@ import {
   ExcludeStrict,
   ExtractStrict,
   OmitStrict,
+  isWithMutation,
 } from './interface';
 
 export class IndexedDatabaseConnection extends DatabaseConnection {
@@ -103,8 +104,8 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
               }
               
               let oldState = currentMigration.baseSchema;
-              if ("migration" in oldState) {
-                oldState
+              if (isWithMutation(oldState)) {
+                oldState.migration
               }
             }
           }
