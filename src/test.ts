@@ -34,7 +34,7 @@ interface TestSchema<VERSION extends number, OBJECTSTORES extends any> {
 }
 
 interface TestMigration<FROMVERSION extends number, TOVERSION extends number, OBJECTSTORES extends any, ADD extends any> {
-    schema: TestSchema<FROMVERSION, OBJECTSTORES>
+    schema: TestSchema<FROMVERSION, OBJECTSTORES> | TestSchemaWithMigration<FROMVERSION, TOVERSION, OBJECTSTORES, ADD>
     toVersion: TOVERSION
     add: ADD
 }
@@ -72,5 +72,8 @@ let schema3: TestSchemaWithMigration<2, 3, {test: {}}, {jojo: {}}> = {
     objectStores: {test: {}, jojo: {}}
 }
 
-//
-schema3.migration.schema.migration
+let schema = schema3.migration.schema
+
+if ("migration" in schema) {
+    schema // wrong
+}
