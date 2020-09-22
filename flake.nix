@@ -1,6 +1,8 @@
 {
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
+  
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
 
   outputs = { self, nixpkgs }:
     let
@@ -28,17 +30,17 @@
 
                 # Network configuration.
                 networking.useDHCP = false;
-                networking.firewall.allowedTCPPorts = [ 80 ];
+                networking.firewall.allowedTCPPorts = [ 80 27017 ];
 
                 # Enable a web server.
                 services.httpd = {
                     enable = true;
-                    adminAddr = "[email protected]";
+                    adminAddr = "Moritz.Hedtke@t-online.de";
                 };
                 
                 services.mongodb = {
                     enable = true;
-                    
+                    bind_ip = "0.0.0.0"; # dangerous?
                 };
             })
         ];
@@ -46,8 +48,9 @@
     };
 }
 
-# nix build /path/to/my-flake#nixosConfigurations.container.config.system.build.toplevel
-# nixos-container create flake-test --flake /path/to/my-flake
-#  nixos-container start flake-test
-# curl http://$(nixos-container show-ip homepage)
-# nixos-container update flake-test --update-input nixpkgs --commit-lock-file
+# nix build .#nixosConfigurations.container.config.system.build.toplevel
+# sudo nixos-container create idb-mongodb --flake .
+# sudo nixos-container start idb-mongodb
+# curl http://$(nixos-container show-ip idb-mongodb)
+# sudo nixos-container update idb-mongodb 
+# sudo nixos-container update idb-mongodb --update-input nixpkgs --commit-lock-file

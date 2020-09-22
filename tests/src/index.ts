@@ -141,7 +141,7 @@ async function run() {
 
     console.log(schema3);
 
-    let connection = await create("mongodb://localhost")
+    let connection = await create("mongodb://idb-mongodb")
 
     console.log(connection)
 
