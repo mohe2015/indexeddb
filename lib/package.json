@@ -3,9 +3,10 @@
   "version": "0.0.2",
   "description": "Make a database interface available that works in the browser and in nodejs",
   "exports": {
-    "node": "./src/node.js",
-    "default": "./src/browser.js"
+    "node": "./src/node.ts",
+    "default": "./src/browser.ts"
   },
+  "types": "./src/api.d.ts",
   "type": "module",
   "scripts": {
     "start": "snowpack dev",
