@@ -4,10 +4,10 @@
   "description": "Make a database interface available that works in the browser and in nodejs",
   "exports": {
     ".": {
-      "node": "./src/node.ts",
-      "default": "./src/browser.ts"
+      "node": "./build/node.js",
+      "default": "./build/browser.js"
     },
-    "./src/interface": "./src/interface.ts"
+    "./src/interface": "./build/interface.js"
   },
   "types": "./src/api.d.ts",
   "type": "module",
