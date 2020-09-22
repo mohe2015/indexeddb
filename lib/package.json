@@ -7,7 +7,7 @@
       "node": "./src/node.ts",
       "default": "./src/browser.ts"
     },
-    "./interface": "./src/interface.ts"
+    "./src/interface": "./src/interface.ts"
   },
   "types": "./src/api.d.ts",
   "type": "module",
