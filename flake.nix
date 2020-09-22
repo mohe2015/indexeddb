@@ -2,15 +2,15 @@
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
   
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.nixpkgs-master.url = "github:NixOS/nixpkgs";
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs-master }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs {
-        system = "x86_64-linux";
-        config = { allowUnfree = true; };
-      };
+      pkgs = import nixpkgs-master {
+            inherit system;
+            config.allowUnfree = true;
+        };
       #pkgs = nixpkgs.legacyPackages.${system};
       yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
     in
@@ -22,15 +22,15 @@
           pkgs.nodePackages.npm-check-updates
         ];
       };
-      nixosConfigurations.container = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.container = nixpkgs-master.lib.nixosSystem {
         inherit system;
         modules =
-            [ ({ pkgs, ... }: {
+            [ ({ ... }: {
                 boot.isContainer = true;
 
                 # Let 'nixos-version --json' know about the Git revision
                 # of this flake.
-                system.configurationRevision = nixpkgs.lib.mkIf (self ? rev) self.rev;
+                system.configurationRevision = nixpkgs-master.lib.mkIf (self ? rev) self.rev;
 
                 # Network configuration.
                 networking.useDHCP = false;
