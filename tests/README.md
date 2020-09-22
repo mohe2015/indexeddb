@@ -1,3 +1,7 @@
+```bash
+sudo nixos-container create idb-mongodb --flake .
+```
+
 # New Project
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
