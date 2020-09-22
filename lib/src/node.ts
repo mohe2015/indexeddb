@@ -31,7 +31,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
   }
 
   static async create(uri: string): Promise<MongoDatabaseConnection> {
-    let database = new MongoDB.MongoClient(uri);
+    let database = new MongoDB.MongoClient(uri, { useUnifiedTopology: true });
     await database.connect();
     return new MongoDatabaseConnection(database);
   }
@@ -72,17 +72,17 @@ export class MongoDatabaseConnection extends DatabaseConnection {
 
     let migrations = database.collection("_config")
 
-    let version = (await migrations.findOne<{value: number}>({ key: "version" }, {
-      fields: {
-        value: true
-      }
-    }))?.value || 1
+    await this.databaseConnection.withSession(async (session) => {
+      session.withTransaction(async () => {
+        let version = (await migrations.findOne<{value: number}>({ key: "version" }, {
+          fields: {
+            value: true
+          }
+        }))?.value || 1
+    
+        if (version < schema.version) {
+          let migrations = getOutstandingMigrations(schema, version)
 
-    if (version < schema.version) {
-      let migrations = getOutstandingMigrations(schema, version)
-
-      await this.databaseConnection.withSession(async (session) => {
-        session.withTransaction(async () => {
           // this could should be really similar to the one in browser.ts
           for (const migration of migrations) {
             console.log("running migration: ", migration)
@@ -129,14 +129,11 @@ export class MongoDatabaseConnection extends DatabaseConnection {
               }
             }
           }
-        })
-      })
-    }
+        }
 
-    //const query = { key: "version" };
-    //const update = { key: "version", value: "1" };
-    //const options = { upsert: true };
-    //migrations.updateOne(query, update, options);
+        await migrations.updateOne({ key: "version" }, { value: schema.version })
+      })
+    })
     
     return new MongoDatabase(database);
   }

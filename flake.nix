@@ -7,7 +7,11 @@
   outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      pkgs = import nixpkgs {
+        system = "x86_64-linux";
+        config = { allowUnfree = true; };
+      };
+      #pkgs = nixpkgs.legacyPackages.${system};
       yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
     in
     {
@@ -40,6 +44,7 @@
                 
                 services.mongodb = {
                     enable = true;
+                    package = pkgs.mongodb-4_2;
                     bind_ip = "0.0.0.0"; # dangerous?
                 };
             })

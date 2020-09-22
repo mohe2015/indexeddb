@@ -1,5 +1,5 @@
 import type { DatabaseMigration, DatabaseObjectStores, WithoutKeysOf, ExtractStrict, OmitStrict, ExcludeStrict, DatabaseSchemaWithoutMigration, DatabaseSchemaWithMigration } from "./interface";
-import { isWithMutation } from './interface';
+import { isWithMutation } from './interface.js';
 
 export function getOutstandingMigrations<
     FROMVERSION extends number,
