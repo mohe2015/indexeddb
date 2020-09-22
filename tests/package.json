@@ -2,7 +2,8 @@
   "name": "@dev.mohe/indexeddb-tests",
   "version": "0.0.1",
   "description": "tests for @dev.mohe/indexeddb",
-  "main": "index.js",
+  "main": "src/index.ts",
+  "type": "module",
   "repository": "git+https://github.com/mohe2015/indexeddb.git",
   "author": "Moritz.Hedtke <Moritz.Hedtke@t-online.de>",
   "license": "AGPL-3.0-or-later",
@@ -15,13 +16,15 @@
     "lint": "prettier --check \"src/**/*.{ts,js}\""
   },
   "dependencies": {
-    "@dev.mohe/indexeddb": "^0.0.2"
+    "@dev.mohe/indexeddb": "^0.0.2",
+    "mongodb": "^3.6.2"
   },
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.2",
     "@types/snowpack-env": "^2.3.0",
     "prettier": "^2.1.2",
     "snowpack": "^2.12.0-pre.1",
+    "ts-node": "^9.0.0",
     "typescript": "^4.1.0-dev.20200921"
   }
 }
