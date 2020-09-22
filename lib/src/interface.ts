@@ -55,12 +55,12 @@ export type PrimaryKeyDatabaseColumn = {
 }
 
 export type IndexDatabaseColumn = {
-  keyPath: string | string[]
-  indexOptions: IDBIndexParameters
+  //keyPath: string | string[]
+  indexOptions: Omit<IDBIndexParameters, "multiEntry">
 }
 
 export type BaseDatabaseColumn = {
-  keyPath?: string | string[];
+  //keyPath?: string | string[];
 }
 
 export type DatabaseColumn = PrimaryKeyDatabaseColumn | IndexDatabaseColumn | BaseDatabaseColumn

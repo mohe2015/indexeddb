@@ -18,6 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import MongoDB from 'mongodb';
 import { Database, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStores, DatabaseSchemaWithMigration, DatabaseSchemaWithoutMigration, ExcludeStrict, ExtractStrict, OmitStrict, WithoutKeysOf } from './interface.js';
+import { getOutstandingMigrations } from './utils.js';
 
 // https://docs.mongodb.com/drivers/node/
 
@@ -68,6 +69,75 @@ export class MongoDatabaseConnection extends DatabaseConnection {
   ): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>> {
     let database = this.databaseConnection.db(name);
     // TODO FIXME implement upgradeneeded manually
+
+    let migrations = database.collection("_config")
+
+    let version = (await migrations.findOne<{value: number}>({ key: "version" }, {
+      fields: {
+        value: true
+      }
+    }))?.value || 1
+
+    if (version < schema.version) {
+      let migrations = getOutstandingMigrations(schema, version)
+
+      await this.databaseConnection.withSession(async (session) => {
+        session.withTransaction(async () => {
+          // this could should be really similar to the one in browser.ts
+          for (const migration of migrations) {
+            console.log("running migration: ", migration)
+            for (const [objectStoreName, objectStore] of Object.entries(migration.removedColumns)) {
+              for (const [columnName, column] of Object.entries(objectStore)) {
+                if ("primaryKeyOptions" in column) {
+                  console.log("delete object store: ", objectStoreName)
+                  database.dropCollection(objectStoreName)
+                } else if ("indexOptions" in column) {
+                  console.log(`delete index without removing data: ${objectStoreName}.${columnName}`)
+                  database.collection(objectStoreName).dropIndex(columnName)
+                } else {
+                  if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
+                    throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                  }
+                  console.log(`delete column without removing data ${objectStoreName}.${columnName}`)
+                }
+              }
+            }
+            for (const [objectStoreName, objectStore] of Object.entries<DatabaseObjectStore>(migration.addedColumns)) { 
+              for (const [columnName, column] of Object.entries(objectStore)) {
+                if ("primaryKeyOptions" in column) {
+                  console.log(`create object store: ${objectStoreName}`, column.primaryKeyOptions)
+                  if (column.primaryKeyOptions.autoIncrement) {
+                    if (columnName !== "_id") {
+                      throw new Error("mongodb only supports autoincrement primary keys named _id")
+                    }
+                  } else {
+                    await database.createCollection(objectStoreName, { strict: true })
+                    await database.collection(objectStoreName).createIndex(columnName, { unique: true })
+                  }
+                } else if ("indexOptions" in column) {
+                  console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`, column.indexOptions)
+                  await database.collection(objectStoreName).createIndex(columnName, {
+                    unique: column.indexOptions.unique,
+                    
+                  });
+                } else {
+                  if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
+                    throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                  }
+                  console.log(`add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
+                }
+              }
+            }
+          }
+        })
+      })
+    }
+
+    //const query = { key: "version" };
+    //const update = { key: "version", value: "1" };
+    //const options = { upsert: true };
+    //migrations.updateOne(query, update, options);
+    
     return new MongoDatabase(database);
   }
 }
@@ -108,7 +178,7 @@ export class MongoDatabase<
     this.database = database;
   }
 
-  async createObjectStore(
+  /*async createObjectStore(
     name: string,
     options: IDBObjectStoreParameters,
   ): Promise<DatabaseObjectStore> {
@@ -117,7 +187,7 @@ export class MongoDatabase<
     });
     let index = await collection.createIndex(options.keyPath, {});
     throw new Error('not implemented');
-  }
+  }*/
 }
 
 export const create = MongoDatabaseConnection.create;

@@ -33,6 +33,7 @@ import {
   isWithMutation,
   DatabaseMigration,
 } from './interface.js';
+import { getOutstandingMigrations } from './utils.js';
 
 export class IndexedDatabaseConnection extends DatabaseConnection {
   private constructor() {
@@ -94,28 +95,10 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
 
           console.log("old version: ", oldVersion)
 
-          let outstandingMigrations = [];
+          let outstandingMigrations = getOutstandingMigrations(schema, oldVersion)
 
-          let currentMigration: DatabaseMigration<number, number, DatabaseObjectStores, DatabaseObjectStores, WithoutKeysOf<DatabaseObjectStores>, OLDSCHEMA> = schema.migration
-
-          while (true) {
-            if (currentMigration) {
-              outstandingMigrations.push(currentMigration)
-              console.log("added migration ", currentMigration)
-              if (currentMigration.fromVersion === oldVersion) {
-                break;
-              }
-              
-              let oldState = currentMigration.baseSchema;
-              if (isWithMutation(oldState)) {
-                currentMigration = oldState.migration
-              } else {
-                throw new Error("missing migrations")
-              }
-            }
-          }
-
-          outstandingMigrations.reverse().forEach(migration => {
+          // this could should be really similar to the one in node.ts
+          outstandingMigrations.forEach(migration => {
             console.log("running migration: ", migration)
             for (const [objectStoreName, objectStore] of Object.entries(migration.removedColumns)) {
               for (const [columnName, column] of Object.entries(objectStore)) {
@@ -140,7 +123,7 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
                   databaseOpenRequest.result.createObjectStore(objectStoreName, column.primaryKeyOptions)
                 } else if ("indexOptions" in column) {
                   console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`, column.indexOptions)
-                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, column.keyPath, column.indexOptions)
+                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, columnName, column.indexOptions)
                 } else {
                   if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
                     throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
