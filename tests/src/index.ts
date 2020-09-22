@@ -25,7 +25,6 @@ import {
   OmitStrict,
   ExtractStrict,
   ExcludeStrict,
-  DatabaseObjectStores,
 } from '@dev.mohe/indexeddb/src/interface';
 
 async function run() {
