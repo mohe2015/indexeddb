@@ -16,21 +16,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import { Db, MongoClient } from 'mongodb';
+import MongoDB from 'mongodb';
 import { Database, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStores, DatabaseSchemaWithMigration, DatabaseSchemaWithoutMigration, ExcludeStrict, ExtractStrict, OmitStrict, WithoutKeysOf } from './interface.js';
 
 // https://docs.mongodb.com/drivers/node/
 
 export class MongoDatabaseConnection extends DatabaseConnection {
-  databaseConnection: MongoClient;
+  databaseConnection: MongoDB.MongoClient;
 
-  constructor(databaseConnection: MongoClient) {
+  constructor(databaseConnection: MongoDB.MongoClient) {
     super();
     this.databaseConnection = databaseConnection;
   }
 
   static async create(uri: string): Promise<MongoDatabaseConnection> {
-    let database = new MongoClient(uri);
+    let database = new MongoDB.MongoClient(uri);
     await database.connect();
     return new MongoDatabaseConnection(database);
   }
@@ -101,9 +101,9 @@ export class MongoDatabase<
       OLDSCHEMA
     >
   > extends Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
-  database: Db;
+  database: MongoDB.Db;
 
-  constructor(database: Db) {
+  constructor(database: MongoDB.Db) {
     super();
     this.database = database;
   }
