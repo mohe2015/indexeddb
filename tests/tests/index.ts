@@ -26,7 +26,7 @@ import {
   ExtractStrict,
   ExcludeStrict,
   DatabaseObjectStores,
-} from '../interface.js';
+} from '@dev.mohe/indexeddb/src/interface';
 
 async function run() {
   try {
