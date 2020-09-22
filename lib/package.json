@@ -13,8 +13,8 @@
   "types": "./src/api.d.ts",
   "type": "module",
   "scripts": {
-    "start": "snowpack dev",
-    "build": "snowpack build",
+    "start": "node --conditions=browser node_modules/snowpack/dist-node/index.bin.js dev",
+    "build": "node --conditions=browser node_modules/snowpack/dist-node/index.bin.js build",
     "test": "echo \"This template does not include a test runner by default.\" && exit 1",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
@@ -23,12 +23,12 @@
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.2",
     "@types/mongodb": "^3.5.27",
-    "@types/node": "^14.11.1",
+    "@types/node": "^14.11.2",
     "@types/snowpack-env": "^2.3.0",
     "prettier": "^2.1.2",
-    "snowpack": "^2.11.1",
+    "snowpack": "^2.12.0-pre.1",
     "typedoc": "^1.0.0-dev.3",
-    "typescript": "^4.1.0-dev.20200919"
+    "typescript": "^4.1.0-dev.20200921"
   },
   "repository": {
     "type": "git",

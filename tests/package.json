@@ -9,8 +9,8 @@
   "license": "AGPL-3.0-or-later",
   "private": false,
   "scripts": {
-    "start": "snowpack dev",
-    "build": "snowpack build",
+    "start": "node --conditions=browser node_modules/snowpack/dist-node/index.bin.js dev",
+    "build": "node --conditions=browser node_modules/snowpack/dist-node/index.bin.js build",
     "test": "echo \"This template does not include a test runner by default.\" && exit 1",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\""
