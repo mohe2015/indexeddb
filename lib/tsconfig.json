@@ -18,6 +18,7 @@
     "keyofStringsOnly": true,
     "noErrorTruncation": true,
 
+    "sourceMap": true,
     "outDir": "build",
 
     // You can't currently define paths in your 'extends' config,

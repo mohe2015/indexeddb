@@ -74,11 +74,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
 
     await this.databaseConnection.withSession(async (session) => {
       session.withTransaction(async () => {
-        let version = (await migrations.findOne<{value: number}>({ key: "version" }, {
-          fields: {
-            value: true
-          }
-        }))?.value || 1
+        let version = (await migrations.findOne<{value: number}>({ key: "version" }))?.value || 1
     
         if (version < schema.version) {
           let migrations = getOutstandingMigrations(schema, version)
@@ -111,7 +107,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
                       throw new Error("mongodb only supports autoincrement primary keys named _id")
                     }
                   } else {
-                    await database.createCollection(objectStoreName, { strict: true })
+                    await database.createCollection(objectStoreName)
                     await database.collection(objectStoreName).createIndex(columnName, { unique: true })
                   }
                 } else if ("indexOptions" in column) {

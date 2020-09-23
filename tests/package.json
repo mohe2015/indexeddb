@@ -12,7 +12,7 @@
     "start": "node --conditions=browser node_modules/snowpack/index.bin.js dev",
     "watch": "tsc --watch",
     "build": "node --conditions=browser node_modules/snowpack/index.bin.js build",
-    "test": "node build/index.js",
+    "test": "node --enable-source-maps --trace-deprecation --unhandled-rejections=strict build/index.js",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\""
   },
