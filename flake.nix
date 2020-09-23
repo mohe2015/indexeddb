@@ -44,6 +44,7 @@
                 
                 services.mongodb = {
                     enable = true;
+                    # https://docs.mongodb.com/manual/core/transactions/#transactions-create-collections-indexes 4.4 required
                     package = pkgs.mongodb-4_2;
                     bind_ip = "0.0.0.0"; # dangerous?
                 };
