@@ -10,8 +10,8 @@
       yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
       overlay = self: super:
       {
-        mongodb-4_4 =  let
-          buildMongoDB = super.callPackage ./mongodb.nix {
+        mongodb-4_4 = let
+          buildMongoDB = super.callPackage (nixpkgs + /pkgs/servers/nosql/mongodb/mongodb.nix) {
             sasl = super.cyrus_sasl;
             boost = super.boost169;
             inherit (super.darwin.apple_sdk.frameworks) CoreFoundation Security;
@@ -19,10 +19,10 @@
           };
         in buildMongoDB {
           version = "4.4.1";
-          sha256 = "13yvhi2268skdni00bh6ph609whqsmhiimhyqy1gs2liwdvh5278";
+          sha256 = "Wi7nhsdfGFRfYs0hvLekfe5c1xuzV+BmZUKD8ZnNh1E=";
           patches =
-            [ ./forget-build-dependencies-4-2.patch ]
-            ++ super.stdenv.lib.optionals super.stdenv.isDarwin [ ./asio-no-experimental-string-view-4-2.patch ];
+            [ (nixpkgs + /pkgs/servers/nosql/mongodb/forget-build-dependencies-4-2.patch) ]
+            ++ super.stdenv.lib.optionals super.stdenv.isDarwin [ (nixpkgs + /pkgs/servers/nosql/mongodb/asio-no-experimental-string-view-4-2.patch) ];
         };
       };
       pkgs = import nixpkgs {
