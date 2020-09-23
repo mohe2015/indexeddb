@@ -7,17 +7,17 @@
   outputs = { self, nixpkgs-master }:
     let
       system = "x86_64-linux";
-      pkgs = import nixpkgs-master {
-            inherit system;
-            config.allowUnfree = true;
-        };
-      #pkgs = nixpkgs.legacyPackages.${system};
-      yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
+      #pkgs = import nixpkgs-master {
+      #      inherit system;
+      #      config.allowUnfree = true;
+      #  };
+      pkgs = nixpkgs-master.legacyPackages.${system};
+      #yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
     in
     {
       devShell.${system} = pkgs.mkShell {
         buildInputs = [
-          yarn
+          pkgs.yarn
           pkgs.nodejs-14_x
           pkgs.nodePackages.npm-check-updates
         ];
