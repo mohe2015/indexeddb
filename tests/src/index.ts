@@ -169,7 +169,7 @@ async function run() {
         typeof addedColumns2,
         typeof schema2,
         typeof schema3
-    >("test11", schema3)
+    >("test12", schema3)
 
     console.log(database)
   } catch (error) {
