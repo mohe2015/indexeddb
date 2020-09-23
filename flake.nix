@@ -7,12 +7,29 @@
   outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
+      yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
+      overlay = self: super:
+      {
+        mongodb-4_4 =  let
+          buildMongoDB = super.callPackage ./mongodb.nix {
+            sasl = super.cyrus_sasl;
+            boost = super.boost169;
+            inherit (super.darwin.apple_sdk.frameworks) CoreFoundation Security;
+            inherit (super.darwin) cctools;
+          };
+        in buildMongoDB {
+          version = "4.4.1";
+          sha256 = "13yvhi2268skdni00bh6ph609whqsmhiimhyqy1gs2liwdvh5278";
+          patches =
+            [ ./forget-build-dependencies-4-2.patch ]
+            ++ super.stdenv.lib.optionals super.stdenv.isDarwin [ ./asio-no-experimental-string-view-4-2.patch ];
+        };
+      };
       pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
+            overlays = [ overlay ];
       };
-      #pkgs = nixpkgs.legacyPackages.${system};
-      yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
     in
     {
       devShell.${system} = pkgs.mkShell {
@@ -45,7 +62,7 @@
                 services.mongodb = {
                     enable = true;
                     # https://docs.mongodb.com/manual/core/transactions/#transactions-create-collections-indexes 4.4 required
-                    package = pkgs.mongodb-4_2;
+                    package = pkgs.mongodb-4_4;
                     bind_ip = "0.0.0.0"; # dangerous?
                 };
             })
