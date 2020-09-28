@@ -17,7 +17,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 */
 // @ts-check
 
-import { create } from '@dev.mohe/indexeddb';
+import { create } from '../browser';
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
@@ -25,7 +25,7 @@ import {
   OmitStrict,
   ExtractStrict,
   ExcludeStrict,
-} from '@dev.mohe/indexeddb/src/interface';
+} from '../interface'; // TODO FIXME when typescript supports it - use internal imports
 
 async function run() {
   try {

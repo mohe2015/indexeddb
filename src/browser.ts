@@ -40,7 +40,7 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
     super();
   }
 
-  static async create() {
+  static async create(_: any) {
     return new IndexedDatabaseConnection();
   }
 
