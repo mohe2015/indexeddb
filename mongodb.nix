@@ -58,7 +58,7 @@ in stdenv.mkDerivation rec {
 
     prefixKey = "DESTDIR=";
 
-    installTargets = [ "install-mongod" ];
+    installTargets = [ "install-core" ];
     
     postInstall = ''
         rm -f "$out/bin/install_compass" || true
