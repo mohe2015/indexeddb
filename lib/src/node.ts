@@ -22,6 +22,8 @@ import { getOutstandingMigrations } from './utils.js';
 
 // https://docs.mongodb.com/drivers/node/
 
+// TODO FIXME https://docs.mongodb.com/manual/core/schema-validation/
+
 export class MongoDatabaseConnection extends DatabaseConnection {
   databaseConnection: MongoDB.MongoClient;
 
@@ -128,7 +130,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
             }
           }
 
-          await migrations.updateOne({ key: "version" }, { value: schema.version })
+          await migrations.updateOne({ key: "version" }, { value: schema.version }, { upsert: true })
         /*} catch (error) {
           if (error instanceof MongoDB.MongoError) {
             console.log("mongodb error while migrating ", error)
