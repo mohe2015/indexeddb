@@ -2,7 +2,7 @@
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
   
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
+  inputs.nixpkgs.url = "git+file:///etc/nixos/nixpkgs";
 
   outputs = { self, nixpkgs }:
     let
@@ -10,20 +10,7 @@
       yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
       overlay = self: super:
       {
-        mongodb-4_4 = let
-          buildMongoDB = super.callPackage (nixpkgs + /pkgs/servers/nosql/mongodb/mongodb.nix) {
-            sasl = super.cyrus_sasl;
-            boost = super.boost169;
-            inherit (super.darwin.apple_sdk.frameworks) CoreFoundation Security;
-            inherit (super.darwin) cctools;
-          };
-        in buildMongoDB {
-          version = "4.4.1";
-          sha256 = "Wi7nhsdfGFRfYs0hvLekfe5c1xuzV+BmZUKD8ZnNh1E=";
-          patches =
-            [ (nixpkgs + /pkgs/servers/nosql/mongodb/forget-build-dependencies-4-2.patch) ]
-            ++ super.stdenv.lib.optionals super.stdenv.isDarwin [ (nixpkgs + /pkgs/servers/nosql/mongodb/asio-no-experimental-string-view-4-2.patch) ];
-        };
+        mongodb-4_4 = super.callPackage ./mongodb.nix {};
       };
       pkgs = import nixpkgs {
             inherit system;
