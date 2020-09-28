@@ -51,6 +51,14 @@
                     # https://docs.mongodb.com/manual/core/transactions/#transactions-create-collections-indexes 4.4 required
                     package = pkgs.mongodb-4_4;
                     bind_ip = "0.0.0.0"; # dangerous?
+                    replSetName = "rs01";
+
+                    initialRootPassword = "password";
+
+                    initialScript = pkgs.writeText "my-file"
+                      ''
+                      rs.initiate()
+                      '';
                 };
             })
         ];
@@ -62,5 +70,5 @@
 # sudo nixos-container create idb-mongodb --flake .
 # sudo nixos-container start idb-mongodb
 # curl http://$(nixos-container show-ip idb-mongodb)
-# sudo nixos-container update idb-mongodb 
+# sudo nixos-container update idb-mongodb
 # sudo nixos-container update idb-mongodb --update-input nixpkgs --commit-lock-file
