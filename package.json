@@ -16,7 +16,7 @@
     "start": "node --conditions=browser node_modules/snowpack/index.bin.js dev",
     "watch": "tsc --watch",
     "build": "node --conditions=browser node_modules/snowpack/index.bin.js build",
-    "test": "node --enable-source-maps --trace-deprecation --unhandled-rejections=strict build/test/index.js",
+    "test": "node --enable-source-maps --trace-deprecation --unhandled-rejections=strict build/tests/index.js",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
     "docs": "typedoc --allowJs src/"
