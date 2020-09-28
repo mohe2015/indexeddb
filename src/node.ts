@@ -131,7 +131,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
             }
           }
 
-          await migrations.updateOne({ key: "version" }, { value: schema.version }, { upsert: true, session })
+          await migrations.updateOne({ key: "version" }, { $set: { value: schema.version } }, { upsert: true, session })
         /*} catch (error) {
           if (error instanceof MongoDB.MongoError) {
             console.log("mongodb error while migrating ", error)
