@@ -11,5 +11,6 @@
   ],
   "installOptions": {
     "installTypes": true
-  }
+  },
+  "exclude": ["**/node_modules/**/*", "**/src/node.ts"]
 }
