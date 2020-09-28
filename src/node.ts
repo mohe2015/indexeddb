@@ -75,9 +75,9 @@ export class MongoDatabaseConnection extends DatabaseConnection {
     let migrations = database.collection("_config")
 
     await this.databaseConnection.withSession(async (session) => {
-      session.withTransaction(async () => {
+      await session.withTransaction(async () => {
        // try {
-          let version = (await migrations.findOne<{value: number}>({ key: "version" }))?.value || 1
+          let version = (await migrations.findOne<{value: number}>({ key: "version" }, { session }))?.value || 1
       
           if (version < schema.version) {
             let migrations = getOutstandingMigrations(schema, version)
@@ -89,10 +89,11 @@ export class MongoDatabaseConnection extends DatabaseConnection {
                 for (const [columnName, column] of Object.entries(objectStore)) {
                   if ("primaryKeyOptions" in column) {
                     console.log("delete object store: ", objectStoreName)
-                    database.dropCollection(objectStoreName)
+                    // @ts-expect-error
+                    await database.dropCollection(objectStoreName, { session })
                   } else if ("indexOptions" in column) {
                     console.log(`delete index without removing data: ${objectStoreName}.${columnName}`)
-                    database.collection(objectStoreName).dropIndex(columnName)
+                    await database.collection(objectStoreName).dropIndex(columnName, { session })
                   } else {
                     //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
                     //  throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
@@ -110,14 +111,14 @@ export class MongoDatabaseConnection extends DatabaseConnection {
                         throw new Error("mongodb only supports autoincrement primary keys named _id")
                       }
                     } else {
-                      await database.createCollection(objectStoreName)
-                      await database.collection(objectStoreName).createIndex(columnName, { unique: true })
+                      await database.createCollection(objectStoreName, { session })
+                      await database.collection(objectStoreName).createIndex(columnName, { unique: true, session })
                     }
                   } else if ("indexOptions" in column) {
                     console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`, column.indexOptions)
                     await database.collection(objectStoreName).createIndex(columnName, {
                       unique: column.indexOptions.unique,
-                      
+                      session
                     });
                   } else {
                     //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
@@ -130,7 +131,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
             }
           }
 
-          await migrations.updateOne({ key: "version" }, { value: schema.version }, { upsert: true })
+          await migrations.updateOne({ key: "version" }, { value: schema.version }, { upsert: true, session })
         /*} catch (error) {
           if (error instanceof MongoDB.MongoError) {
             console.log("mongodb error while migrating ", error)
