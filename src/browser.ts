@@ -44,6 +44,10 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
     return new IndexedDatabaseConnection();
   }
 
+  async close() {
+    // no-op
+  }
+
   async database<
     FROMVERSION extends number,
     TOVERSION extends number,

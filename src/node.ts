@@ -38,6 +38,10 @@ export class MongoDatabaseConnection extends DatabaseConnection {
     return new MongoDatabaseConnection(database);
   }
 
+  async close() {
+    await this.databaseConnection.close()
+  }
+
   async database<
     FROMVERSION extends number,
     TOVERSION extends number,
@@ -183,17 +187,6 @@ export class MongoDatabase<
     super();
     this.database = database;
   }
-
-  /*async createObjectStore(
-    name: string,
-    options: IDBObjectStoreParameters,
-  ): Promise<DatabaseObjectStore> {
-    let collection = await this.database.createCollection(name, {
-      autoIndexId: options.autoIncrement,
-    });
-    let index = await collection.createIndex(options.keyPath, {});
-    throw new Error('not implemented');
-  }*/
 }
 
 export const create = MongoDatabaseConnection.create;

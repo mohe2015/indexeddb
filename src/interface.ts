@@ -310,6 +310,8 @@ export abstract class DatabaseConnection {
       OLDSCHEMA
     >
   >(name: string, schema: SCHEMA): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>;
+
+  abstract close(): Promise<void>
 }
 
 export abstract class Database<
@@ -340,4 +342,6 @@ AFTERREMOVED extends {
     AFTERREMOVED,
     OLDSCHEMA
   >
-> {}
+> {
+
+}

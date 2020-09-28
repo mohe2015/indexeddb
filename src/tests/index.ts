@@ -147,17 +147,34 @@ async function run() {
 
     let database = await connection.database
       <
-        1,
-        2,
-        {},
-        {},
-        typeof addedColumns1,
-        typeof addedColumns1,
-        typeof schema1,
-        typeof schema2
-      >("test12", schema2)
+      2,
+      3,
+      typeof schema2['objectStores'],
+      typeof removedColumns2,
+      typeof addedColumns2,
+      {
+        [K in ExtractStrict<
+          keyof typeof schema2['objectStores'],
+          keyof typeof removedColumns2
+        >]: OmitStrict<
+          typeof schema2['objectStores'][K],
+          keyof typeof removedColumns2[K]
+        >;
+      } &
+        {
+          [K in ExcludeStrict<
+            keyof typeof schema2['objectStores'],
+            keyof typeof removedColumns2
+          >]: typeof schema2['objectStores'][K];
+        } &
+        typeof addedColumns2,
+        typeof schema2,
+        typeof schema3
+      >("test12", schema3)
 
     console.log(database)
+
+    await connection.close()
   } catch (error) {
     console.error(error);
     alert(error);
