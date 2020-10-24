@@ -1,6 +1,6 @@
 {
   "name": "@dev.mohe/indexeddb",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Make a database interface available that works in the browser and in nodejs",
   "exports": {
     ".": {
@@ -10,12 +10,13 @@
     },
     "./src/interface": "./build/interface.js"
   },
-  "types": "./src/api.d.ts",
+  "types": "./build/api.d.ts",
   "type": "module",
   "scripts": {
     "start": "node --conditions=browser node_modules/snowpack/index.bin.js dev",
     "watch": "tsc --watch",
-    "build": "node --conditions=browser node_modules/snowpack/index.bin.js build",
+    "build": "tsc",
+    "build-browser": "node --conditions=browser node_modules/snowpack/index.bin.js build",
     "test": "node --enable-source-maps --trace-deprecation --unhandled-rejections=strict build/tests/index.js",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
