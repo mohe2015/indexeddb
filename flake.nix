@@ -53,7 +53,7 @@
                     bind_ip = "0.0.0.0"; # dangerous?
                     replSetName = "rs01";
 
-                    #initialRootPassword = "password";
+                    initialRootPassword = "password"; # https://github.com/NixOS/nixpkgs/pull/99037
 
                     initialScript = pkgs.writeText "my-file"
                       ''
