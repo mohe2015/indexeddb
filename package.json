@@ -1,6 +1,6 @@
 {
   "name": "@dev.mohe/indexeddb",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Make a database interface available that works in the browser and in nodejs",
   "exports": {
     ".": {
