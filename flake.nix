@@ -2,12 +2,12 @@
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
   
-  inputs.nixpkgs.url = "git+file:///etc/nixos/nixpkgs";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
 
   outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
-      yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-14_x; };
+      yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-15_x; };
       overlay = self: super:
       {
         mongodb-4_4 = super.callPackage ./mongodb.nix {};
@@ -22,7 +22,7 @@
       devShell.${system} = pkgs.mkShell {
         buildInputs = [
           yarn
-          pkgs.nodejs-14_x
+          pkgs.nodejs-15_x
           pkgs.nodePackages.npm-check-updates
         ];
       };
