@@ -264,6 +264,14 @@ export class MongoDatabase<
     super();
     this.database = database;
   }
+
+  async test() {
+    let result = await this.database.collection("settings").insertOne({
+      key: "test",
+      value: "hi"
+    })
+    
+  }
 }
 
 export const create = MongoDatabaseConnection.create;

@@ -249,7 +249,10 @@ export class IndexedDatabase<
     this.database = database;
   }
 
-  transaction() {
+  // Transactions are started when the transaction is created, not when the first request is placed; for example consider this:
+  // Requests are executed in the order in which they were made against the
+  // transaction, and their results are returned in the same order.
+  transaction(objectStores: string[], mode: "readonly" | "readwrite") {
     /*
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
@@ -259,12 +262,67 @@ await tx.done;
 */
 
     const transaction: IDBTransaction = this.database.transaction(
-      'users',
-      'readwrite',
+      objectStores,
+      mode,
     );
-    transaction.addEventListener('abort', (event) => {});
-    transaction.addEventListener('error', (event) => {});
-    transaction.addEventListener('complete', (event) => {});
+    transaction.addEventListener('abort', (event) => {
+      console.error(event)
+    });
+    transaction.addEventListener('error', (event) => {
+      console.error(event)
+    });
+    transaction.addEventListener('complete', (event) => {
+      console.log(event)
+    });
   }
 }
+
+class IndexedDatabaseTransaction {
+  transaction: IDBTransaction;
+  done: Promise<Event>
+
+  constructor(transaction: IDBTransaction) {
+    this.transaction = transaction
+
+    this.done = new Promise((resolve, reject) => {
+      this.transaction.addEventListener('abort', (event) => {
+        reject(event)
+      })
+      this.transaction.addEventListener('complete', (event) => {
+        resolve(event)
+      })
+      this.transaction.addEventListener('error', (event) => {
+        reject(event)
+      })
+    })
+  }
+
+  objectStore(name: string) {
+    return this.transaction.objectStore(name)
+  }
+}
+
+class IndexedDatabaseObjectStore {
+  objectStore: IDBObjectStore
+
+  constructor(objectStore: IDBObjectStore) {
+    this.objectStore = objectStore
+  }
+
+  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any) {
+    return new Promise((resolve, reject) => {
+      let idbRequest = this.objectStore.add(key, value)
+
+      idbRequest.addEventListener('error', (event) => {
+        console.error(event)
+        reject(event)
+      })
+      idbRequest.addEventListener('success', (event) => {
+        console.log(event)
+        resolve(event)
+      })
+    })
+  }
+}
+
 export const create = IndexedDatabaseConnection.create;
