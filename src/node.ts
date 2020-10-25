@@ -20,7 +20,7 @@ import MongoDB from 'mongodb';
 import {
   Database,
   DatabaseConnection,
-  DatabaseObjectStore,
+  DatabaseSchemaObjectStore,
   DatabaseObjectStores,
   DatabaseSchemaWithMigration,
   DatabaseSchemaWithoutMigration,
@@ -150,7 +150,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
               }
             }
             for (const [objectStoreName, objectStore] of Object.entries<
-              DatabaseObjectStore
+              DatabaseSchemaObjectStore
             >(migration.addedColumns)) {
               for (const [columnName, column] of Object.entries(objectStore)) {
                 if ('primaryKeyOptions' in column) {

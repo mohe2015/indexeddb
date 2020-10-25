@@ -21,7 +21,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 import {
   Database,
-  DatabaseObjectStore,
+  DatabaseSchemaObjectStore,
   DatabaseConnection,
   DatabaseSchemaWithoutMigration,
   DatabaseObjectStores,
@@ -153,7 +153,7 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
               }
             }
             for (const [objectStoreName, objectStore] of Object.entries<
-              DatabaseObjectStore
+              DatabaseSchemaObjectStore
             >(migration.addedColumns)) {
               for (const [columnName, column] of Object.entries(objectStore)) {
                 if ('primaryKeyOptions' in column) {

@@ -68,9 +68,9 @@ export type DatabaseColumn =
   | IndexDatabaseColumn
   | BaseDatabaseColumn;
 
-export type DatabaseObjectStore = { [a: string]: DatabaseColumn };
+export type DatabaseSchemaObjectStore = { [a: string]: DatabaseColumn };
 
-export type DatabaseObjectStores = { [a: string]: DatabaseObjectStore };
+export type DatabaseObjectStores = { [a: string]: DatabaseSchemaObjectStore };
 
 export type DatabaseMigration<
   FROMVERSION extends number,
@@ -383,9 +383,9 @@ export abstract class Database<
 export abstract class DatabaseTransaction {
   abstract done: Promise<Event>
 
-  abstract objectStore(name: string): DatabaseObjectStore
+  abstract objectStore(name: string): DatabaseSchemaObjectStore
 }
 
-export abstract class DatabaseObjectStore {
+export abstract class DatabaseObjectStore2 {
   abstract async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void>
 }
