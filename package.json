@@ -1,6 +1,6 @@
 {
   "name": "@dev.mohe/indexeddb",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Make a database interface available that works in the browser and in nodejs",
   "exports": {
     ".": {
@@ -45,9 +45,8 @@
   "optionalDependencies": {
     "mongodb": "^3.6.2"
   },
+  "private": false,
   "dependencies": {
-    "mongodb": "^3.6.2",
-    "ts-node": "^9.0.0"
-  },
-  "private": false
+    "mongodb": "^3.6.2"
+  }
 }
