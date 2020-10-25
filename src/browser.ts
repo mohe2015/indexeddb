@@ -254,7 +254,7 @@ export class IndexedDatabase<
   // Transactions are started when the transaction is created, not when the first request is placed; for example consider this:
   // Requests are executed in the order in which they were made against the
   // transaction, and their results are returned in the same order.
-  transaction(objectStores: string[], mode: "readonly" | "readwrite"): IndexedDatabaseTransaction {
+  async transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<IndexedDatabaseTransaction> {
     /*
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
@@ -273,7 +273,7 @@ await tx.done;
 
 class IndexedDatabaseTransaction extends DatabaseTransaction {
   transaction: IDBTransaction;
-  done: Promise<Event>
+  done: Promise<void>
 
   constructor(transaction: IDBTransaction) {
     super()
@@ -284,7 +284,7 @@ class IndexedDatabaseTransaction extends DatabaseTransaction {
         reject(event)
       })
       this.transaction.addEventListener('complete', (event) => {
-        resolve(event)
+        resolve(/*event*/)
       })
       this.transaction.addEventListener('error', (event) => {
         reject(event)

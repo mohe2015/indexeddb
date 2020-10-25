@@ -377,7 +377,7 @@ export abstract class Database<
   >
 > {
 
-  abstract async transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction>
+  abstract transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction>
 }
 
 export abstract class DatabaseTransaction {
@@ -387,5 +387,5 @@ export abstract class DatabaseTransaction {
 }
 
 export abstract class DatabaseObjectStore {
-  abstract async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void>
+  abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void>
 }
