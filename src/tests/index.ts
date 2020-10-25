@@ -39,18 +39,17 @@ async function run() {
         name: {
           primaryKeyOptions: {
             autoIncrement: false,
-            keyPath: "name"
-          }
+            keyPath: 'name',
+          },
         },
-        password: {
-
-        },
+        password: {},
       },
       posts: {
-        _id: { // this is technically invalid and should be fixed as it is an out of line primary key
+        _id: {
+          // this is technically invalid and should be fixed as it is an out of line primary key
           primaryKeyOptions: {
-            autoIncrement: true
-          }
+            autoIncrement: true,
+          },
         },
         title: {},
         author: {},
@@ -60,7 +59,14 @@ async function run() {
       },
     };
 
-    let migration1: DatabaseMigration<1, 2, {}, {}, typeof addedColumns1, typeof schema1> = {
+    let migration1: DatabaseMigration<
+      1,
+      2,
+      {},
+      {},
+      typeof addedColumns1,
+      typeof schema1
+    > = {
       fromVersion: schema1.version,
       toVersion: 2,
       baseSchema: schema1,
@@ -80,20 +86,14 @@ async function run() {
 
     let removedColumns2 = {
       users: {
-        name: {
-
-        },
-        password: {
-
-        },
+        name: {},
+        password: {},
       },
     };
 
     let addedColumns2 = {
       posts: {
-        titlee: {
-
-        },
+        titlee: {},
       },
     };
 
@@ -112,8 +112,7 @@ async function run() {
       addedColumns: addedColumns2,
     };
 
-    let schema3 = migrate
-    <
+    let schema3 = migrate<
       2,
       3,
       typeof schema2['objectStores'],
@@ -135,18 +134,16 @@ async function run() {
           >]: typeof schema2['objectStores'][K];
         } &
         typeof addedColumns2,
-        typeof schema2
-    >
-    (migration2);
+      typeof schema2
+    >(migration2);
 
     console.log(schema3);
 
-    let connection = await create("mongodb://idb-mongodb")
+    let connection = await create('mongodb://idb-mongodb');
 
-    console.log(connection)
+    console.log(connection);
 
-    let database = await connection.database
-      <
+    let database = await connection.database<
       2,
       3,
       typeof schema2['objectStores'],
@@ -168,13 +165,13 @@ async function run() {
           >]: typeof schema2['objectStores'][K];
         } &
         typeof addedColumns2,
-        typeof schema2,
-        typeof schema3
-      >("test12", schema3)
+      typeof schema2,
+      typeof schema3
+    >('test12', schema3);
 
-    console.log(database)
+    console.log(database);
 
-    await connection.close()
+    await connection.close();
   } catch (error) {
     console.error(error);
     alert(error);

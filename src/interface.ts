@@ -51,19 +51,22 @@ export type ExtractStrict<
 // removing all columns would remove the object store (especially removing the primary key)
 
 export type PrimaryKeyDatabaseColumn = {
-  primaryKeyOptions: IDBObjectStoreParameters
-}
+  primaryKeyOptions: IDBObjectStoreParameters;
+};
 
 export type IndexDatabaseColumn = {
   //keyPath: string | string[]
-  indexOptions: Omit<IDBIndexParameters, "multiEntry">
-}
+  indexOptions: Omit<IDBIndexParameters, 'multiEntry'>;
+};
 
 export type BaseDatabaseColumn = {
   //keyPath?: string | string[];
-}
+};
 
-export type DatabaseColumn = PrimaryKeyDatabaseColumn | IndexDatabaseColumn | BaseDatabaseColumn
+export type DatabaseColumn =
+  | PrimaryKeyDatabaseColumn
+  | IndexDatabaseColumn
+  | BaseDatabaseColumn;
 
 export type DatabaseObjectStore = { [a: string]: DatabaseColumn };
 
@@ -79,7 +82,7 @@ export type DatabaseMigration<
 > = {
   fromVersion: FROMVERSION;
   toVersion: TOVERSION;
-  baseSchema: SCHEMA
+  baseSchema: SCHEMA;
   addedColumns: ADDED;
   removedColumns: REMOVED;
 };
@@ -90,7 +93,7 @@ export interface DatabaseSchemaWithoutMigration<
 > {
   version: VERSION;
   objectStores: OBJECTSTORES;
-};
+}
 
 export interface DatabaseSchemaWithMigration<
   FROMVERSION extends number,
@@ -110,7 +113,7 @@ export interface DatabaseSchemaWithMigration<
         keyof REMOVED
       >]: OLDOBJECTSTORES[K];
     },
-    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
 > extends DatabaseSchemaWithoutMigration<TOVERSION, AFTERREMOVED & ADDED> {
   migration: DatabaseMigration<
     FROMVERSION,
@@ -120,29 +123,40 @@ export interface DatabaseSchemaWithMigration<
     ADDED,
     OLDSCHEMA
   >;
-};
+}
 
 export function isWithMutation<
-FROMVERSION extends number,
-TOVERSION extends number,
-OLDOBJECTSTORES extends DatabaseObjectStores,
-REMOVED extends DatabaseObjectStores,
-ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-AFTERREMOVED extends {
-  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
-    OLDOBJECTSTORES[K],
-    keyof REMOVED[K]
-  >;
-} &
-  {
-    [K in ExcludeStrict<
-      keyof OLDOBJECTSTORES,
-      keyof REMOVED
-    >]: OLDOBJECTSTORES[K];
-  },
-  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
-  B extends DatabaseSchemaWithMigration<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA>,
-  >(schema:  OLDSCHEMA | B): schema is B {
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+    FROMVERSION,
+    OLDOBJECTSTORES
+  >,
+  B extends DatabaseSchemaWithMigration<
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED,
+    OLDSCHEMA
+  >
+>(schema: OLDSCHEMA | B): schema is B {
   return (schema as B).migration !== undefined;
 }
 
@@ -221,7 +235,7 @@ export function migrate<
         keyof REMOVED
       >]: OLDOBJECTSTORES[K];
     },
-    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>
 >(
   migration: DatabaseMigration<
     FROMVERSION,
@@ -276,7 +290,6 @@ export type WithOnlyKeysOf<A extends DatabaseObjectStores> = {
 // https://developers.google.com/closure/compiler/docs/api-tutorial3
 
 export abstract class DatabaseConnection {
-
   // TODO FIXME implement deletion
 
   // TODO FIXME implement listing databases
@@ -299,7 +312,10 @@ export abstract class DatabaseConnection {
           keyof REMOVED
         >]: OLDOBJECTSTORES[K];
       },
-    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+      FROMVERSION,
+      OLDOBJECTSTORES
+    >,
     SCHEMA extends DatabaseSchemaWithMigration<
       FROMVERSION,
       TOVERSION,
@@ -309,30 +325,47 @@ export abstract class DatabaseConnection {
       AFTERREMOVED,
       OLDSCHEMA
     >
-  >(name: string, schema: SCHEMA): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>;
+  >(
+    name: string,
+    schema: SCHEMA,
+  ): Promise<
+    Database<
+      FROMVERSION,
+      TOVERSION,
+      OLDOBJECTSTORES,
+      REMOVED,
+      ADDED,
+      AFTERREMOVED,
+      OLDSCHEMA,
+      SCHEMA
+    >
+  >;
 
-  abstract close(): Promise<void>
+  abstract close(): Promise<void>;
 }
 
 export abstract class Database<
-FROMVERSION extends number,
-TOVERSION extends number,
-OLDOBJECTSTORES extends DatabaseObjectStores,
-REMOVED extends DatabaseObjectStores,
-ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-AFTERREMOVED extends {
-  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
-    OLDOBJECTSTORES[K],
-    keyof REMOVED[K]
-  >;
-} &
-  {
-    [K in ExcludeStrict<
-      keyof OLDOBJECTSTORES,
-      keyof REMOVED
-    >]: OLDOBJECTSTORES[K];
-  },
-  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+    FROMVERSION,
+    OLDOBJECTSTORES
+  >,
   SCHEMA extends DatabaseSchemaWithMigration<
     FROMVERSION,
     TOVERSION,
@@ -342,6 +375,4 @@ AFTERREMOVED extends {
     AFTERREMOVED,
     OLDSCHEMA
   >
-> {
-
-}
+> {}

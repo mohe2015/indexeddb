@@ -66,7 +66,10 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
           keyof REMOVED
         >]: OLDOBJECTSTORES[K];
       },
-    OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+    OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+      FROMVERSION,
+      OLDOBJECTSTORES
+    >,
     SCHEMA extends DatabaseSchemaWithMigration<
       FROMVERSION,
       TOVERSION,
@@ -77,8 +80,20 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
       OLDSCHEMA
     >
   >(
-    name: string, schema: SCHEMA
-  ): Promise<Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>> {
+    name: string,
+    schema: SCHEMA,
+  ): Promise<
+    Database<
+      FROMVERSION,
+      TOVERSION,
+      OLDOBJECTSTORES,
+      REMOVED,
+      ADDED,
+      AFTERREMOVED,
+      OLDSCHEMA,
+      SCHEMA
+    >
+  > {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, schema.version);
 
@@ -97,46 +112,84 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
           let oldVersion = event.oldVersion;
           if (oldVersion === 0) oldVersion = 1; // this is a bug in firefox - if the initial creation aborts firefox still sets the version to 1
 
-          console.log("old version: ", oldVersion)
+          console.log('old version: ', oldVersion);
 
-          let outstandingMigrations = getOutstandingMigrations(schema, oldVersion)
+          let outstandingMigrations = getOutstandingMigrations(
+            schema,
+            oldVersion,
+          );
 
           // this could should be really similar to the one in node.ts
-          outstandingMigrations.forEach(migration => {
-            console.log("running migration: ", migration)
-            for (const [objectStoreName, objectStore] of Object.entries(migration.removedColumns)) {
+          outstandingMigrations.forEach((migration) => {
+            console.log('running migration: ', migration);
+            for (const [objectStoreName, objectStore] of Object.entries(
+              migration.removedColumns,
+            )) {
               for (const [columnName, column] of Object.entries(objectStore)) {
-                if ("primaryKeyOptions" in column) {
-                  console.log("delete object store: ", objectStoreName)
-                  databaseOpenRequest.result.deleteObjectStore(objectStoreName)
-                } else if ("indexOptions" in column) {
-                  console.log(`delete index without removing data: ${objectStoreName}.${columnName}`)
-                  databaseOpenRequest.transaction!.objectStore(objectStoreName).deleteIndex(columnName)
+                if ('primaryKeyOptions' in column) {
+                  console.log('delete object store: ', objectStoreName);
+                  databaseOpenRequest.result.deleteObjectStore(objectStoreName);
+                } else if ('indexOptions' in column) {
+                  console.log(
+                    `delete index without removing data: ${objectStoreName}.${columnName}`,
+                  );
+                  databaseOpenRequest
+                    .transaction!.objectStore(objectStoreName)
+                    .deleteIndex(columnName);
                 } else {
-                  if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
-                    throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                  if (
+                    !databaseOpenRequest.result.objectStoreNames.contains(
+                      objectStoreName,
+                    )
+                  ) {
+                    throw new Error(
+                      `tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`,
+                    );
                   }
-                  console.log(`delete column without removing data ${objectStoreName}.${columnName}`)
+                  console.log(
+                    `delete column without removing data ${objectStoreName}.${columnName}`,
+                  );
                 }
               }
             }
-            for (const [objectStoreName, objectStore] of Object.entries<DatabaseObjectStore>(migration.addedColumns)) { 
+            for (const [objectStoreName, objectStore] of Object.entries<
+              DatabaseObjectStore
+            >(migration.addedColumns)) {
               for (const [columnName, column] of Object.entries(objectStore)) {
-                if ("primaryKeyOptions" in column) {
-                  console.log(`create object store: ${objectStoreName}`, column.primaryKeyOptions)
-                  databaseOpenRequest.result.createObjectStore(objectStoreName, column.primaryKeyOptions)
-                } else if ("indexOptions" in column) {
-                  console.log(`add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`, column.indexOptions)
-                  databaseOpenRequest.transaction!.objectStore(objectStoreName).createIndex(columnName, columnName, column.indexOptions)
+                if ('primaryKeyOptions' in column) {
+                  console.log(
+                    `create object store: ${objectStoreName}`,
+                    column.primaryKeyOptions,
+                  );
+                  databaseOpenRequest.result.createObjectStore(
+                    objectStoreName,
+                    column.primaryKeyOptions,
+                  );
+                } else if ('indexOptions' in column) {
+                  console.log(
+                    `add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
+                    column.indexOptions,
+                  );
+                  databaseOpenRequest
+                    .transaction!.objectStore(objectStoreName)
+                    .createIndex(columnName, columnName, column.indexOptions);
                 } else {
-                  if (!databaseOpenRequest.result.objectStoreNames.contains(objectStoreName)) {
-                    throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                  if (
+                    !databaseOpenRequest.result.objectStoreNames.contains(
+                      objectStoreName,
+                    )
+                  ) {
+                    throw new Error(
+                      `tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`,
+                    );
                   }
-                  console.log(`add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`)
+                  console.log(
+                    `add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
+                  );
                 }
               }
             }
-          })
+          });
         } catch (error) {
           console.log(error);
           databaseOpenRequest.transaction!.abort();
@@ -148,24 +201,28 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
   }
 }
 
-export class IndexedDatabase<FROMVERSION extends number,
-TOVERSION extends number,
-OLDOBJECTSTORES extends DatabaseObjectStores,
-REMOVED extends DatabaseObjectStores,
-ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
-AFTERREMOVED extends {
-  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
-    OLDOBJECTSTORES[K],
-    keyof REMOVED[K]
-  >;
-} &
-  {
-    [K in ExcludeStrict<
-      keyof OLDOBJECTSTORES,
-      keyof REMOVED
-    >]: OLDOBJECTSTORES[K];
-  },
-  OLDSCHEMA extends DatabaseSchemaWithoutMigration<FROMVERSION, OLDOBJECTSTORES>,
+export class IndexedDatabase<
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+    FROMVERSION,
+    OLDOBJECTSTORES
+  >,
   SCHEMA extends DatabaseSchemaWithMigration<
     FROMVERSION,
     TOVERSION,
@@ -174,7 +231,17 @@ AFTERREMOVED extends {
     ADDED,
     AFTERREMOVED,
     OLDSCHEMA
->> extends Database<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
+  >
+> extends Database<
+  FROMVERSION,
+  TOVERSION,
+  OLDOBJECTSTORES,
+  REMOVED,
+  ADDED,
+  AFTERREMOVED,
+  OLDSCHEMA,
+  SCHEMA
+> {
   database: IDBDatabase;
 
   constructor(database: IDBDatabase) {
@@ -183,7 +250,7 @@ AFTERREMOVED extends {
   }
 
   transaction() {
-/*
+    /*
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
 const val = (await store.get('counter')) || 0;
@@ -191,16 +258,13 @@ await store.put(val + 1, 'counter');
 await tx.done;
 */
 
-    const transaction: IDBTransaction = this.database.transaction("users", "readwrite")
-    transaction.addEventListener("abort", (event) => {
-
-    })
-    transaction.addEventListener("error", (event) => {
-
-    })
-    transaction.addEventListener("complete", (event) => {
-
-    })
+    const transaction: IDBTransaction = this.database.transaction(
+      'users',
+      'readwrite',
+    );
+    transaction.addEventListener('abort', (event) => {});
+    transaction.addEventListener('error', (event) => {});
+    transaction.addEventListener('complete', (event) => {});
   }
 }
 export const create = IndexedDatabaseConnection.create;
