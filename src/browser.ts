@@ -32,6 +32,8 @@ import {
   OmitStrict,
   isWithMutation,
   DatabaseMigration,
+  DatabaseTransaction,
+  DatabaseObjectStore,
 } from './interface.js';
 import { getOutstandingMigrations } from './utils.js';
 
@@ -269,11 +271,12 @@ await tx.done;
   }
 }
 
-class IndexedDatabaseTransaction {
+class IndexedDatabaseTransaction extends DatabaseTransaction {
   transaction: IDBTransaction;
   done: Promise<Event>
 
   constructor(transaction: IDBTransaction) {
+    super()
     this.transaction = transaction
 
     this.done = new Promise((resolve, reject) => {
@@ -289,19 +292,20 @@ class IndexedDatabaseTransaction {
     })
   }
 
-  objectStore(name: string): IndexedDatabaseObjectStore {
+  objectStore(name: string): DatabaseObjectStore {
     return new IndexedDatabaseObjectStore(this.transaction.objectStore(name))
   }
 }
 
-class IndexedDatabaseObjectStore {
+class IndexedDatabaseObjectStore extends DatabaseObjectStore {
   objectStore: IDBObjectStore
 
   constructor(objectStore: IDBObjectStore) {
+    super()
     this.objectStore = objectStore
   }
 
-  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any) {
+  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void> {
     return new Promise((resolve, reject) => {
       let idbRequest = this.objectStore.add(key, value)
 
@@ -311,7 +315,7 @@ class IndexedDatabaseObjectStore {
       })
       idbRequest.addEventListener('success', (event) => {
         console.log(event)
-        resolve(event)
+        resolve(/*event*/)
       })
     })
   }

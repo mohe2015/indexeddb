@@ -383,9 +383,9 @@ export abstract class Database<
 export abstract class DatabaseTransaction {
   abstract done: Promise<Event>
 
-  abstract objectStore(name: string): DatabaseSchemaObjectStore
+  abstract objectStore(name: string): DatabaseObjectStore
 }
 
-export abstract class DatabaseObjectStore2 {
+export abstract class DatabaseObjectStore {
   abstract async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void>
 }
