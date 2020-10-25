@@ -2,7 +2,7 @@
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
   
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
+  inputs.nixpkgs.url = "github:mohe2015/nixpkgs/fix-mongodb";
 
   outputs = { self, nixpkgs }:
     let
@@ -51,9 +51,12 @@
                     # https://docs.mongodb.com/manual/core/transactions/#transactions-create-collections-indexes 4.4 required
                     package = pkgs.mongodb-4_4;
                     bind_ip = "0.0.0.0"; # dangerous?
+
+                    # Transaction numbers are only allowed on a replica set member or mongos
                     replSetName = "rs01";
 
-                    initialRootPassword = "password"; # https://github.com/NixOS/nixpkgs/pull/99037
+                    #enableAuth = true;
+                    #initialRootPassword = "password"; # https://github.com/NixOS/nixpkgs/pull/99037
 
                     initialScript = pkgs.writeText "my-file"
                       ''

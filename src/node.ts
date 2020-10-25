@@ -33,7 +33,11 @@ export class MongoDatabaseConnection extends DatabaseConnection {
   }
 
   static async create(uri: string): Promise<MongoDatabaseConnection> {
-    let database = new MongoDB.MongoClient(uri, { useUnifiedTopology: true });
+    let database = new MongoDB.MongoClient(uri, {
+      replicaSet: "rs01",
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
     await database.connect();
     return new MongoDatabaseConnection(database);
   }
