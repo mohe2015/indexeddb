@@ -375,4 +375,17 @@ export abstract class Database<
     AFTERREMOVED,
     OLDSCHEMA
   >
-> {}
+> {
+
+  abstract transaction(objectStores: string[], mode: "readonly" | "readwrite"): DatabaseTransaction
+}
+
+export abstract class DatabaseTransaction {
+  abstract done: Promise<Event>
+
+  abstract objectStore(name: string): DatabaseObjectStore
+}
+
+export abstract class DatabaseObjectStore {
+  abstract async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void>
+}

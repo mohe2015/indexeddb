@@ -252,7 +252,7 @@ export class IndexedDatabase<
   // Transactions are started when the transaction is created, not when the first request is placed; for example consider this:
   // Requests are executed in the order in which they were made against the
   // transaction, and their results are returned in the same order.
-  transaction(objectStores: string[], mode: "readonly" | "readwrite") {
+  transaction(objectStores: string[], mode: "readonly" | "readwrite"): IndexedDatabaseTransaction {
     /*
 const tx = db.transaction('keyval', 'readwrite');
 const store = tx.objectStore('keyval');
@@ -265,15 +265,7 @@ await tx.done;
       objectStores,
       mode,
     );
-    transaction.addEventListener('abort', (event) => {
-      console.error(event)
-    });
-    transaction.addEventListener('error', (event) => {
-      console.error(event)
-    });
-    transaction.addEventListener('complete', (event) => {
-      console.log(event)
-    });
+    return new IndexedDatabaseTransaction(transaction)
   }
 }
 
@@ -297,8 +289,8 @@ class IndexedDatabaseTransaction {
     })
   }
 
-  objectStore(name: string) {
-    return this.transaction.objectStore(name)
+  objectStore(name: string): IndexedDatabaseObjectStore {
+    return new IndexedDatabaseObjectStore(this.transaction.objectStore(name))
   }
 }
 
