@@ -28,6 +28,8 @@ import {
   ExtractStrict,
   OmitStrict,
   WithoutKeysOf,
+  DatabaseTransaction,
+  DatabaseObjectStore,
 } from './interface.js';
 import { getOutstandingMigrations } from './utils.js';
 
@@ -213,7 +215,7 @@ export class MongoDatabaseConnection extends DatabaseConnection {
       });
     });
 
-    return new MongoDatabase(database);
+    return new MongoDatabase(this.databaseConnection, database);
   }
 }
 
@@ -258,19 +260,50 @@ export class MongoDatabase<
   OLDSCHEMA,
   SCHEMA
 > {
+  databaseConnection: MongoDB.MongoClient;
   database: MongoDB.Db;
 
-  constructor(database: MongoDB.Db) {
+  constructor(databaseConnection: MongoDB.MongoClient, database: MongoDB.Db) {
     super();
+    this.databaseConnection = databaseConnection
     this.database = database;
   }
 
-  async test() {
-    let result = await this.database.collection("settings").insertOne({
-      key: "test",
-      value: "hi"
-    })
+  async transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction> {
+    let session = this.databaseConnection.startSession()
+    session.startTransaction()
+    return new MongoDatabaseTransaction(this.database, session)
     
+  }
+}
+
+export class MongoDatabaseTransaction extends DatabaseTransaction {
+  database: MongoDB.Db;
+  session: MongoDB.ClientSession
+  done: Promise<void>
+
+  constructor(database: MongoDB.Db, session: MongoDB.ClientSession) {
+    super()
+    this.database = database
+    this.session = session
+    this.done = session.commitTransaction(undefined)
+  }
+  
+  objectStore(name: string): MongoDatabaseObjectStore {
+    return new MongoDatabaseObjectStore(this.database.collection(name))
+  }
+}
+
+export class MongoDatabaseObjectStore extends DatabaseObjectStore {
+  collection: MongoDB.Collection
+
+  constructor(collection: MongoDB.Collection) {
+    super()
+    this.collection = collection
+  }
+
+  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void> {
+    let result = await this.collection.insertOne(value)
   }
 }
 

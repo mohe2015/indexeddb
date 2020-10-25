@@ -377,11 +377,11 @@ export abstract class Database<
   >
 > {
 
-  abstract transaction(objectStores: string[], mode: "readonly" | "readwrite"): DatabaseTransaction
+  abstract async transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction>
 }
 
 export abstract class DatabaseTransaction {
-  abstract done: Promise<Event>
+  abstract done: Promise<void>
 
   abstract objectStore(name: string): DatabaseObjectStore
 }
