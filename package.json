@@ -8,7 +8,7 @@
       "node": "./build/node.js",
       "default": "./build/browser.js"
     },
-    "./src/interface": "./build/interface.js"
+    "./build/interface": "./build/interface.js"
   },
   "types": "./build/api.d.ts",
   "type": "module",
