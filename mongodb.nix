@@ -1,14 +1,17 @@
+# SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 { fetchurl, sconsPackages, stdenv, python38, boost169, curl, gperftools, libpcap, libyamlcpp, openssl, pcre-cpp, cyrus_sasl, snappy, zlib, lzma }:
 let
 python = python38.withPackages (ps: with ps; [ pyyaml cheetah3 psutil setuptools ]);
 boost = boost169.override { enableShared = false; enabledStatic = true; };
 in stdenv.mkDerivation rec {
-    version = "4.4.1";
+    version = "4.4.2";
     pname = "mongodb";
     
     src = fetchurl {
         url = "https://fastdl.mongodb.org/src/mongodb-src-r${version}.tar.gz";
-        sha256 = "Wi7nhsdfGFRfYs0hvLekfe5c1xuzV+BmZUKD8ZnNh1E=";
+        sha256 = "X5cKD2nGBNJQHuTfkgr6nWHsFvW2kfcecFhxoIsL/+U=";
     };
     
     nativeBuildInputs = [ sconsPackages.scons_latest ];
@@ -39,18 +42,8 @@ in stdenv.mkDerivation rec {
     sconsFlags = [
         "--release"
         "--ssl"
-        #"--rocksdb" # Don't have this packaged yet
-     #   "--wiredtiger=on"
-     #   "--js-engine=mozjs"
-     #   "--use-sasl-client"
         "--disable-warnings-as-errors"
-        #"VARIANT_DIR=nixos" # Needed so we don't produce argument lists that are too long for gcc / ld
     ] ++ map (lib: "--use-system-${lib}") ["boost" "pcre" "snappy" "yaml" "zlib"];
-
-    #preBuild = ''
-    #sconsFlags+=" CC=$CC"
-    #sconsFlags+=" CXX=$CXX"
-    #'';
     
     buildPhase = ''
     echo skip build phase
@@ -59,10 +52,6 @@ in stdenv.mkDerivation rec {
     prefixKey = "DESTDIR=";
 
     installTargets = [ "install-core" ];
-    
-    postInstall = ''
-        rm -f "$out/bin/install_compass" || true
-    '';
 
     doInstallCheck = true;
     installCheckPhase = ''

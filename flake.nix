@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 {
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
@@ -24,6 +27,7 @@
           yarn
           pkgs.nodejs-15_x
           pkgs.nodePackages.npm-check-updates
+          pkgs.reuse
         ];
       };
       nixosConfigurations.container = nixpkgs.lib.nixosSystem {
