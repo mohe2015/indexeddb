@@ -142,11 +142,11 @@ async function run() {
       typeof schema2
     >(migration2);
 
-    console.log(schema3);
+    //console.log(schema3);
 
     let connection = await create('mongodb://idb-mongodb');
 
-    console.log(connection);
+    //console.log(connection);
 
     let database = await connection.database<
       2,
@@ -174,12 +174,24 @@ async function run() {
       typeof schema3
     >('test12', schema3);
 
-    console.log(database);
+    //console.log(database);
+
+    let transaction = await database.transaction(["users", "posts"], "readwrite") 
+
+    await transaction.objectStore("users").add(undefined, {
+        name: `test${new Date().getTime()}`,
+        password: "elephant"
+    })
+
+    await transaction.objectStore("posts").add(1337, {
+      title: "test"
+    })
+
+    await transaction.done
 
     await connection.close();
   } catch (error) {
     console.error(error);
-    alert(error);
   }
 }
 

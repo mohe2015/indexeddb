@@ -312,7 +312,7 @@ class IndexedDatabaseObjectStore extends DatabaseObjectStore {
 
   async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void> {
     return new Promise((resolve, reject) => {
-      let idbRequest = this.objectStore.add(key, value)
+      let idbRequest = this.objectStore.add(value, key)
 
       idbRequest.addEventListener('error', (event) => {
         console.error(event)
