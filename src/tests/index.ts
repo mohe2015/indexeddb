@@ -183,7 +183,9 @@ async function run() {
         password: "elephant"
     })
 
-    await transaction.objectStore("posts").add(1337, {
+    var randomnumber = Math.floor(Math.random() * 100000);
+
+    await transaction.objectStore("posts").add(randomnumber, {
       title: "test"
     })
 
