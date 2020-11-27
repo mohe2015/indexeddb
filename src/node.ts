@@ -307,8 +307,9 @@ export class MongoDatabaseObjectStore extends DatabaseObjectStore {
     this.collection = collection
   }
 
-  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void> {
+  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
     let result = await this.collection.insertOne(value)
+    return result
   }
 }
 

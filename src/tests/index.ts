@@ -178,7 +178,7 @@ async function run() {
 
     let transaction = await database.transaction(["users", "posts"], "readwrite") 
 
-    await transaction.objectStore("users").add(undefined, {
+    let result = await transaction.objectStore("users").add(undefined, {
         name: `test${new Date().getTime()}`,
         password: "elephant"
     })
@@ -186,8 +186,14 @@ async function run() {
     var randomnumber = Math.floor(Math.random() * 100000);
 
     await transaction.objectStore("posts").add(randomnumber, {
-      title: "test"
-    })
+      title: "start"
+    });
+
+    await transaction.objectStore("posts").add(randomnumber+1, {
+      title: "end"
+    });
+
+    console.log(result)
 
     await transaction.done
 

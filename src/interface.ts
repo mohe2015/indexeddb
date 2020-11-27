@@ -392,5 +392,5 @@ export abstract class DatabaseTransaction {
 }
 
 export abstract class DatabaseObjectStore {
-  abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void>
+  abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 }

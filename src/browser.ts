@@ -198,7 +198,6 @@ export class IndexedDatabaseConnection extends DatabaseConnection {
             }
           });
         } catch (error) {
-          console.log(error);
           databaseOpenRequest.transaction!.abort();
           reject(error);
         }
@@ -310,17 +309,15 @@ class IndexedDatabaseObjectStore extends DatabaseObjectStore {
     this.objectStore = objectStore
   }
 
-  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<void> {
+  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
     return new Promise((resolve, reject) => {
       let idbRequest = this.objectStore.add(value, key)
 
       idbRequest.addEventListener('error', (event) => {
-        console.error(event)
         reject(event)
       })
       idbRequest.addEventListener('success', (event) => {
-        console.log(event)
-        resolve(/*event*/)
+        resolve(idbRequest.result)
       })
     })
   }
