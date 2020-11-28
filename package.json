@@ -21,13 +21,15 @@
     "test": "node --enable-source-maps --trace-deprecation --unhandled-rejections=strict build/tests/index.js",
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
-    "docs": "typedoc --allowJs src/"
+    "docs": "typedoc --allowJs src/",
+    "build-esbuild": "./node_modules/.bin/esbuild --sourcemap --outdir=build --format=esm --splitting --tsconfig=./tsconfig.json src/**/*.ts"
   },
   "devDependencies": {
     "@snowpack/plugin-run-script": "^2.1.7",
     "@types/mongodb": "^3.5.31",
     "@types/node": "^14.14.2",
     "@types/snowpack-env": "^2.3.0",
+    "esbuild": "^0.7.19",
     "prettier": "^2.1.2",
     "snowpack": "^2.15.1",
     "typedoc": "^1.0.0-dev.3",
