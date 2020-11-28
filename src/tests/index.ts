@@ -33,7 +33,7 @@ import {
 } from '../interface.js';
 
 async function run() {
-  try {
+  //try {
     let schema1: DatabaseSchemaWithoutMigration<1, {}> = {
       version: 1,
       objectStores: {},
@@ -178,29 +178,34 @@ async function run() {
 
     let transaction = await database.transaction(["users", "posts"], "readwrite") 
 
-    let result = await transaction.objectStore("users").add(undefined, {
+    let result0 = await transaction.objectStore("users").add(undefined, {
         name: `test${new Date().getTime()}`,
         password: "elephant"
     })
 
     var randomnumber = Math.floor(Math.random() * 100000);
 
-    await transaction.objectStore("posts").add(randomnumber, {
+    let result1 = await transaction.objectStore("posts").add(randomnumber, {
       title: "start"
     });
 
-    await transaction.objectStore("posts").add(randomnumber+1, {
+    // this should break it
+    await fetch("/test");
+
+    let result2 = await transaction.objectStore("posts").add(undefined, {
       title: "end"
     });
 
-    console.log(result)
+    console.log(result0)
+    console.log(result1)
+    console.log(result2)
 
     await transaction.done
 
     await connection.close();
-  } catch (error) {
-    console.error(error);
-  }
+  //} catch (error) {
+  //  console.error(error);
+  //}
 }
 
 run();
