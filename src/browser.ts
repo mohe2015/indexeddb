@@ -39,8 +39,8 @@ import {
   DatabaseMigration,
   DatabaseTransaction,
   DatabaseObjectStore,
-} from './interface.js';
-import { getOutstandingMigrations } from './utils.js';
+} from './interface';
+import { getOutstandingMigrations } from './utils';
 
 export class IndexedDatabaseConnection extends DatabaseConnection {
   private constructor() {

@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 // @ts-check
 
-import { create } from '../api.js'; // TODO FIXME when typescript supports it - use internal imports
+import { create } from '../api'; // TODO FIXME when typescript supports it - use internal imports
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
@@ -30,7 +30,7 @@ import {
   OmitStrict,
   ExtractStrict,
   ExcludeStrict,
-} from '../interface.js';
+} from '../interface';
 
 async function run() {
   //try {

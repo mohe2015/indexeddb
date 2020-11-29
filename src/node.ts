@@ -35,8 +35,8 @@ import {
   WithoutKeysOf,
   DatabaseTransaction,
   DatabaseObjectStore,
-} from './interface.js';
-import { getOutstandingMigrations } from './utils.js';
+} from './interface';
+import { getOutstandingMigrations } from './utils';
 
 // https://docs.mongodb.com/drivers/node/
 

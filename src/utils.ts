@@ -31,7 +31,7 @@ import type {
   DatabaseSchemaWithoutMigration,
   DatabaseSchemaWithMigration,
 } from './interface';
-import { isWithMutation } from './interface.js';
+import { isWithMutation } from './interface';
 
 export function getOutstandingMigrations<
   FROMVERSION extends number,
