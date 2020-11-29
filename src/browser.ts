@@ -301,7 +301,7 @@ class IndexedDatabaseTransaction extends DatabaseTransaction {
   }
 }
 
-class IndexedDatabaseObjectStore extends DatabaseObjectStore {
+export class IndexedDatabaseObjectStore extends DatabaseObjectStore {
   objectStore: IDBObjectStore
 
   constructor(objectStore: IDBObjectStore) {
@@ -309,17 +309,57 @@ class IndexedDatabaseObjectStore extends DatabaseObjectStore {
     this.objectStore = objectStore
   }
 
-  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
-    return new Promise((resolve, reject) => {
-      let idbRequest = this.objectStore.add(value, key)
-
-      idbRequest.addEventListener('error', (event) => {
+  private handleRequest<T>(request: IDBRequest<T>): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      request.addEventListener('error', (event) => {
         reject(event)
       })
-      idbRequest.addEventListener('success', (event) => {
-        resolve(idbRequest.result)
+      request.addEventListener('success', (event) => {
+        resolve(request.result)
       })
     })
+  }
+
+  async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
+    return this.handleRequest(this.objectStore.add(value, key))
+  }
+
+  async clear(): Promise<void> {
+    return this.handleRequest(this.objectStore.clear())
+  }
+
+  async count(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined): Promise<any> {
+    return this.handleRequest(this.objectStore.count(key))
+  }
+
+  async delete(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any> {
+    return this.handleRequest(this.objectStore.delete(key))
+  }
+
+  async get(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any> {
+    return this.handleRequest(this.objectStore.get(key))
+  }
+
+  async getKey(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<IDBValidKey | undefined> {
+    return this.handleRequest(this.objectStore.getKey(key))
+  }
+
+  async getAll(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, count: number | undefined): Promise<any[]> {
+    return this.handleRequest(this.objectStore.getAll(key, count))
+  }
+
+  async getAllKeys(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, count: number | undefined): Promise<IDBValidKey[]> {
+    return this.handleRequest(this.objectStore.getAllKeys(key, count))
+  }
+
+  // TODO FIXME depending on mongodb this could be synchronous
+  // TODO FIXME index class
+  async index(name: string): Promise<IDBIndex> {
+    return this.objectStore.index(name)
+  }
+
+  async put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
+    return this.handleRequest(this.objectStore.put(value, key))
   }
 }
 

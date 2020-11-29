@@ -22,6 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 // @ts-check
 
+import type { IndexedDatabaseObjectStore } from '../browser';
 import { create } from '../api'; // TODO FIXME when typescript supports it - use internal imports
 import {
   DatabaseSchemaWithoutMigration,
@@ -189,9 +190,6 @@ async function run() {
       title: "start"
     });
 
-    // this should break it
-    await fetch("/test");
-
     let result2 = await transaction.objectStore("posts").add(undefined, {
       title: "end"
     });
@@ -199,6 +197,14 @@ async function run() {
     console.log(result0)
     console.log(result1)
     console.log(result2)
+
+    // TODO It seems like the primary key is not available as an index directly
+    // but the objectStore and the index has quite a similar interface so it may be possible
+    // to add fake getPrimaryIndex method to the objectstore that actually just returns the objectstore
+    // and then have a unified interface to access both.
+
+    let objectStore = transaction.objectStore("users") as IndexedDatabaseObjectStore
+    console.log(objectStore.objectStore.indexNames)
 
     await transaction.done
 
