@@ -396,26 +396,27 @@ export class IndexedDatabaseCursor {
   }
 
   [Symbol.asyncIterator]() {
+    let self = this
     return {
       async next() {
         new Promise<IDBCursorWithValue>((resolve, reject) => {
-          if (!this.lastCursorRequest) {
-            this.lastCursorRequest = this.objectStoreOrIndex.openCursor(this.key, this.direction)
+          if (!self.lastCursorRequest) {
+            self.lastCursorRequest = self.objectStoreOrIndex.openCursor(self.key, self.direction)
           } else {
-            this.lastCursorRequest.result!.continue()
+            self.lastCursorRequest.result!.continue()
           }
 
-          this.lastCursorRequest!.addEventListener('error', (event) => {
+          self.lastCursorRequest!.addEventListener('error', (event) => {
             reject(event)
           }, {
             once: true
           })
 
-          this.lastCursorRequest!.addEventListener('success', (event) => {
-            if (this.lastCursorRequest!.result === null) {
+          self.lastCursorRequest!.addEventListener('success', (event) => {
+            if (self.lastCursorRequest!.result === null) {
               reject(event)
             } else {
-              resolve(this.lastCursorRequest!.result)
+              resolve(self.lastCursorRequest!.result)
             }
           }, {
             once: true
