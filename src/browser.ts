@@ -399,7 +399,7 @@ export class IndexedDatabaseCursor {
     let self = this
     return {
       async next() {
-        new Promise<IDBCursorWithValue>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
           if (!self.lastCursorRequest) {
             self.lastCursorRequest = self.objectStoreOrIndex.openCursor(self.key, self.direction)
           } else {
@@ -414,9 +414,9 @@ export class IndexedDatabaseCursor {
 
           self.lastCursorRequest!.addEventListener('success', (event) => {
             if (self.lastCursorRequest!.result === null) {
-              reject(event)
+              resolve({ done: true })
             } else {
-              resolve(self.lastCursorRequest!.result)
+              resolve({ done: false, value: self.lastCursorRequest!.result })
             }
           }, {
             once: true
