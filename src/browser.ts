@@ -341,8 +341,8 @@ export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrInde
     return handleRequest(this.objectStoreOrIndex.getAllKeys(key, count))
   }
 
-  async openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursorWithValue | null> {
-    return new IndexedDatabaseCursor(this.objectStoreOrIndex.openCursor(key, direction)).get()
+  async openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IndexedDatabaseCursor> {
+    return new IndexedDatabaseCursor(this.objectStoreOrIndex.openCursor(key, direction))
   }
 
   async openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null> {
@@ -388,21 +388,34 @@ export class IndexedDatabaseCursor {
     this.cursorRequest = cursorRequest
   }
 
-  async get() {
-    new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+  async* [Symbol.asyncIterator]() {
+      yield "hello";
+      yield "async";
+      yield "iteration!";
+  }
+
+  // TODO FIXME unify with continue maybe using a method
+  // or doing this.objectStoreOrIndex.openCursor(key, direction) in this class here
+  async getFirst(): Promise<IDBCursorWithValue | null> {
+    return new Promise<IDBCursorWithValue | null>((resolve, reject) => {
       this.cursorRequest.addEventListener('error', (event) => {
         reject(event)
       }, {
         once: true
       })
       this.cursorRequest.addEventListener('success', (event) => {
-        resolve(this.cursorRequest.result)
+        if (this.cursorRequest.result === null) {
+          reject(event)
+        } else {
+          resolve(this.cursorRequest.result)
+        }
       }, {
         once: true
       })
     })
   }
 
+  // TODO FIXME WE could also make this void which may simplify usage????
   async continue(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined): Promise<IDBCursorWithValue | null> {
     return new Promise<IDBCursorWithValue | null>((resolve, reject) => {
 
