@@ -207,7 +207,7 @@ async function run() {
     
     console.log("count: ", await objectStore.count());
 
-    await objectStore.delete(result0)
+    // objectStore.delete(result0)
 
     console.log("count: ", await objectStore.count());
 
