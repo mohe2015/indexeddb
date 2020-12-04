@@ -24,6 +24,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
+import type { nextTick } from 'process';
 import {
   Database,
   DatabaseSchemaObjectStore,
@@ -394,30 +395,34 @@ export class IndexedDatabaseCursor {
     this.direction = direction
   }
 
-  async* [Symbol.asyncIterator](): AsyncGenerator<IDBCursorWithValue> {
-    yield new Promise<IDBCursorWithValue>((resolve, reject) => {
-      if (!this.lastCursorRequest) {
-        this.lastCursorRequest = this.objectStoreOrIndex.openCursor(this.key, this.direction)
-      } else {
-        this.lastCursorRequest.result!.continue()
+  [Symbol.asyncIterator]() {
+    return {
+      async next() {
+        new Promise<IDBCursorWithValue>((resolve, reject) => {
+          if (!this.lastCursorRequest) {
+            this.lastCursorRequest = this.objectStoreOrIndex.openCursor(this.key, this.direction)
+          } else {
+            this.lastCursorRequest.result!.continue()
+          }
+
+          this.lastCursorRequest!.addEventListener('error', (event) => {
+            reject(event)
+          }, {
+            once: true
+          })
+
+          this.lastCursorRequest!.addEventListener('success', (event) => {
+            if (this.lastCursorRequest!.result === null) {
+              reject(event)
+            } else {
+              resolve(this.lastCursorRequest!.result)
+            }
+          }, {
+            once: true
+          })
+        })
       }
-
-      this.lastCursorRequest!.addEventListener('error', (event) => {
-        reject(event)
-      }, {
-        once: true
-      })
-
-      this.lastCursorRequest!.addEventListener('success', (event) => {
-        if (this.lastCursorRequest!.result === null) {
-          reject(event)
-        } else {
-          resolve(this.lastCursorRequest!.result)
-        }
-      }, {
-        once: true
-      })
-    })
+    }
   }
 }
 
