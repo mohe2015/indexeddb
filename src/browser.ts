@@ -333,19 +333,19 @@ export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrInde
     return this.handleRequest(this.objectStoreOrIndex.getKey(key))
   }
 
-  async getAll(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, count: number | undefined): Promise<any[]> {
+  async getAll(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<any[]> {
     return this.handleRequest(this.objectStoreOrIndex.getAll(key, count))
   }
 
-  async getAllKeys(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, count: number | undefined): Promise<IDBValidKey[]> {
+  async getAllKeys(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<IDBValidKey[]> {
     return this.handleRequest(this.objectStoreOrIndex.getAllKeys(key, count))
   }
 
-  async openCursor(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange | undefined, direction: "next" | "nextunique" | "prev" | "prevunique" | undefined): Promise<IDBCursorWithValue | null> {
+  async openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursorWithValue | null> {
     return this.handleRequest(this.objectStoreOrIndex.openCursor(key, direction))
   }
 
-  async openKeyCursor(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange | undefined, direction: "next" | "nextunique" | "prev" | "prevunique" | undefined): Promise<IDBCursor | null> {
+  async openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null> {
     return this.handleRequest(this.objectStoreOrIndex.openKeyCursor(key, direction))
   }
 }

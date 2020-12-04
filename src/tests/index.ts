@@ -211,6 +211,15 @@ async function run() {
 
     console.log("count: ", await objectStore.count());
 
+    let cursor = await objectStore.openCursor(IDBKeyRange.upperBound("tesu"))
+
+    while (cursor) {
+      console.log("cursor:", cursor)
+
+      // THIS CALLS THE ONSUCCESS AGAIN WHICH LETS THIS FAIL
+      cursor.continue();
+    }
+    
     await transaction.done
 
     await connection.close();
