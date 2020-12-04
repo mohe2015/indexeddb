@@ -204,7 +204,12 @@ async function run() {
     // and then have a unified interface to access both.
 
     let objectStore = transaction.objectStore("users") as IndexedDatabaseObjectStore
-    console.log(objectStore.objectStore.indexNames)
+    
+    console.log("count: ", await objectStore.count());
+
+    await objectStore.delete(result0)
+
+    console.log("count: ", await objectStore.count());
 
     await transaction.done
 

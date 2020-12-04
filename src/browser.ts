@@ -321,7 +321,7 @@ export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrInde
     })
   }
 
-  async count(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined): Promise<any> {
+  async count(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any> {
     return this.handleRequest(this.objectStoreOrIndex.count(key))
   }
 
