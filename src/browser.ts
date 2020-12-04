@@ -396,9 +396,10 @@ export class IndexedDatabaseCursor {
 
   async* [Symbol.asyncIterator](): AsyncGenerator<IDBCursorWithValue> {
     yield new Promise<IDBCursorWithValue>((resolve, reject) => {
-      const firstRequest = !this.lastCursorRequest
-      if (firstRequest) {
+      if (!this.lastCursorRequest) {
         this.lastCursorRequest = this.objectStoreOrIndex.openCursor(this.key, this.direction)
+      } else {
+        this.lastCursorRequest.result!.continue()
       }
 
       this.lastCursorRequest!.addEventListener('error', (event) => {
@@ -416,10 +417,6 @@ export class IndexedDatabaseCursor {
       }, {
         once: true
       })
-
-      if (!firstRequest) {
-        this.lastCursorRequest!.result!.continue()
-      }
     })
   }
 }
