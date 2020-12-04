@@ -342,7 +342,7 @@ export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrInde
   }
 
   async openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IndexedDatabaseCursor> {
-    return new IndexedDatabaseCursor(this.objectStoreOrIndex.openCursor(key, direction))
+    return new IndexedDatabaseCursor(this.objectStoreOrIndex, key, direction)
   }
 
   async openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null> {
@@ -416,26 +416,6 @@ export class IndexedDatabaseCursor {
       }, {
         once: true
       })
-    })
-  }
-  
-  // TODO FIXME WE could also make this void which may simplify usage????
-  async continue(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined): Promise<IDBCursorWithValue | null> {
-    return new Promise<IDBCursorWithValue | null>((resolve, reject) => {
-
-      this.cursorRequest.addEventListener('error', (event) => {
-        reject(event)
-      }, {
-        once: true
-      })
-
-      this.cursorRequest.addEventListener('success', (event) => {
-        resolve(this.cursorRequest.result)
-      }, {
-        once: true
-      })
-
-      this.cursorRequest.result!.continue(key)
     })
   }
 }

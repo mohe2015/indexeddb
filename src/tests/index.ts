@@ -213,13 +213,14 @@ async function run() {
 
     let cursor = await objectStore.openCursor(IDBKeyRange.upperBound("tesu"))
 
-    while (true) {
-      console.log("cursor:", cursor.getFirst())
-
-      // THIS CALLS THE ONSUCCESS AGAIN WHICH LETS THIS FAIL
-      await cursor.continue();
+    for await (const x of cursor) {
+      console.log(x);
+      // expected output:
+      //    "hello"
+      //    "async"
+      //    "iteration!"
     }
-    
+  
     await transaction.done
 
     await connection.close();
