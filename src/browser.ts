@@ -382,39 +382,43 @@ export class IndexedDatabaseObjectStore extends IndexedDatabaseObjectStoreOrInde
 }
 
 export class IndexedDatabaseCursor {
-  cursorRequest: IDBRequest<IDBCursorWithValue | null>;
+  objectStoreOrIndex: IDBObjectStore | IDBIndex 
+  key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange
+  direction?: "next" | "nextunique" | "prev" | "prevunique"
 
-  constructor(cursorRequest: IDBRequest<IDBCursorWithValue | null>) {
-    this.cursorRequest = cursorRequest
+  lastCursorRequest?: IDBRequest<IDBCursorWithValue | null>
+
+  constructor(objectStoreOrIndex: IDBObjectStore | IDBIndex, key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique") {
+    this.objectStoreOrIndex = objectStoreOrIndex  
+    this.key = key
+    this.direction = direction
   }
 
-  async* [Symbol.asyncIterator]() {
-      yield "hello";
-      yield "async";
-      yield "iteration!";
-  }
+  async* [Symbol.asyncIterator](): AsyncGenerator<IDBCursorWithValue> {
+    if (this.lastCursorRequest) {
+      this.lastCursorRequest.result!.continue()
+    } else {
+      this.lastCursorRequest = this.objectStoreOrIndex.openCursor(this.key, this.direction)
+    }
 
-  // TODO FIXME unify with continue maybe using a method
-  // or doing this.objectStoreOrIndex.openCursor(key, direction) in this class here
-  async getFirst(): Promise<IDBCursorWithValue | null> {
-    return new Promise<IDBCursorWithValue | null>((resolve, reject) => {
-      this.cursorRequest.addEventListener('error', (event) => {
+    yield new Promise<IDBCursorWithValue>((resolve, reject) => {
+      this.lastCursorRequest!.addEventListener('error', (event) => {
         reject(event)
       }, {
         once: true
       })
-      this.cursorRequest.addEventListener('success', (event) => {
-        if (this.cursorRequest.result === null) {
+      this.lastCursorRequest!.addEventListener('success', (event) => {
+        if (this.lastCursorRequest!.result === null) {
           reject(event)
         } else {
-          resolve(this.cursorRequest.result)
+          resolve(this.lastCursorRequest!.result)
         }
       }, {
         once: true
       })
     })
   }
-
+  
   // TODO FIXME WE could also make this void which may simplify usage????
   async continue(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined): Promise<IDBCursorWithValue | null> {
     return new Promise<IDBCursorWithValue | null>((resolve, reject) => {
