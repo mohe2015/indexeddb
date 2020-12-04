@@ -391,6 +391,9 @@ export abstract class DatabaseTransaction {
   abstract objectStore(name: string): DatabaseObjectStore
 }
 
-export abstract class DatabaseObjectStore {
+export abstract class DatabaseObjectStoreOrIndex {
+}
+
+export abstract class DatabaseObjectStore extends DatabaseObjectStoreOrIndex {
   abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 }
