@@ -340,6 +340,14 @@ export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrInde
   async getAllKeys(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, count: number | undefined): Promise<IDBValidKey[]> {
     return this.handleRequest(this.objectStoreOrIndex.getAllKeys(key, count))
   }
+
+  async openCursor(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange | undefined, direction: "next" | "nextunique" | "prev" | "prevunique" | undefined): Promise<IDBCursorWithValue | null> {
+    return this.handleRequest(this.objectStoreOrIndex.openCursor(key, direction))
+  }
+
+  async openKeyCursor(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange | undefined, direction: "next" | "nextunique" | "prev" | "prevunique" | undefined): Promise<IDBCursor | null> {
+    return this.handleRequest(this.objectStoreOrIndex.openKeyCursor(key, direction))
+  }
 }
 
 export class IndexedDatabaseObjectStore extends IndexedDatabaseObjectStoreOrIndex {
