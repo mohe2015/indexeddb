@@ -217,7 +217,7 @@ async function run() {
       console.log("cursor:", cursor)
 
       // THIS CALLS THE ONSUCCESS AGAIN WHICH LETS THIS FAIL
-      cursor.continue();
+      await cursor.continue();
     }
     
     await transaction.done

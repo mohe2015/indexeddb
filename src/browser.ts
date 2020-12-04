@@ -302,6 +302,17 @@ class IndexedDatabaseTransaction extends DatabaseTransaction {
   }
 }
 
+function handleRequest<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    request.addEventListener('error', (event) => {
+      reject(event)
+    })
+    request.addEventListener('success', (event) => {
+      resolve(request.result)
+    })
+  })
+}
+
 export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrIndex {
   objectStoreOrIndex: IDBObjectStore | IDBIndex
 
@@ -310,43 +321,32 @@ export class IndexedDatabaseObjectStoreOrIndex extends DatabaseObjectStoreOrInde
     this.objectStoreOrIndex = objectStoreOrIndex
   }
 
-  protected handleRequest<T>(request: IDBRequest<T>): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      request.addEventListener('error', (event) => {
-        reject(event)
-      })
-      request.addEventListener('success', (event) => {
-        resolve(request.result)
-      })
-    })
-  }
-
   async count(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any> {
-    return this.handleRequest(this.objectStoreOrIndex.count(key))
+    return handleRequest(this.objectStoreOrIndex.count(key))
   }
 
   async get(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any> {
-    return this.handleRequest(this.objectStoreOrIndex.get(key))
+    return handleRequest(this.objectStoreOrIndex.get(key))
   }
 
   async getKey(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<IDBValidKey | undefined> {
-    return this.handleRequest(this.objectStoreOrIndex.getKey(key))
+    return handleRequest(this.objectStoreOrIndex.getKey(key))
   }
 
   async getAll(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<any[]> {
-    return this.handleRequest(this.objectStoreOrIndex.getAll(key, count))
+    return handleRequest(this.objectStoreOrIndex.getAll(key, count))
   }
 
   async getAllKeys(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<IDBValidKey[]> {
-    return this.handleRequest(this.objectStoreOrIndex.getAllKeys(key, count))
+    return handleRequest(this.objectStoreOrIndex.getAllKeys(key, count))
   }
 
   async openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursorWithValue | null> {
-    return this.handleRequest(this.objectStoreOrIndex.openCursor(key, direction))
+    return new IndexedDatabaseCursor(this.objectStoreOrIndex.openCursor(key, direction)).get()
   }
 
   async openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null> {
-    return this.handleRequest(this.objectStoreOrIndex.openKeyCursor(key, direction))
+    return handleRequest(this.objectStoreOrIndex.openKeyCursor(key, direction))
   }
 }
 
@@ -359,15 +359,15 @@ export class IndexedDatabaseObjectStore extends IndexedDatabaseObjectStoreOrInde
   }
 
   async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
-    return this.handleRequest(this.objectStore.add(value, key))
+    return handleRequest(this.objectStore.add(value, key))
   }
 
   async clear(): Promise<void> {
-    return this.handleRequest(this.objectStore.clear())
+    return handleRequest(this.objectStore.clear())
   }
 
   async delete(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any> {
-    return this.handleRequest(this.objectStore.delete(key))
+    return handleRequest(this.objectStore.delete(key))
   }
 
   // TODO FIXME depending on mongodb this could be synchronous
@@ -377,7 +377,49 @@ export class IndexedDatabaseObjectStore extends IndexedDatabaseObjectStoreOrInde
   }
 
   async put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
-    return this.handleRequest(this.objectStore.put(value, key))
+    return handleRequest(this.objectStore.put(value, key))
+  }
+}
+
+export class IndexedDatabaseCursor {
+  cursorRequest: IDBRequest<IDBCursorWithValue | null>;
+
+  constructor(cursorRequest: IDBRequest<IDBCursorWithValue | null>) {
+    this.cursorRequest = cursorRequest
+  }
+
+  async get() {
+    new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+      this.cursorRequest.addEventListener('error', (event) => {
+        reject(event)
+      }, {
+        once: true
+      })
+      this.cursorRequest.addEventListener('success', (event) => {
+        resolve(this.cursorRequest.result)
+      }, {
+        once: true
+      })
+    })
+  }
+
+  async continue(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined): Promise<IDBCursorWithValue | null> {
+    return new Promise<IDBCursorWithValue | null>((resolve, reject) => {
+
+      this.cursorRequest.addEventListener('error', (event) => {
+        reject(event)
+      }, {
+        once: true
+      })
+
+      this.cursorRequest.addEventListener('success', (event) => {
+        resolve(this.cursorRequest.result)
+      }, {
+        once: true
+      })
+
+      this.cursorRequest.result!.continue(key)
+    })
   }
 }
 
