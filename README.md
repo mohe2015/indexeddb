@@ -21,6 +21,11 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
+TODO ESLINT
+TODO TYPEDOC
+
+https://tsdoc.org/
+
 https://nodejs.org/api/esm.html#esm_self_referencing_a_package_using_its_name
 
 https://nodejs.org/api/esm.html#esm_internal_package_imports

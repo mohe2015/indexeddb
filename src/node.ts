@@ -35,6 +35,8 @@ import {
   WithoutKeysOf,
   DatabaseTransaction,
   DatabaseObjectStore,
+  DatabaseCursor,
+  DatabaseObjectStoreOrIndex,
 } from './interface';
 import { getOutstandingMigrations } from './utils';
 
@@ -310,6 +312,50 @@ export class MongoDatabaseObjectStore extends DatabaseObjectStore {
   async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
     let result = await this.collection.insertOne(value)
     return result.insertedId
+  }
+
+  async clear(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  
+  async delete(key: IDBValidKey): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async index(name: string): Promise<DatabaseObjectStoreOrIndex> {
+    throw new Error('Method not implemented.');
+  }
+
+  async put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async count(key?: IDBValidKey): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+
+  async get(key: IDBValidKey): Promise<any> {
+    throw new Error('Method not implemented.');
+  }
+  
+  async getKey(key: IDBValidKey): Promise<string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getAll(key?: IDBValidKey, count?: number): Promise<any[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async getAllKeys(key?: IDBValidKey, count?: number): Promise<IDBValidKey[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  async openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<DatabaseCursor> {
+    throw new Error('Method not implemented.');
+  }
+
+  async openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: 'next' | 'nextunique' | 'prev' | 'prevunique'): Promise<IDBCursor | null> {
+    throw new Error('Method not implemented.');
   }
 }
 

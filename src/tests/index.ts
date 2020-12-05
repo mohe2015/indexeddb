@@ -198,7 +198,7 @@ async function run() {
     console.log(result1)
     console.log(result2);
 
-    (await transaction.objectStore("users").index("test")).count()
+   // (await transaction.objectStore("users").index("test")).count()
 
     let objectStore = transaction.objectStore("users")
     

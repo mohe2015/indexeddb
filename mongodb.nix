@@ -27,6 +27,7 @@
 , zstd
 , icu67
 , fmt
+, valgrind
 }:
 let
 python = python38.withPackages (ps: with ps; [ pyyaml cheetah3 psutil setuptools ]);
@@ -63,6 +64,7 @@ in stdenv.mkDerivation rec {
         zstd
         icu67
         fmt
+        valgrind
     ];
     
     postPatch = ''

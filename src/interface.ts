@@ -392,18 +392,60 @@ export abstract class DatabaseTransaction {
 }
 
 export abstract class DatabaseObjectStoreOrIndex {
-  abstract count(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
 
+  /**
+   * Returns the total number of records that match the key or key range.
+   * @param key the key or key range to match
+   * @returns the total number of records that match the key or key range
+   */
+  abstract count(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<number>
+
+  /**
+   * Returns the object with the specified key.
+   * @param key the key to look for
+   * @returns the object with the specified key
+   */
   abstract get(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
 
+  /**
+   * Returns the key of the object with the specified key or key range.
+   * @param key the key or key range to look for
+   * @returns the key of the object with the specified key or key range
+   */
   abstract getKey(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<IDBValidKey | undefined> 
 
+  /**
+   * Returns all objects that match the specified key or key range.
+   * This method produces the same result for a record that doesn't exist in the database and a record that has an undefined value.
+   * @param key the key or key range to match
+   * @param count the number of objects to return
+   * @returns all objects that match the specified key or key range.
+   */
   abstract getAll(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<any[]> 
 
+  /**
+   * Returns the keys of all objects that match the specified key or key range.
+   * This method produces the same result for a record that doesn't exist in the database and a record that has an undefined value.
+   * @param key the key or key range to match
+   * @param count the number of objects to return
+   * @returns the keys of all objects that match the specified key or key range.
+   */
   abstract getAllKeys(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<IDBValidKey[]> 
 
+  /**
+   * Returns the cursor to iterate through the objects that match the specified key or key range.
+   * @param key the key or key range to match
+   * @param direction the direction of the cursor
+   * @returns the cursor to use for iterating
+   */
   abstract openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<DatabaseCursor>
 
+  /**
+   * Returns the cursor to iterate through the keys of the objects that match the specified key or key range.
+   * @param key the key or key range to match
+   * @param direction the direction of the cursor
+   * @returns the cursor to use for iterating
+   */
   abstract openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null>
 }
 
