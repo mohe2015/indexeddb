@@ -41,6 +41,7 @@ import {
   DatabaseTransaction,
   DatabaseObjectStore,
   DatabaseObjectStoreOrIndex,
+  DatabaseCursor,
 } from './interface';
 import { getOutstandingMigrations } from './utils';
 
@@ -371,10 +372,8 @@ export class IndexedDatabaseObjectStore extends IndexedDatabaseObjectStoreOrInde
     return handleRequest(this.objectStore.delete(key))
   }
 
-  // TODO FIXME depending on mongodb this could be synchronous
-  // TODO FIXME index class
-  async index(name: string): Promise<IDBIndex> {
-    return this.objectStore.index(name)
+  async index(name: string): Promise<DatabaseObjectStoreOrIndex> {
+    return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(name))
   }
 
   async put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
@@ -382,7 +381,7 @@ export class IndexedDatabaseObjectStore extends IndexedDatabaseObjectStoreOrInde
   }
 }
 
-export class IndexedDatabaseCursor {
+export class IndexedDatabaseCursor extends DatabaseCursor {
   objectStoreOrIndex: IDBObjectStore | IDBIndex 
   key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange
   direction?: "next" | "nextunique" | "prev" | "prevunique"
@@ -390,6 +389,7 @@ export class IndexedDatabaseCursor {
   lastCursorRequest?: IDBRequest<IDBCursorWithValue | null>
 
   constructor(objectStoreOrIndex: IDBObjectStore | IDBIndex, key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique") {
+    super()
     this.objectStoreOrIndex = objectStoreOrIndex  
     this.key = key
     this.direction = direction

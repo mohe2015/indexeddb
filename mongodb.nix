@@ -7,6 +7,7 @@
 , stdenv
 , python38
 , boost170
+, asio
 , curl
 , gperftools
 , libpcap
@@ -24,7 +25,7 @@
 , libunwind
 , libstemmer
 , zstd
-, icu
+, icu67
 , fmt
 }:
 let
@@ -42,6 +43,7 @@ in stdenv.mkDerivation rec {
     
     buildInputs = [
         boost170
+        asio
         curl
         gperftools
         libpcap
@@ -59,7 +61,7 @@ in stdenv.mkDerivation rec {
         libunwind
         libstemmer
         zstd
-        icu
+        icu67
         fmt
     ];
     

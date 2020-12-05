@@ -196,14 +196,11 @@ async function run() {
 
     console.log(result0)
     console.log(result1)
-    console.log(result2)
+    console.log(result2);
 
-    // TODO It seems like the primary key is not available as an index directly
-    // but the objectStore and the index has quite a similar interface so it may be possible
-    // to add fake getPrimaryIndex method to the objectstore that actually just returns the objectstore
-    // and then have a unified interface to access both.
+    (await transaction.objectStore("users").index("test")).count()
 
-    let objectStore = transaction.objectStore("users") as IndexedDatabaseObjectStore
+    let objectStore = transaction.objectStore("users")
     
     console.log("count: ", await objectStore.count());
 

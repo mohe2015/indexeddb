@@ -402,7 +402,7 @@ export abstract class DatabaseObjectStoreOrIndex {
 
   abstract getAllKeys(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<IDBValidKey[]> 
 
-  abstract openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IndexedDatabaseCursor>
+  abstract openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<DatabaseCursor>
 
   abstract openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null>
 }
@@ -415,7 +415,7 @@ export abstract class DatabaseObjectStore extends DatabaseObjectStoreOrIndex {
 
   abstract delete(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
 
-  abstract index(name: string): Promise<IDBIndex>
+  abstract index(name: string): Promise<DatabaseObjectStoreOrIndex>
 
   abstract put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 }
