@@ -392,8 +392,35 @@ export abstract class DatabaseTransaction {
 }
 
 export abstract class DatabaseObjectStoreOrIndex {
+  abstract count(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
+
+  abstract get(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
+
+  abstract getKey(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<IDBValidKey | undefined> 
+
+  abstract getAll(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<any[]> 
+
+  abstract getAllKeys(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, count?: number): Promise<IDBValidKey[]> 
+
+  abstract openCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IndexedDatabaseCursor>
+
+  abstract openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null>
 }
 
 export abstract class DatabaseObjectStore extends DatabaseObjectStoreOrIndex {
+
   abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
+
+  abstract clear(): Promise<void> 
+
+  abstract delete(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
+
+  abstract index(name: string): Promise<IDBIndex>
+
+  abstract put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
+}
+
+export abstract class DatabaseCursor {
+
+  abstract [Symbol.asyncIterator](): AsyncIterator<IDBCursorWithValue>
 }
