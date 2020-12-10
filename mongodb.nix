@@ -1,36 +1,10 @@
 # SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-{
-  fetchurl
-, sconsPackages
-, stdenv
-, python38
-, boost170
-, asio
-, curl
-, gperftools
-, libpcap
-, libyamlcpp
-, openssl
-, pcre-cpp
-, cyrus_sasl
-, snappy
-, zlib
-, lzma
-, wiredtiger
-, mongoc
-, abseil-cpp
-, pkgconfig
-, libunwind
-, libstemmer
-, zstd
-, icu67
-, fmt
-, valgrind
-}:
+{ fetchurl, sconsPackages, stdenv, python38, boost169, curl, gperftools, libpcap, libyamlcpp, openssl, pcre-cpp, cyrus_sasl, snappy, zlib, lzma }:
 let
 python = python38.withPackages (ps: with ps; [ pyyaml cheetah3 psutil setuptools ]);
+boost = boost169.override { enableShared = false; enabledStatic = true; };
 in stdenv.mkDerivation rec {
     version = "4.4.2";
     pname = "mongodb";
@@ -40,11 +14,10 @@ in stdenv.mkDerivation rec {
         sha256 = "X5cKD2nGBNJQHuTfkgr6nWHsFvW2kfcecFhxoIsL/+U=";
     };
     
-    nativeBuildInputs = [ pkgconfig sconsPackages.scons_latest ];
+    nativeBuildInputs = [ sconsPackages.scons_latest ];
     
     buildInputs = [
-        boost170
-        asio
+        boost
         curl
         gperftools
         libpcap
@@ -56,16 +29,9 @@ in stdenv.mkDerivation rec {
         snappy
         zlib
         lzma
-        wiredtiger
-        mongoc
-        abseil-cpp
-        libunwind
-        libstemmer
-        zstd
-        icu67
-        fmt
-        valgrind
     ];
+    
+    # TODO FIXME add forget-build-dependencies patch
     
     postPatch = ''
     # fix environment variable reading
@@ -77,29 +43,7 @@ in stdenv.mkDerivation rec {
         "--release"
         "--ssl"
         "--disable-warnings-as-errors"
-
-        "--enable-free-mon=off"
-        "--enable-http-client=off"
-      # "--use-system-abseil-cpp" # doesnt work but is build input
-        "--use-system-asio"
-        "--use-system-boost"
-        "--use-system-fmt"
-      # "--use-system-google-benchmark" # also used by another package but not packaged
-        "--use-system-icu"
-      # "--use-system-intel_decimal128" # not packaged
-      # "--use-system-kms-message" # not packaged
-        "--use-system-pcre"
-        "--use-system-snappy"
-        "--use-system-stemmer"
-        "--use-system-tcmalloc"
-        "--use-system-libunwind"
-        "--use-system-valgrind"
-        "--use-system-wiredtiger"
-        "--use-system-yaml"
-        "--use-system-zlib"
-        "--use-system-zstd"
-      # "--use-system-mongo-c" # doesn't work but is build input
-    ];
+    ] ++ map (lib: "--use-system-${lib}") ["boost" "pcre" "snappy" "yaml" "zlib"];
     
     buildPhase = ''
     echo skip build phase
