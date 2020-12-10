@@ -40,7 +40,7 @@
                 services.mongodb = {
                     enable = true;
                     # https://docs.mongodb.com/manual/core/transactions/#transactions-create-collections-indexes 4.4 required
-                    package = super.callPackage ./mongodb.nix {};
+                    package = pkgs.callPackage ./mongodb.nix {};
                     bind_ip = "0.0.0.0"; # dangerous?
 
                     # Transaction numbers are only allowed on a replica set member or mongos
