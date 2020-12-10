@@ -10,21 +10,14 @@
   outputs = { self, nixpkgs }:
     let
       system = "x86_64-linux";
-      yarn = pkgs.yarn.override { nodejs = pkgs.nodejs-15_x; };
-      overlay = self: super:
-      {
-        mongodb-4_4 = super.callPackage ./mongodb.nix {};
-      };
       pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
-            overlays = [ overlay ];
       };
     in
     {
       devShell.${system} = pkgs.mkShell {
         buildInputs = [
-          yarn
           pkgs.nodejs-15_x
           pkgs.nodePackages.npm-check-updates
           pkgs.reuse
@@ -42,18 +35,12 @@
 
                 # Network configuration.
                 networking.useDHCP = false;
-                networking.firewall.allowedTCPPorts = [ 80 27017 ];
+                networking.firewall.allowedTCPPorts = [ 27017 ];
 
-                # Enable a web server.
-                services.httpd = {
-                    enable = true;
-                    adminAddr = "Moritz.Hedtke@t-online.de";
-                };
-                
                 services.mongodb = {
                     enable = true;
                     # https://docs.mongodb.com/manual/core/transactions/#transactions-create-collections-indexes 4.4 required
-                    package = pkgs.mongodb-4_4;
+                    package = super.callPackage ./mongodb.nix {};
                     bind_ip = "0.0.0.0"; # dangerous?
 
                     # Transaction numbers are only allowed on a replica set member or mongos

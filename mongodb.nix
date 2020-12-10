@@ -1,10 +1,9 @@
 # SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-{ fetchurl, sconsPackages, stdenv, python38, boost169, curl, gperftools, libpcap, libyamlcpp, openssl, pcre-cpp, cyrus_sasl, snappy, zlib, lzma }:
+{ fetchurl, sconsPackages, stdenv, python38 }:
 let
 python = python38.withPackages (ps: with ps; [ pyyaml cheetah3 psutil setuptools ]);
-boost = boost169.override { enableShared = false; enabledStatic = true; };
 in stdenv.mkDerivation rec {
     version = "4.4.2";
     pname = "mongodb";
@@ -16,23 +15,8 @@ in stdenv.mkDerivation rec {
     
     nativeBuildInputs = [ sconsPackages.scons_latest ];
     
-    buildInputs = [
-        boost
-        curl
-        gperftools
-        libpcap
-        libyamlcpp
-        openssl
-        pcre-cpp
-        python
-        cyrus_sasl
-        snappy
-        zlib
-        lzma
-    ];
-    
-    # TODO FIXME add forget-build-dependencies patch
-    
+    buildInputs = [];
+        
     postPatch = ''
     # fix environment variable reading
     substituteInPlace SConstruct \
@@ -43,7 +27,7 @@ in stdenv.mkDerivation rec {
         "--release"
         "--ssl"
         "--disable-warnings-as-errors"
-    ] ++ map (lib: "--use-system-${lib}") ["boost" "pcre" "snappy" "yaml" "zlib"];
+    ];
     
     buildPhase = ''
     echo skip build phase
