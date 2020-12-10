@@ -21,12 +21,12 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-import type { DatabaseConnection } from './interface';
+import type { DatabaseConnection } from './interface.js';
 
 export async function create(uri: string): Promise<DatabaseConnection> {
   if (typeof global !== 'undefined') {
-    return (await import('./node')).create(uri!);
+    return (await import('./node.js')).create(uri!);
   } else {
-    return (await import('./browser')).create(uri!);
+    return (await import('./browser.js')).create(uri!);
   }
 }

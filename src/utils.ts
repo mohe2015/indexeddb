@@ -30,8 +30,8 @@ import type {
   ExcludeStrict,
   DatabaseSchemaWithoutMigration,
   DatabaseSchemaWithMigration,
-} from './interface';
-import { isWithMutation } from './interface';
+} from './interface.js';
+import { isWithMutation } from './interface.js';
 
 export function getOutstandingMigrations<
   FROMVERSION extends number,

@@ -22,8 +22,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 // @ts-check
 
-import type { IndexedDatabaseObjectStore } from '../browser';
-import { create } from '../api'; // TODO FIXME when typescript supports it - use internal imports
+import type { IndexedDatabaseObjectStore } from '../browser.js';
+import { create } from '../api.js'; // TODO FIXME when typescript supports it - use internal imports
 import {
   DatabaseSchemaWithoutMigration,
   DatabaseMigration,
@@ -31,7 +31,7 @@ import {
   OmitStrict,
   ExtractStrict,
   ExcludeStrict,
-} from '../interface';
+} from '../interface.js';
 
 async function run() {
   //try {

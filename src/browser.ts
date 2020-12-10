@@ -24,7 +24,6 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 
 // https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
 
-import type { nextTick } from 'process';
 import {
   Database,
   DatabaseSchemaObjectStore,
@@ -42,8 +41,8 @@ import {
   DatabaseObjectStore,
   DatabaseObjectStoreOrIndex,
   DatabaseCursor,
-} from './interface';
-import { getOutstandingMigrations } from './utils';
+} from './interface.js';
+import { getOutstandingMigrations } from './utils.js';
 
 export class IndexedDatabaseConnection extends DatabaseConnection {
   private constructor() {

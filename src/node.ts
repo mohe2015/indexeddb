@@ -37,8 +37,8 @@ import {
   DatabaseObjectStore,
   DatabaseCursor,
   DatabaseObjectStoreOrIndex,
-} from './interface';
-import { getOutstandingMigrations } from './utils';
+} from './interface.js';
+import { getOutstandingMigrations } from './utils.js';
 
 // https://docs.mongodb.com/drivers/node/
 
