@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
-{ fetchurl, sconsPackages, stdenv, python38 }:
+{ fetchurl, sconsPackages, stdenv, python38, openssl, curl, lzma }:
 let
 python = python38.withPackages (ps: with ps; [ pyyaml cheetah3 psutil setuptools ]);
 in stdenv.mkDerivation rec {
@@ -15,7 +15,12 @@ in stdenv.mkDerivation rec {
     
     nativeBuildInputs = [ sconsPackages.scons_latest ];
     
-    buildInputs = [];
+    buildInputs = [
+        python # unclear which packages are needed
+        openssl # required at configure time
+        curl # required at configure time
+        lzma # required at linking but not at configure time
+        ];
         
     postPatch = ''
     # fix environment variable reading

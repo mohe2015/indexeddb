@@ -60,7 +60,7 @@
     };
 }
 
-# nix build .#nixosConfigurations.container.config.system.build.toplevel
+# nix build --keep-failed --print-build-logs .#nixosConfigurations.container.config.system.build.toplevel
 # sudo nixos-container create idb-mongodb --flake .
 # sudo nixos-container start idb-mongodb
 # curl http://$(nixos-container show-ip idb-mongodb)
