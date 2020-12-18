@@ -5,7 +5,7 @@
   # https://github.com/NixOS/nix/issues/3803
   description = "indexeddb";
   
-  inputs.nixpkgs.url = "github:mohe2015/nixpkgs/fix-mongodb";
+  inputs.nixpkgs.url = "github:mohe2015/nixpkgs/fix-mongodb2";
 
   outputs = { self, nixpkgs }:
     let

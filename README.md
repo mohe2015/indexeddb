@@ -36,6 +36,9 @@ sudo nixos-container create idb-mongodb --flake .
 sudo nixos-container start  idb-mongodb
 
 # Setup
+```
+npm install --no-optional
+```
 
 ```
 (cd lib && yarn link)
