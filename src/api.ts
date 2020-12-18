@@ -25,7 +25,8 @@ import type { DatabaseConnection } from './interface.js';
 
 export async function create(uri: string): Promise<DatabaseConnection> {
   if (typeof global !== 'undefined') {
-    return (await import('./node.js')).create(uri!);
+    //return (await import('./node.js')).create(uri!);
+    return (await import('./postgresql.js')).create(uri!);
   } else {
     return (await import('./browser.js')).create(uri!);
   }
