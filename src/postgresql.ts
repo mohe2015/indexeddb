@@ -21,7 +21,7 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-import PG from 'pg';
+import { Pool } from 'pg';
 import {
   Database,
   DatabaseConnection,
@@ -40,29 +40,17 @@ import {
 } from './interface.js';
 import { getOutstandingMigrations } from './utils.js';
 
-// https://docs.mongodb.com/drivers/node/
-
-// TODO FIXME https://docs.mongodb.com/manual/core/schema-validation/
-
 export class PostgresqlDatabaseConnection extends DatabaseConnection {
-  databaseConnection: MongoDB.MongoClient;
 
-  constructor(databaseConnection: MongoDB.MongoClient) {
+  constructor() {
     super();
-    this.databaseConnection = databaseConnection;
   }
 
-  static async create(uri: string): Promise<MongoDatabaseConnection> {
-    let database = new MongoDB.MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    await database.connect();
-    return new MongoDatabaseConnection(database);
+  static async create(uri: string): Promise<PostgresqlDatabaseConnection> {
+    return new PostgresqlDatabaseConnection();
   }
 
   async close() {
-    await this.databaseConnection.close();
   }
 
   async database<
@@ -111,122 +99,134 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
       SCHEMA
     >
   > {
-    let database = this.databaseConnection.db(name);
-    // TODO FIXME implement upgradeneeded manually
+    let pool = new Pool({
+      host: "/var/run/postgresql",
+      database: name
+    })
+    pool.on('error', (err, client) => {
+      console.error('Unexpected error on idle client', err)
+    })
+   
+    let client = await pool.connect()
+    try {
+      let migrations = client.query('CREATE TABLE _config IF NOT EXISTS (key VARCHAR, value VARCHAR)');
 
-    let migrations = database.collection('_config');
+      await client.query('BEGIN');
+    
+      let version =
+        (
+          await migrations.findOne<{ value: number }>(
+            { key: 'version' },
+            { session },
+          )
+        )?.value || 1;
 
-    await this.databaseConnection.withSession(async (session) => {
-      await session.withTransaction(async () => {
-        // try {
-        let version =
-          (
-            await migrations.findOne<{ value: number }>(
-              { key: 'version' },
-              { session },
-            )
-          )?.value || 1;
+      if (version < schema.version) {
+        let migrations = getOutstandingMigrations(schema, version);
 
-        if (version < schema.version) {
-          let migrations = getOutstandingMigrations(schema, version);
-
-          // this could should be really similar to the one in browser.ts
-          for (const migration of migrations) {
-            console.log('running migration: ', migration);
-            for (const [objectStoreName, objectStore] of Object.entries(
-              migration.removedColumns,
-            )) {
-              for (const [columnName, column] of Object.entries(objectStore)) {
-                if ('primaryKeyOptions' in column) {
-                  console.log('delete object store: ', objectStoreName);
-                  // @ts-expect-error
-                  await database.dropCollection(objectStoreName, { session });
-                } else if ('indexOptions' in column) {
-                  console.log(
-                    `delete index without removing data: ${objectStoreName}.${columnName}`,
-                  );
-                  await database
-                    .collection(objectStoreName)
-                    .dropIndex(columnName, { session });
-                } else {
-                  //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
-                  //  throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
-                  //}
-                  console.log(
-                    `delete column without removing data ${objectStoreName}.${columnName}`,
-                  );
-                }
+        // this could should be really similar to the one in browser.ts
+        for (const migration of migrations) {
+          console.log('running migration: ', migration);
+          for (const [objectStoreName, objectStore] of Object.entries(
+            migration.removedColumns,
+          )) {
+            for (const [columnName, column] of Object.entries(objectStore)) {
+              if ('primaryKeyOptions' in column) {
+                console.log('delete object store: ', objectStoreName);
+                // @ts-expect-error
+                await database.dropCollection(objectStoreName, { session });
+              } else if ('indexOptions' in column) {
+                console.log(
+                  `delete index without removing data: ${objectStoreName}.${columnName}`,
+                );
+                await database
+                  .collection(objectStoreName)
+                  .dropIndex(columnName, { session });
+              } else {
+                //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
+                //  throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                //}
+                console.log(
+                  `delete column without removing data ${objectStoreName}.${columnName}`,
+                );
               }
             }
-            for (const [objectStoreName, objectStore] of Object.entries<
-              DatabaseSchemaObjectStore
-            >(migration.addedColumns)) {
-              for (const [columnName, column] of Object.entries(objectStore)) {
-                if ('primaryKeyOptions' in column) {
-                  console.log(
-                    `create object store: ${objectStoreName}`,
-                    column.primaryKeyOptions,
-                  );
-                  if (column.primaryKeyOptions.autoIncrement) {
-                    if (columnName !== '_id') {
-                      throw new Error(
-                        'mongodb only supports autoincrement primary keys named _id',
-                      );
-                    }
-                  } else {
-                    await database.createCollection(objectStoreName, {
-                      session,
-                    });
-                    await database
-                      .collection(objectStoreName)
-                      .createIndex(columnName, { unique: true, session });
+          }
+          for (const [objectStoreName, objectStore] of Object.entries<
+            DatabaseSchemaObjectStore
+          >(migration.addedColumns)) {
+            for (const [columnName, column] of Object.entries(objectStore)) {
+              if ('primaryKeyOptions' in column) {
+                console.log(
+                  `create object store: ${objectStoreName}`,
+                  column.primaryKeyOptions,
+                );
+                if (column.primaryKeyOptions.autoIncrement) {
+                  if (columnName !== '_id') {
+                    throw new Error(
+                      'mongodb only supports autoincrement primary keys named _id',
+                    );
                   }
-                } else if ('indexOptions' in column) {
-                  console.log(
-                    `add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
-                    column.indexOptions,
-                  );
+                } else {
+                  await database.createCollection(objectStoreName, {
+                    session,
+                  });
                   await database
                     .collection(objectStoreName)
-                    .createIndex(columnName, {
-                      unique: column.indexOptions.unique,
-                      session,
-                    });
-                } else {
-                  //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
-                  //  throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
-                  //}
-                  console.log(
-                    `add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
-                  );
+                    .createIndex(columnName, { unique: true, session });
                 }
+              } else if ('indexOptions' in column) {
+                console.log(
+                  `add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
+                  column.indexOptions,
+                );
+                await database
+                  .collection(objectStoreName)
+                  .createIndex(columnName, {
+                    unique: column.indexOptions.unique,
+                    session,
+                  });
+              } else {
+                //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
+                //  throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
+                //}
+                console.log(
+                  `add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
+                );
               }
             }
           }
         }
+      }
 
-        await migrations.updateOne(
-          { key: 'version' },
-          { $set: { value: schema.version } },
-          { upsert: true, session },
-        );
-        /*} catch (error) {
-          if (error instanceof MongoDB.MongoError) {
-            console.log("mongodb error while migrating ", error)
-          } else {
-            console.log("unknown error while migrating ", error)
-          }
-          console.log("aborting transaction...")
-          await session.abortTransaction()
-        }*/
-      });
-    });
-
-    return new MongoDatabase(this.databaseConnection, database);
+      await migrations.updateOne(
+        { key: 'version' },
+        { $set: { value: schema.version } },
+        { upsert: true, session },
+      );
+      /*} catch (error) {
+        if (error instanceof MongoDB.MongoError) {
+          console.log("mongodb error while migrating ", error)
+        } else {
+          console.log("unknown error while migrating ", error)
+        }
+        console.log("aborting transaction...")
+        await session.abortTransaction()
+      }*/
+        
+      await client.query('COMMIT')
+    } catch (e) {
+      await client.query('ROLLBACK');
+      console.error(e);
+      throw e
+    } finally {
+      client.release()
+    }
+    return new PostgresqlDatabase(pool);
   }
 }
 
-export class MongoDatabase<
+export class PostgresqlDatabase<
   FROMVERSION extends number,
   TOVERSION extends number,
   OLDOBJECTSTORES extends DatabaseObjectStores,
@@ -267,13 +267,11 @@ export class MongoDatabase<
   OLDSCHEMA,
   SCHEMA
 > {
-  databaseConnection: MongoDB.MongoClient;
-  database: MongoDB.Db;
+  pool: Pool;
 
-  constructor(databaseConnection: MongoDB.MongoClient, database: MongoDB.Db) {
+  constructor(pool: Pool) {
     super();
-    this.databaseConnection = databaseConnection
-    this.database = database;
+    this.pool = pool;
   }
 
   async transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction> {
@@ -281,6 +279,11 @@ export class MongoDatabase<
     session.startTransaction()
     return new MongoDatabaseTransaction(this.database, session)
     
+  }
+
+  // TODO FIXME add to interface
+  async close() {
+    await this.pool.end()
   }
 }
 
