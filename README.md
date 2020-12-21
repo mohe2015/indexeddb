@@ -44,6 +44,13 @@ npm install --no-optional
 (cd lib && yarn link)
 (cd tests && yarn link @dev.mohe/indexeddb)
 
+# Postgresql
+
+```sql
+CREATE DATABASE test12;
+GRANT ALL PRIVILEGES ON DATABASE test12 TO moritz;
+```
+
 # New Project
 
 > ✨ Bootstrapped with Create Snowpack App (CSA).
