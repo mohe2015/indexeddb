@@ -109,17 +109,13 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
    
     let client = await pool.connect()
     try {
-      let migrations = client.query('CREATE TABLE _config IF NOT EXISTS (key VARCHAR, value VARCHAR)');
-
       await client.query('BEGIN');
+
+      let migrations = await client.query('CREATE TABLE _config IF NOT EXISTS (key VARCHAR, value VARCHAR)');
     
-      let version =
-        (
-          await migrations.findOne<{ value: number }>(
-            { key: 'version' },
-            { session },
-          )
-        )?.value || 1;
+      let result = await client.query('SELECT value FROM _config WHERE key = "version" LIMIT 1');
+      const [{version = 1}] = result.rows
+      console.log(version)
 
       if (version < schema.version) {
         let migrations = getOutstandingMigrations(schema, version);
@@ -139,9 +135,9 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
                 console.log(
                   `delete index without removing data: ${objectStoreName}.${columnName}`,
                 );
-                await database
-                  .collection(objectStoreName)
-                  .dropIndex(columnName, { session });
+                //await database
+                //  .collection(objectStoreName)
+                //  .dropIndex(columnName, { session });
               } else {
                 //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
                 //  throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
@@ -168,24 +164,24 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
                     );
                   }
                 } else {
-                  await database.createCollection(objectStoreName, {
-                    session,
-                  });
-                  await database
-                    .collection(objectStoreName)
-                    .createIndex(columnName, { unique: true, session });
+                 n//await database.createCollection(objectStoreName, {
+                  //  session,
+                  //});
+                  //await database
+                  //  .collection(objectStoreName)
+                  //  .createIndex(columnName, { unique: true, session });
                 }
               } else if ('indexOptions' in column) {
                 console.log(
                   `add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
                   column.indexOptions,
                 );
-                await database
-                  .collection(objectStoreName)
-                  .createIndex(columnName, {
-                    unique: column.indexOptions.unique,
-                    session,
-                  });
+                //await database
+                //  .collection(objectStoreName)
+                //  .createIndex(columnName, {
+                //    unique: column.indexOptions.unique,
+                //    session,
+                //  });
               } else {
                 //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
                 //  throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
@@ -199,11 +195,11 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
         }
       }
 
-      await migrations.updateOne(
-        { key: 'version' },
-        { $set: { value: schema.version } },
-        { upsert: true, session },
-      );
+      //await migrations.updateOne(
+      //  { key: 'version' },
+      //  { $set: { value: schema.version } },
+      //  { upsert: true, session },
+      //);
       /*} catch (error) {
         if (error instanceof MongoDB.MongoError) {
           console.log("mongodb error while migrating ", error)
@@ -275,10 +271,7 @@ export class PostgresqlDatabase<
   }
 
   async transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction> {
-    let session = this.databaseConnection.startSession()
-    session.startTransaction()
-    return new MongoDatabaseTransaction(this.database, session)
-    
+    return new PostgresqlTransaction()
   }
 
   // TODO FIXME add to interface
@@ -287,34 +280,27 @@ export class PostgresqlDatabase<
   }
 }
 
-export class MongoDatabaseTransaction extends DatabaseTransaction {
-  database: MongoDB.Db;
-  session: MongoDB.ClientSession
+export class PostgresqlTransaction extends DatabaseTransaction {
   done: Promise<void>
 
-  constructor(database: MongoDB.Db, session: MongoDB.ClientSession) {
+  constructor() {
     super()
-    this.database = database
-    this.session = session
-    this.done = session.commitTransaction(undefined)
+    this.done = (async () => {})()
   }
   
-  objectStore(name: string): MongoDatabaseObjectStore {
-    return new MongoDatabaseObjectStore(this.database.collection(name))
+  objectStore(name: string): PostgresqlObjectStore {
+    return new PostgresqlObjectStore()
   }
 }
 
-export class MongoDatabaseObjectStore extends DatabaseObjectStore {
-  collection: MongoDB.Collection
+export class PostgresqlObjectStore extends DatabaseObjectStore {
 
-  constructor(collection: MongoDB.Collection) {
+  constructor() {
     super()
-    this.collection = collection
   }
 
   async add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any> {
-    let result = await this.collection.insertOne(value)
-    return result.insertedId
+    throw new Error('Method not implemented.');
   }
 
   async clear(): Promise<void> {
@@ -362,4 +348,4 @@ export class MongoDatabaseObjectStore extends DatabaseObjectStore {
   }
 }
 
-export const create = MongoDatabaseConnection.create;
+export const create = PostgresqlDatabaseConnection.create;
