@@ -5,7 +5,7 @@
   "exports": {
     ".": {
       "browser": "./build/browser.js",
-      "node": "./build/node.js",
+      "node": "./build/postgresql.js",
       "default": "./build/browser.js"
     },
     "./build/interface": "./build/interface.js",

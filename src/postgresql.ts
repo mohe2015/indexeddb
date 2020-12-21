@@ -164,7 +164,7 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
                     );
                   }
                 } else {
-                 n//await database.createCollection(objectStoreName, {
+                 //await database.createCollection(objectStoreName, {
                   //  session,
                   //});
                   //await database
