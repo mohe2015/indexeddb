@@ -21,7 +21,7 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
 
-import { Pool } from 'pg';
+import PG from 'pg';
 import {
   Database,
   DatabaseConnection,
@@ -99,7 +99,7 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
       SCHEMA
     >
   > {
-    let pool = new Pool({
+    let pool = new PG.Pool({
       host: "/var/run/postgresql",
       database: name
     })
@@ -111,14 +111,14 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
     try {
       await client.query('BEGIN');
 
-      let migrations = await client.query('CREATE TABLE _config IF NOT EXISTS (key VARCHAR, value VARCHAR)');
+      let migrations = await client.query('CREATE TABLE IF NOT EXISTS _config (key VARCHAR, value VARCHAR)');
     
-      let result = await client.query('SELECT value FROM _config WHERE key = "version" LIMIT 1');
-      const [{version = 1}] = result.rows
-      console.log(version)
+      let result = await client.query(`SELECT value FROM _config WHERE key = 'version' LIMIT 1`);
+      const [row = {value: 1}] = result.rows
+      console.log(row.value)
 
-      if (version < schema.version) {
-        let migrations = getOutstandingMigrations(schema, version);
+      if (row.value < schema.version) {
+        let migrations = getOutstandingMigrations(schema, row.value);
 
         // this could should be really similar to the one in browser.ts
         for (const migration of migrations) {
@@ -263,9 +263,9 @@ export class PostgresqlDatabase<
   OLDSCHEMA,
   SCHEMA
 > {
-  pool: Pool;
+  pool: PG.Pool;
 
-  constructor(pool: Pool) {
+  constructor(pool: PG.Pool) {
     super();
     this.pool = pool;
   }
