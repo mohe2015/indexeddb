@@ -272,7 +272,7 @@ export function migrate<
   };
 }
 
-// type which doesnt contain any nested keys from the other object store (for added
+// type which doesnt contain any nested keys from the other object store (for added)
 export type WithoutKeysOf<A extends DatabaseObjectStores> = {
   [K in keyof A]?: {
     [K1 in keyof A[K]]?: never;
@@ -382,13 +382,13 @@ export abstract class Database<
   >
 > {
 
-  abstract transaction(objectStores: string[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction>
+  abstract transaction<OBJECTSTORES extends keyof SCHEMA["objectStores"]>(objectStores: OBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<OBJECTSTORES>>
 }
 
-export abstract class DatabaseTransaction {
+export abstract class DatabaseTransaction<OBJECTSTORES> {
   abstract done: Promise<void>
 
-  abstract objectStore(name: string): DatabaseObjectStore
+  abstract objectStore(name: OBJECTSTORES): DatabaseObjectStore
 }
 
 export abstract class DatabaseObjectStoreOrIndex {
