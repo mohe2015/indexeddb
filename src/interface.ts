@@ -460,10 +460,12 @@ SCHEMA
 > {
   abstract done: Promise<void>
 
-  abstract objectStore(name: ALLOWEDOBJECTSTORES): DatabaseObjectStore<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>
+  abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<NAME, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>
 }
 
-export abstract class DatabaseObjectStoreOrIndex<FROMVERSION extends number,
+export abstract class DatabaseObjectStoreOrIndex<
+NAME extends keyof SCHEMA["objectStores"],
+FROMVERSION extends number,
 TOVERSION extends number,
 OLDOBJECTSTORES extends DatabaseObjectStores,
 REMOVED extends DatabaseObjectStores,
@@ -515,7 +517,9 @@ SCHEMA> {
    * @param key the key to look for
    * @returns the object with the specified key
    */
-  abstract get(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
+  abstract get<COLUMNS extends keyof SCHEMA["objectStores"][NAME]>(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, columns: COLUMNS[]): Promise<{
+    [C in COLUMNS]: SCHEMA["objectStores"][NAME][C];
+  }>
 
   /**
    * Returns the key of the object with the specified key or key range.
@@ -559,7 +563,9 @@ SCHEMA> {
   abstract openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null>
 }
 
-export abstract class DatabaseObjectStore<FROMVERSION extends number,
+export abstract class DatabaseObjectStore<
+NAME extends keyof SCHEMA["objectStores"],
+FROMVERSION extends number,
 TOVERSION extends number,
 OLDOBJECTSTORES extends DatabaseObjectStores,
 REMOVED extends DatabaseObjectStores,
@@ -588,7 +594,7 @@ SCHEMA extends DatabaseSchemaWithMigration<
   ADDED,
   AFTERREMOVED,
   OLDSCHEMA
->> extends DatabaseObjectStoreOrIndex<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
+>> extends DatabaseObjectStoreOrIndex<NAME, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
 
   abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 
@@ -596,7 +602,7 @@ SCHEMA extends DatabaseSchemaWithMigration<
 
   abstract delete(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
 
-  abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>
+  abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<NAME, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>
 
   abstract put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 }
