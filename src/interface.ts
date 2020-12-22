@@ -81,7 +81,7 @@ export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: st
 export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> {
 
     // TODO FIXME
-    abstract get(columns: (keyof Type)[]): TypeOfProps<Type>;
+    abstract get<COLUMNS extends keyof Type>(columns: COLUMNS[]): TypeOfProps<Pick<Type, COLUMNS>>;
 }
 
 let connection: DatabaseConnection<typeof objectStores> = null!;
