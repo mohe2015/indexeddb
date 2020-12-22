@@ -25,7 +25,7 @@ import PG from 'pg';
 
 class PostgresqlDatabaseConnection extends DatabaseConnection {
     
-    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (database: Database<SCHEMA>) => void): Promise<Database<SCHEMA>> {
+    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, never>) => void): Promise<Database<SCHEMA>> {
         // TODO FIXME version
         let pool = new PG.Pool({
             host: "/var/run/postgresql",
@@ -39,7 +39,8 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
             await client.query('BEGIN');
 
             let database = new PostgresqlDatabase<SCHEMA>(pool);
-            callback(database);
+            let transaction = database.transaction([], "versionchange");
+            callback(transaction);
 
             await client.query('COMMIT')
         } catch (e) {
@@ -61,13 +62,27 @@ class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseCo
         this.pool = pool
     }
     
-    transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>> {
+    transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>> {
+        let client = await this.pool.connect()
+
+
         throw new Error("Method not implemented.");
     }
-
 }
 
 class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
+
+    client: PG.PoolClient
+
+    constructor(client: PG.PoolClient) {
+        super()
+        this.client = client
+    }
+
+    async createObjectStore(name: string, options: IDBObjectStoreParameters): Promise<any> {
+        await this.client.query(`CREATE TABLE ${name} (${options.keyPath} INTEGER)`);
+    }
+
     objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
         throw new Error("Method not implemented.");
     }
