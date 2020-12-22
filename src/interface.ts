@@ -34,25 +34,38 @@ class Type<T> {
 
 export interface Any extends Type<any> {}
 
+export type DatabaseColumn<T> = {
+    type: Type<T>,
+    index?: boolean
+}
+
 const dbtypes = {
     string: new Type<string>(),
     number: new Type<number>(),
 };
 
 let users = {
-    name: dbtypes.string,
-    age: dbtypes.number
+    name: {
+        type: dbtypes.string,
+    },
+    age: {
+        type: dbtypes.number,
+    },
 }
 
 let posts = {
-    title: dbtypes.string,
-    content: dbtypes.string
+    title: {
+        type: dbtypes.string,
+    },
+    content: {
+        type: dbtypes.string
+    },
 }
 
 // TODO FIXME generalize
 type TypeOf<O extends Any> = O['_T'];
-type TypeOfProps<O extends { [a: string]: Any }> = { [k in keyof O]: TypeOf<O[k]> };
-type TypeOfTypeOfProps<O extends { [a: string]: { [b: string]: Any } }> = { [k in keyof O]: TypeOfProps<O[k]> };
+type TypeOfProps<O extends { [a: string]: DatabaseColumn<any> }> = { [k in keyof O]: TypeOf<O[k]["type"]> };
+type TypeOfTypeOfProps<O extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> = { [k in keyof O]: TypeOfProps<O[k]> };
 
 type Users = TypeOfProps<typeof users>
 
@@ -69,29 +82,29 @@ let a: ObjectStores = {} as ObjectStores;
 
 a.users.age
 
-export abstract class DatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: Any } }> {
+export abstract class DatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
 
     abstract database(name: string, schema: SCHEMA): Database<SCHEMA>
 }
 
-export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: Any } }> {
+export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
 
     abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>>
 }
 
-export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Any } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {
+export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {
 
     abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]>
 }
 
-export abstract class DatabaseObjectStoreOrIndex<Type extends { [a: string]: Any }> {
+export abstract class DatabaseObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }> {
 
-    // TODO FIXME
     abstract get<COLUMNS extends keyof Type>(columns: COLUMNS[]): TypeOfProps<Pick<Type, COLUMNS>>;
 }
 
-export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> extends DatabaseObjectStoreOrIndex<Type> {
+export abstract class DatabaseObjectStore<Type extends { [a: string]: DatabaseColumn<any> }> extends DatabaseObjectStoreOrIndex<Type> {
 
+    // TODO FIXME the database needs to know which columns are indexes
     abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<Type>>
 }
 
