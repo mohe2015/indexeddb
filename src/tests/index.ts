@@ -177,6 +177,9 @@ async function run() {
 
     //console.log(database);
 
+    let transaction1 = await database.transaction(["users"], "readonly");
+    let me = transaction1.objectStore("users").get("Moritz Hedtke", "name");
+
     let transaction = await database.transaction(["posts", "users"], "readwrite") 
 
     let result0 = await transaction.objectStore("users").add(undefined, {
