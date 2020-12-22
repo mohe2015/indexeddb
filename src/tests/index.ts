@@ -177,7 +177,7 @@ async function run() {
 
     //console.log(database);
 
-    let transaction = await database.transaction(["users", "posts"], "readwrite") 
+    let transaction = await database.transaction(["posts", "users"], "readwrite") 
 
     let result0 = await transaction.objectStore("users").add(undefined, {
         name: `test${new Date().getTime()}`,
