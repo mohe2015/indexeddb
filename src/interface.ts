@@ -84,7 +84,7 @@ a.users.age
 
 export abstract class DatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
 
-    abstract database(name: string, schema: SCHEMA): Database<SCHEMA>
+    abstract database(name: string, schema: SCHEMA): Promise<Database<SCHEMA>>
 }
 
 export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
