@@ -82,9 +82,9 @@ let a: ObjectStores = {} as ObjectStores;
 
 a.users.age
 
-export abstract class DatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
+export abstract class DatabaseConnection {
 
-    abstract database(name: string, schema: SCHEMA): Promise<Database<SCHEMA>>
+    abstract database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (database: Database<SCHEMA>) => void): Promise<Database<SCHEMA>>
 }
 
 export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
@@ -108,9 +108,11 @@ export abstract class DatabaseObjectStore<Type extends { [a: string]: DatabaseCo
     abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<Type>>
 }
 
-let connection: DatabaseConnection<typeof objectStores> = null!;
+let connection: DatabaseConnection = null!;
 
-let database = connection.database("test", objectStores)
+let database = await connection.database("test", objectStores, 1, (database) => {
+    
+});
 
 let transaction = await database.transaction(["users", "users"], "readonly");
 

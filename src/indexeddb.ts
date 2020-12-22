@@ -22,9 +22,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface";
 
-class IndexedDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends DatabaseConnection<SCHEMA> {
+class IndexedDatabaseConnection extends DatabaseConnection {
     
-    async database(name: string, schema: SCHEMA): Promise<Database<SCHEMA>> {
+    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (database: Database<SCHEMA>) => void): Promise<Database<SCHEMA>> {
         // TODO FIXME version
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, 1);
@@ -40,9 +40,7 @@ class IndexedDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: Dat
             databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
                 let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
                 try {
-
-
-
+                    callback(database);
                 } catch (error) {
                     databaseOpenRequest.transaction!.abort();
                     reject(error);
