@@ -24,7 +24,7 @@ import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, Data
 
 class IndexedDatabaseConnection extends DatabaseConnection {
     
-    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (database: Database<SCHEMA>) => void): Promise<Database<SCHEMA>> {
+    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, never>) => void): Promise<Database<SCHEMA>> {
         // TODO FIXME version
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, 1);
@@ -39,8 +39,9 @@ class IndexedDatabaseConnection extends DatabaseConnection {
             })
             databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
                 let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
+                let transaction = new IndexedDatabaseTransaction<SCHEMA, never>(databaseOpenRequest.transaction!);
                 try {
-                    callback(database);
+                    callback(transaction);
                 } catch (error) {
                     databaseOpenRequest.transaction!.abort();
                     reject(error);
@@ -58,14 +59,24 @@ class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColum
         super()
         this.database = database
     }
+
+    createObjectStore(name: string, options: IDBObjectStoreParameters): IDBObjectStore {
+        return this.database.createObjectStore(name, options)
+    }
     
     transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>> {
         throw new Error("Method not implemented.");
     }
-
 }
 
 class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
+    transaction: IDBTransaction;
+    
+    constructor(transaction: IDBTransaction) {
+        super()
+        this.transaction = transaction
+    }
+    
     objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
         throw new Error("Method not implemented.");
     }
