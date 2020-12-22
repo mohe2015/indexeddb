@@ -63,6 +63,21 @@ let a: ObjectStores = {} as ObjectStores;
 
 a.users.age
 
+export abstract class DatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: Any } }> {
+
+    abstract database(name: string, schema: SCHEMA): Database<SCHEMA>
+}
+
+export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: Any } }> {
+
+    abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>>
+}
+
+export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Any } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {
+
+    abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]>
+}
+
 export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> {
 
     // TODO FIXME
