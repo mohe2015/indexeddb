@@ -84,3 +84,14 @@ export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> {
     abstract get(columns: (keyof Type)[]): TypeOfProps<Type>;
 }
 
+let connection: DatabaseConnection<typeof objectStores> = null!;
+
+let database = connection.database("test", objectStores)
+
+let transaction = await database.transaction(["users"], "readonly");
+
+let objectStore = transaction.objectStore("users")
+
+let value = objectStore.get(["name"])
+
+value.age
