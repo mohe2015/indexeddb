@@ -23,9 +23,9 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface";
 import PG from 'pg';
 
-class PostgresqlDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends DatabaseConnection<SCHEMA> {
+class PostgresqlDatabaseConnection extends DatabaseConnection {
     
-    async database(name: string, schema: SCHEMA): Promise<Database<SCHEMA>> {
+    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (database: Database<SCHEMA>) => void): Promise<Database<SCHEMA>> {
         // TODO FIXME version
         let pool = new PG.Pool({
             host: "/var/run/postgresql",
@@ -38,6 +38,9 @@ class PostgresqlDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: 
         try {
             await client.query('BEGIN');
 
+            let database = new PostgresqlDatabase<SCHEMA>(pool);
+            callback(database);
+
             await client.query('COMMIT')
         } catch (e) {
           await client.query('ROLLBACK');
@@ -46,7 +49,6 @@ class PostgresqlDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: 
         } finally {
           client.release()
         }
-        return new PostgresqlDatabase(pool);
     }
 }
 
