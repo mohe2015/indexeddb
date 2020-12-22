@@ -517,9 +517,7 @@ SCHEMA> {
    * @param key the key to look for
    * @returns the object with the specified key
    */
-  abstract get<COLUMNS extends keyof SCHEMA["objectStores"][NAME]>(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, columns: COLUMNS[]): Promise<{
-    [C in COLUMNS]: SCHEMA["objectStores"][NAME][C];
-  }>
+  abstract get<COLUMNS extends keyof SCHEMA["objectStores"][NAME]>(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey, columns: COLUMNS[]): Promise<PickStrict<SCHEMA["objectStores"][NAME], COLUMNS>>
 
   /**
    * Returns the key of the object with the specified key or key range.
