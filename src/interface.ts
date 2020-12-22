@@ -62,3 +62,10 @@ type ObjectStores = TypeOfTypeOfProps<typeof objectStores>
 let a: ObjectStores = {} as ObjectStores;
 
 a.users.age
+
+export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> {
+
+    // TODO FIXME
+    abstract get(columns: (keyof Type)[]): TypeOfProps<Type>;
+}
+
