@@ -25,18 +25,14 @@ export {}
 // inspired by https://github.com/gcanti/io-ts
 
 class Type<T> {
-    _T: T
-
-    constructor(_T: T) {
-        this._T = _T
-    }
+    _T!: T
 }
 
 export interface Any extends Type<any> {}
 
 const dbtypes = {
-    string: new Type<string>("hi"),
-    number: new Type<number>(1),
+    string: new Type<string>(),
+    number: new Type<number>(),
 };
 
 // what we want:
