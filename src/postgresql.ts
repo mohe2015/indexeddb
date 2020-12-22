@@ -111,16 +111,17 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
     try {
       await client.query('BEGIN');
 
-      let migrations = await client.query('CREATE TABLE IF NOT EXISTS _config (key VARCHAR, value VARCHAR)');
+      await client.query('CREATE TABLE IF NOT EXISTS _config (key VARCHAR, value VARCHAR)');
     
       let result = await client.query(`SELECT value FROM _config WHERE key = 'version' LIMIT 1`);
       const [row = {value: 1}] = result.rows
-      console.log(row.value)
+      const version = row.value
+      console.log(version)
 
-      if (row.value < schema.version) {
-        let migrations = getOutstandingMigrations(schema, row.value);
+      if (version < schema.version) {
+        let migrations = getOutstandingMigrations(schema, version);
 
-        // this could should be really similar to the one in browser.ts
+        // this should be really similar to the one in browser.ts
         for (const migration of migrations) {
           console.log('running migration: ', migration);
           for (const [objectStoreName, objectStore] of Object.entries(
@@ -129,22 +130,19 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
             for (const [columnName, column] of Object.entries(objectStore)) {
               if ('primaryKeyOptions' in column) {
                 console.log('delete object store: ', objectStoreName);
-                // @ts-expect-error
-                await database.dropCollection(objectStoreName, { session });
+
+                // TODO FIXME document that the migrations are subject to sql injection
+                await client.query(`DROP TABLE ${objectStoreName}`)
               } else if ('indexOptions' in column) {
                 console.log(
-                  `delete index without removing data: ${objectStoreName}.${columnName}`,
+                  `delete index: ${objectStoreName}.${columnName}`,
                 );
-                //await database
-                //  .collection(objectStoreName)
-                //  .dropIndex(columnName, { session });
+                await client.query(`DROP INDEX ${objectStoreName}_${columnName}`)
               } else {
-                //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
-                //  throw new Error(`tried deleting column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
-                //}
                 console.log(
-                  `delete column without removing data ${objectStoreName}.${columnName}`,
+                  `delete column (removing data!): ${objectStoreName}.${columnName}`,
                 );
+                await client.query(`ALTER TABLE ${objectStoreName} DROP COLUMN ${columnName}`)
               }
             }
           }
@@ -164,31 +162,21 @@ export class PostgresqlDatabaseConnection extends DatabaseConnection {
                     );
                   }
                 } else {
-                 //await database.createCollection(objectStoreName, {
-                  //  session,
-                  //});
-                  //await database
-                  //  .collection(objectStoreName)
-                  //  .createIndex(columnName, { unique: true, session });
+                  // TODO FIXME type
+                  await client.query(`CREATE TABLE ${objectStoreName} (${columnName} INTEGER PRIMARY KEY)`)
                 }
               } else if ('indexOptions' in column) {
                 console.log(
                   `add index without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
                   column.indexOptions,
                 );
-                //await database
-                //  .collection(objectStoreName)
-                //  .createIndex(columnName, {
-                //    unique: column.indexOptions.unique,
-                //    session,
-                //  });
+                await client.query(`CREATE ${column.indexOptions.unique ? "UNIQUE" : ""} INDEX ${objectStoreName}_${columnName} ON ${objectStoreName} (${columnName})`)
               } else {
-                //if (!(await database.collections()).some(collection => collection.collectionName === objectStoreName)) {
-                //  throw new Error(`tried adding column ${objectStoreName}.${columnName} but object store ${objectStoreName} does not exist!`)
-                //}
                 console.log(
                   `add column without adding data [WARNING: no default value can break database queries]: ${objectStoreName}.${columnName}`,
                 );
+                // TODO FIXME type
+                await client.query(`ALTER TABLE ${objectStoreName} ADD COLUMN ${columnName} BSON`)
               }
             }
           }

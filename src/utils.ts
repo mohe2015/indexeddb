@@ -79,7 +79,7 @@ export function getOutstandingMigrations<
   while (true) {
     if (currentMigration) {
       outstandingMigrations.push(currentMigration);
-      console.log('added migration ', currentMigration);
+      //console.log('added migration ', currentMigration);
       if (currentMigration.fromVersion === oldVersion) {
         break;
       }
