@@ -15,7 +15,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "useDefineForClassFields": true,
-    "keyofStringsOnly": true,
+    //"keyofStringsOnly": true,
     "noErrorTruncation": true,
 
     "sourceMap": true,

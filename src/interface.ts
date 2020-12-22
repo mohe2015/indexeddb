@@ -29,7 +29,7 @@ export {}
 // inspired by https://github.com/gcanti/io-ts
 
 class Type<T> {
-    _T!: T
+    _T!: T;
 }
 
 export interface Any extends Type<any> {}
@@ -39,14 +39,26 @@ const dbtypes = {
     number: new Type<number>(),
 };
 
-let testUser = {
+let users = {
     name: dbtypes.string,
     age: dbtypes.number
 }
 
+// TODO FIXME generalize
 type TypeOf<O extends Any> = O['_T'];
 type TypeOfProps<O extends { [a: string]: Any }> = { [k in keyof O]: TypeOf<O[k]> };
+type TypeOfTypeOfProps<O extends { [a: string]: { [b: string]: Any } }> = { [k in keyof O]: TypeOfProps<O[k]> };
 
-type User = TypeOfProps<typeof testUser>
+type Users = TypeOfProps<typeof users>
 
 // LOL
+
+const objectStores = {
+    users
+}
+
+type ObjectStores = TypeOfTypeOfProps<typeof objectStores>
+
+let a: ObjectStores = {} as ObjectStores;
+
+a.users.age
