@@ -22,6 +22,10 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 export {}
 
+// there will not be migration support at first. instead I will try to implement an
+// unified interface to do the migration (which is only possible when opening the database because of indexeddb)
+
+
 // inspired by https://github.com/gcanti/io-ts
 
 class Type<T> {
@@ -34,12 +38,6 @@ const dbtypes = {
     string: new Type<string>(),
     number: new Type<number>(),
 };
-
-// what we want:
-
-// creating and deleting objectStores, columns, indexes (one by one?)
-// I'm not sure about the migration support, it complicated things a lot
-// 
 
 let testUser = {
     name: dbtypes.string,
