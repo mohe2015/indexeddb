@@ -84,10 +84,15 @@ export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: st
     abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]>
 }
 
-export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> {
+export abstract class DatabaseObjectStoreOrIndex<Type extends { [a: string]: Any }> {
 
     // TODO FIXME
     abstract get<COLUMNS extends keyof Type>(columns: COLUMNS[]): TypeOfProps<Pick<Type, COLUMNS>>;
+}
+
+export abstract class DatabaseObjectStore<Type extends { [a: string]: Any }> extends DatabaseObjectStoreOrIndex<Type> {
+
+    abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<Type>>
 }
 
 let connection: DatabaseConnection<typeof objectStores> = null!;
