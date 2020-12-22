@@ -21,44 +21,42 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
 import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface";
+import PG from 'pg';
 
-class IndexedDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends DatabaseConnection<SCHEMA> {
+class PostgresqlDatabaseConnection<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends DatabaseConnection<SCHEMA> {
     
     async database(name: string, schema: SCHEMA): Promise<Database<SCHEMA>> {
         // TODO FIXME version
-        return new Promise((resolve, reject) => {
-            const databaseOpenRequest = window.indexedDB.open(name, 1);
-            databaseOpenRequest.addEventListener('success', (event) => {
-                resolve(new IndexedDatabase<SCHEMA>(databaseOpenRequest.result));
-            })
-            databaseOpenRequest.addEventListener('error', (event) => {
-                reject(databaseOpenRequest.error);
-            })
-            databaseOpenRequest.addEventListener('blocked', (event) => {
-                reject(databaseOpenRequest.error)
-            })
-            databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
-                let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
-                try {
-
-
-
-                } catch (error) {
-                    databaseOpenRequest.transaction!.abort();
-                    reject(error);
-                }
-            })
+        let pool = new PG.Pool({
+            host: "/var/run/postgresql",
+            database: name
         })
+        pool.on('error', (err, client) => {
+            console.error('Unexpected error on idle client', err)
+        })
+        let client = await pool.connect()
+        try {
+            await client.query('BEGIN');
+
+            await client.query('COMMIT')
+        } catch (e) {
+          await client.query('ROLLBACK');
+          console.error(e);
+          throw e
+        } finally {
+          client.release()
+        }
+        return new PostgresqlDatabase(pool);
     }
 }
 
-class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends Database<SCHEMA> {
+class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends Database<SCHEMA> {
     
-    database: IDBDatabase
+    pool: PG.Pool
 
-    constructor(database: IDBDatabase) {
+    constructor(pool: PG.Pool) {
         super()
-        this.database = database
+        this.pool = pool
     }
     
     transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>> {
@@ -67,9 +65,8 @@ class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColum
 
 }
 
-class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
+class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
     objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
         throw new Error("Method not implemented.");
     }
-
 }
