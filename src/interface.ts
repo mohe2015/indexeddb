@@ -44,6 +44,11 @@ let users = {
     age: dbtypes.number
 }
 
+let posts = {
+    title: dbtypes.string,
+    content: dbtypes.string
+}
+
 // TODO FIXME generalize
 type TypeOf<O extends Any> = O['_T'];
 type TypeOfProps<O extends { [a: string]: Any }> = { [k in keyof O]: TypeOf<O[k]> };
@@ -54,7 +59,8 @@ type Users = TypeOfProps<typeof users>
 // LOL
 
 const objectStores = {
-    users
+    users,
+    posts
 }
 
 type ObjectStores = TypeOfTypeOfProps<typeof objectStores>
@@ -88,10 +94,10 @@ let connection: DatabaseConnection<typeof objectStores> = null!;
 
 let database = connection.database("test", objectStores)
 
-let transaction = await database.transaction(["users"], "readonly");
+let transaction = await database.transaction(["users", "users"], "readonly");
 
 let objectStore = transaction.objectStore("users")
 
 let value = objectStore.get(["name"])
 
-value.age
+value.name
