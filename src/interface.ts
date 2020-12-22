@@ -382,16 +382,126 @@ export abstract class Database<
   >
 > {
 
-  abstract transaction<OBJECTSTORES extends keyof SCHEMA["objectStores"]>(objectStores: OBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<OBJECTSTORES>>
+  abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA["objectStores"],
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+    FROMVERSION,
+    OLDOBJECTSTORES
+  >,
+  SCHEMA extends DatabaseSchemaWithMigration<
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED,
+    OLDSCHEMA
+  >
+>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<ALLOWEDOBJECTSTORES, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>
 }
 
-export abstract class DatabaseTransaction<OBJECTSTORES> {
+export abstract class DatabaseTransaction<
+ALLOWEDOBJECTSTORES extends keyof SCHEMA["objectStores"],
+FROMVERSION extends number,
+TOVERSION extends number,
+OLDOBJECTSTORES extends DatabaseObjectStores,
+REMOVED extends DatabaseObjectStores,
+ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+AFTERREMOVED extends {
+  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+    OLDOBJECTSTORES[K],
+    keyof REMOVED[K]
+  >;
+} &
+  {
+    [K in ExcludeStrict<
+      keyof OLDOBJECTSTORES,
+      keyof REMOVED
+    >]: OLDOBJECTSTORES[K];
+  },
+OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+  FROMVERSION,
+  OLDOBJECTSTORES
+>,
+SCHEMA extends DatabaseSchemaWithMigration<
+  FROMVERSION,
+  TOVERSION,
+  OLDOBJECTSTORES,
+  REMOVED,
+  ADDED,
+  AFTERREMOVED,
+  OLDSCHEMA
+>
+> extends Database<
+FROMVERSION,
+TOVERSION,
+OLDOBJECTSTORES,
+REMOVED,
+ADDED,
+AFTERREMOVED,
+OLDSCHEMA,
+SCHEMA
+> {
   abstract done: Promise<void>
 
-  abstract objectStore(name: OBJECTSTORES): DatabaseObjectStore
+  abstract objectStore(name: ALLOWEDOBJECTSTORES): DatabaseObjectStore<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>
 }
 
-export abstract class DatabaseObjectStoreOrIndex {
+export abstract class DatabaseObjectStoreOrIndex<FROMVERSION extends number,
+TOVERSION extends number,
+OLDOBJECTSTORES extends DatabaseObjectStores,
+REMOVED extends DatabaseObjectStores,
+ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+AFTERREMOVED extends {
+  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+    OLDOBJECTSTORES[K],
+    keyof REMOVED[K]
+  >;
+} &
+  {
+    [K in ExcludeStrict<
+      keyof OLDOBJECTSTORES,
+      keyof REMOVED
+    >]: OLDOBJECTSTORES[K];
+  },
+OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+  FROMVERSION,
+  OLDOBJECTSTORES
+>,
+SCHEMA extends DatabaseSchemaWithMigration<
+  FROMVERSION,
+  TOVERSION,
+  OLDOBJECTSTORES,
+  REMOVED,
+  ADDED,
+  AFTERREMOVED,
+  OLDSCHEMA
+>
+> extends Database<
+FROMVERSION,
+TOVERSION,
+OLDOBJECTSTORES,
+REMOVED,
+ADDED,
+AFTERREMOVED,
+OLDSCHEMA,
+SCHEMA> {
 
   /**
    * Returns the total number of records that match the key or key range.
@@ -449,7 +559,36 @@ export abstract class DatabaseObjectStoreOrIndex {
   abstract openKeyCursor(key?: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | IDBKeyRange, direction?: "next" | "nextunique" | "prev" | "prevunique"): Promise<IDBCursor | null>
 }
 
-export abstract class DatabaseObjectStore extends DatabaseObjectStoreOrIndex {
+export abstract class DatabaseObjectStore<FROMVERSION extends number,
+TOVERSION extends number,
+OLDOBJECTSTORES extends DatabaseObjectStores,
+REMOVED extends DatabaseObjectStores,
+ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+AFTERREMOVED extends {
+  [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+    OLDOBJECTSTORES[K],
+    keyof REMOVED[K]
+  >;
+} &
+  {
+    [K in ExcludeStrict<
+      keyof OLDOBJECTSTORES,
+      keyof REMOVED
+    >]: OLDOBJECTSTORES[K];
+  },
+OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+  FROMVERSION,
+  OLDOBJECTSTORES
+>,
+SCHEMA extends DatabaseSchemaWithMigration<
+  FROMVERSION,
+  TOVERSION,
+  OLDOBJECTSTORES,
+  REMOVED,
+  ADDED,
+  AFTERREMOVED,
+  OLDSCHEMA
+>> extends DatabaseObjectStoreOrIndex<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA> {
 
   abstract add(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 
@@ -457,7 +596,7 @@ export abstract class DatabaseObjectStore extends DatabaseObjectStoreOrIndex {
 
   abstract delete(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey): Promise<any>
 
-  abstract index(name: string): Promise<DatabaseObjectStoreOrIndex>
+  abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>>
 
   abstract put(key: string | number | Date | ArrayBufferView | ArrayBuffer | IDBArrayKey | undefined, value: any): Promise<any>
 }
