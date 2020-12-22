@@ -460,7 +460,37 @@ SCHEMA
 > {
   abstract done: Promise<void>
 
-  abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<NAME, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>
+  abstract objectStore<NAME extends ALLOWEDOBJECTSTORES,
+  FROMVERSION extends number,
+  TOVERSION extends number,
+  OLDOBJECTSTORES extends DatabaseObjectStores,
+  REMOVED extends DatabaseObjectStores,
+  ADDED extends WithoutKeysOf<OLDOBJECTSTORES>,
+  AFTERREMOVED extends {
+    [K in ExtractStrict<keyof OLDOBJECTSTORES, keyof REMOVED>]: OmitStrict<
+      OLDOBJECTSTORES[K],
+      keyof REMOVED[K]
+    >;
+  } &
+    {
+      [K in ExcludeStrict<
+        keyof OLDOBJECTSTORES,
+        keyof REMOVED
+      >]: OLDOBJECTSTORES[K];
+    },
+  OLDSCHEMA extends DatabaseSchemaWithoutMigration<
+    FROMVERSION,
+    OLDOBJECTSTORES
+  >,
+  SCHEMA extends DatabaseSchemaWithMigration<
+    FROMVERSION,
+    TOVERSION,
+    OLDOBJECTSTORES,
+    REMOVED,
+    ADDED,
+    AFTERREMOVED,
+    OLDSCHEMA
+  >>(name: NAME): DatabaseObjectStore<NAME, FROMVERSION, TOVERSION, OLDOBJECTSTORES, REMOVED, ADDED, AFTERREMOVED, OLDSCHEMA, SCHEMA>
 }
 
 export abstract class DatabaseObjectStoreOrIndex<
