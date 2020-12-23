@@ -43,10 +43,10 @@
   },
   "homepage": "https://github.com/mohe2015/indexeddb#readme",
   "optionalDependencies": {
-    "pg": "^8.5.1"
+    "pg-promise": "^10.8.6"
   },
   "private": false,
   "dependencies": {
-    "pg": "^8.5.1"
+    "pg-promise": "^10.8.6"
   }
 }
