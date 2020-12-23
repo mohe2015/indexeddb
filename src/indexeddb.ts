@@ -20,7 +20,7 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
-import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface";
+import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface.js";
 
 class IndexedDatabaseConnection extends DatabaseConnection {
     
@@ -79,9 +79,9 @@ class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Da
         this.transaction = transaction
     }
     
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
-         this.transaction.db.createObjectStore(name, options)
-        s
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
+        this.transaction.db.createObjectStore(name as string, options)
+        
         throw new Error("Method not implemented.");
     }
 
@@ -89,3 +89,5 @@ class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Da
         throw new Error("Method not implemented.");
     }
 }
+
+export const create = () => new IndexedDatabaseConnection();
