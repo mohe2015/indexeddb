@@ -24,7 +24,7 @@ import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, Data
 
 class IndexedDatabaseConnection extends DatabaseConnection {
     
-    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, never>) => void): Promise<Database<SCHEMA>> {
+    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>) => Promise<void>): Promise<Database<SCHEMA>> {
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, 1);
             databaseOpenRequest.addEventListener('success', (event) => {
@@ -38,8 +38,9 @@ class IndexedDatabaseConnection extends DatabaseConnection {
             })
             databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
                 let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
-                let transaction = new IndexedDatabaseTransaction<SCHEMA, never>(databaseOpenRequest.transaction!);
+                let transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(databaseOpenRequest.transaction!);
                 try {
+                    // TODO FIXME await?
                     callback(transaction);
                     resolve(database)
                 } catch (error) {
@@ -60,10 +61,10 @@ class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColum
         this.database = database
     }
 
-    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => void): Promise<void> {
+    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => Promise<void>): Promise<void> {
         let transaction = new IndexedDatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>(this.database.transaction(objectStores as string[], mode));
         try {
-            callback(transaction);
+            await callback(transaction);
         } catch (e) {
             transaction.transaction.abort();
             throw e

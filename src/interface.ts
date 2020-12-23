@@ -38,7 +38,7 @@ export class Type<T> {
 
 export interface Any extends Type<any> {}
 
-enum DatabaseColumnType {
+export enum DatabaseColumnType {
     DEFAULT, INDEX, PRIMARY_KEY
 }
 
@@ -59,12 +59,12 @@ export type TypeOfTypeOfProps<O extends { [a: string]: { [b: string]: DatabaseCo
 
 export abstract class DatabaseConnection {
 
-    abstract database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, any>) => void): Promise<Database<SCHEMA>>
+    abstract database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>) => Promise<void>): Promise<Database<SCHEMA>>
 }
 
 export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
 
-    abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => void): Promise<void>
+    abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => Promise<void>): Promise<void>
 }
 
 export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {

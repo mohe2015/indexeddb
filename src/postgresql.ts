@@ -25,7 +25,7 @@ import PG from 'pg';
 
 class PostgresqlDatabaseConnection extends DatabaseConnection {
     
-    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, never>) => void): Promise<Database<SCHEMA>> {
+    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>) => Promise<void>): Promise<Database<SCHEMA>> {
         let pool = new PG.Pool({
             host: "/var/run/postgresql",
             database: name
@@ -48,11 +48,11 @@ class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseCo
         this.pool = pool
     }
     
-    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => void): Promise<void> {
+    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => Promise<void>): Promise<void> {
         let client = await this.pool.connect()
         try {
             await client.query('BEGIN');
-            callback(new PostgresqlDatabaseTransaction(client));
+            await callback(new PostgresqlDatabaseTransaction(client));
             await client.query('COMMIT')
         } catch (e) {
           await client.query('ROLLBACK');
