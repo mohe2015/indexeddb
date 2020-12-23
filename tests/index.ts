@@ -55,14 +55,14 @@ const objectStores = {
 let connection: DatabaseConnection = await create();
 
 let database = await connection.database("test12", objectStores, 1, async (transaction) => {
-    transaction.createObjectStore("posts", "title", objectStores.posts.title)
+    //transaction.createObjectStore("posts", "title", objectStores.posts.title)
 });
 
-await database.transaction(["users", "users"], "readonly", async (transaction) => {
+await database.transaction(["users", "posts"], "readwrite", async (transaction) => {
 
-    let objectStore = transaction.objectStore("users")
+    let objectStore = transaction.objectStore("posts", "title")
 
-    let value = await objectStore.get(["name"], "Moritz Hedtke")
+    let value = await objectStore.get(["content"], "Moritz Hedtke")
 
-    value?.name
+    value?.content
 });
