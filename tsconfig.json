@@ -31,6 +31,6 @@
     "baseUrl": "./",
     "paths": { "*": ["web_modules/.types/*"] }
   },
-  "include": ["src", "types", "tests"],
+  "include": ["src", "types"],
   "exclude": ["node_modules"]
 }

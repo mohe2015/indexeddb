@@ -1,0 +1,10 @@
+{
+    "mount": {
+        "src": "/dist",
+        "public": "/"
+    },
+    "plugins": [
+        "@snowpack/plugin-typescript"
+    ],
+    "exclude": ["**/src/postgresql.ts"]
+}

@@ -20,8 +20,8 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
-import { create } from "../src/api.js";
-import { DatabaseColumn, DatabaseColumnType, DatabaseConnection, dbtypes, TypeOfProps, TypeOfTypeOfProps } from "../src/interface.js";
+import { create } from "../api.js";
+import { DatabaseColumn, DatabaseColumnType, DatabaseConnection, dbtypes, TypeOfProps, TypeOfTypeOfProps } from "../interface.js";
 
 // TODO FIXME maybe separate primary key storage
 // or at least store the name somewhere?

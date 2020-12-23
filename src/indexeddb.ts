@@ -26,7 +26,7 @@ import {
   DatabaseConnection,
   DatabaseObjectStore,
   DatabaseTransaction,
-} from './interface.ts';
+} from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
   async database<
