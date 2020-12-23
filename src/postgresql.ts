@@ -31,7 +31,7 @@ import postgres from 'postgres';
 class PostgresqlDatabaseConnection extends DatabaseConnection {
     
     async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>) => Promise<void>): Promise<Database<SCHEMA>> {
-        let pool = pgp()({
+        let pool = postgres({
             host: "/var/run/postgresql",
             database: name
         })
@@ -43,31 +43,31 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
 
 class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends Database<SCHEMA> {
     
-    pool: pgp.IDatabase<{}>
+    pool: postgres.Sql<{}>
 
-    constructor(pool: pgp.IDatabase<{}>) {
+    constructor(pool: postgres.Sql<{}>) {
         super()
         this.pool = pool
     }
     
     async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => Promise<void>): Promise<void> {
-        await this.pool.tx(async t => {
-            await callback(new PostgresqlDatabaseTransaction(t));
+        await this.pool.begin(async (sql) => {
+            await callback(new PostgresqlDatabaseTransaction(sql));
         })
     }
 }
 
 class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
 
-    client: pgp.ITask<{}>
+    client: postgres.TransactionSql<{}>
 
-    constructor(client: pgp.ITask<{}>) {
+    constructor(client: postgres.TransactionSql<{}>) {
         super()
         this.client = client
     }
 
     async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-        await this.client.none(`CREATE TABLE ${name} (${primaryColumnName} ${primaryColumn.type.postgresqlType} PRIMARY KEY)`);
+        await this.client`CREATE TABLE ${name as string} (${primaryColumnName as string} ${primaryColumn.type.postgresqlType} PRIMARY KEY)`;
         return new PostgresqlDatabaseObjectStore<SCHEMA[NAME], C>(this.client, name as string, primaryColumnName)
     }
 
@@ -80,12 +80,12 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
 
 export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> extends DatabaseObjectStoreOrIndex<Type, C> {
 
-    client: pgp.ITask<{}>
+    client: postgres.TransactionSql<{}>
     
     objectStoreName: string
     columnName: C
 
-    constructor(client: pgp.ITask<{}>, objectStoreName: string, columnName: C) {
+    constructor(client: postgres.TransactionSql<{}>, objectStoreName: string, columnName: C) {
         super()
         this.client = client
         this.objectStoreName = objectStoreName
@@ -93,13 +93,15 @@ export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseCo
     }
 
     async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]["type"]["_T"]): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
-        return await this.client.one(`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName} = $1`, [key])
+        let result = await this.client`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName as string} = ${key}`
+        
+        throw new Error("not implemented")
     }
 }
 
 export class PostgresqlDatabaseObjectStore<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> extends PostgresqlObjectStoreOrIndex<Type, C> {
 
-    constructor(client: pgp.ITask<{}>, objectStoreName: string, columnName: C) {
+    constructor(client: postgres.TransactionSql<{}>, objectStoreName: string, columnName: C) {
         super(client, objectStoreName, columnName)
     }
 
