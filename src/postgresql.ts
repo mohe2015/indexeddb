@@ -21,7 +21,12 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
 import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStoreOrIndex, DatabaseTransaction, dbtypes, TypeOfProps } from "./interface.js";
-import pgp from 'pg-promise';
+import postgres from 'postgres';
+
+// pg and pg-promise have shitty promise support
+// currently either use https://github.com/porsager/postgres or https://github.com/malthe/ts-postgres
+
+
 
 class PostgresqlDatabaseConnection extends DatabaseConnection {
     
