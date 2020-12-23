@@ -20,83 +20,126 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
-import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface.js";
+import {
+  Database,
+  DatabaseColumn,
+  DatabaseConnection,
+  DatabaseObjectStore,
+  DatabaseTransaction,
+} from './interface.js';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
-    
-    async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>) => Promise<void>): Promise<Database<SCHEMA>> {
-        return new Promise((resolve, reject) => {
-            const databaseOpenRequest = window.indexedDB.open(name, 1);
-            databaseOpenRequest.addEventListener('success', (event) => {
-                resolve(new IndexedDatabase<SCHEMA>(databaseOpenRequest.result));
-            })
-            databaseOpenRequest.addEventListener('error', (event) => {
-                reject(databaseOpenRequest.error);
-            })
-            databaseOpenRequest.addEventListener('blocked', (event) => {
-                reject(databaseOpenRequest.error)
-            })
-            databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
-                let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
-                let transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(databaseOpenRequest.transaction!);
-                try {
-                    // TODO FIXME await?
-                    callback(transaction);
-                    resolve(database)
-                } catch (error) {
-                    databaseOpenRequest.transaction!.abort();
-                    reject(error);
-                }
-            })
-        })
-    }
-}
-
-class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends Database<SCHEMA> {
-    
-    database: IDBDatabase
-
-    constructor(database: IDBDatabase) {
-        super()
-        this.database = database
-    }
-
-    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => Promise<void>): Promise<void> {
-        let transaction = new IndexedDatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>(this.database.transaction(objectStores as string[], mode));
+  async database<
+    SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
+  >(
+    name: string,
+    schema: SCHEMA,
+    targetVersion: number,
+    callback: (
+      transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>,
+    ) => Promise<void>,
+  ): Promise<Database<SCHEMA>> {
+    return new Promise((resolve, reject) => {
+      const databaseOpenRequest = window.indexedDB.open(name, 1);
+      databaseOpenRequest.addEventListener('success', (event) => {
+        resolve(new IndexedDatabase<SCHEMA>(databaseOpenRequest.result));
+      });
+      databaseOpenRequest.addEventListener('error', (event) => {
+        reject(databaseOpenRequest.error);
+      });
+      databaseOpenRequest.addEventListener('blocked', (event) => {
+        reject(databaseOpenRequest.error);
+      });
+      databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
+        let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
+        let transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
+          databaseOpenRequest.transaction!,
+        );
         try {
-            await callback(transaction);
-        } catch (e) {
-            transaction.transaction.abort();
-            throw e
+          // TODO FIXME await?
+          callback(transaction);
+          resolve(database);
+        } catch (error) {
+          databaseOpenRequest.transaction!.abort();
+          reject(error);
         }
-    }
-
-    async close() {
-        this.database.close()
-    }
+      });
+    });
+  }
 }
 
-class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
-    transaction: IDBTransaction;
-    
-    constructor(transaction: IDBTransaction) {
-        super()
-        this.transaction = transaction
-    }
-    
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-        this.transaction.db.createObjectStore(name as string)
-        
-        throw new Error("Method not implemented.");
-    }
+class IndexedDatabase<
+  SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
+> extends Database<SCHEMA> {
+  database: IDBDatabase;
 
-    async createColumn<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, columnName: C, column: DatabaseColumn<T>): Promise<void> {
-        // do nothing
-    }
+  constructor(database: IDBDatabase) {
+    super();
+    this.database = database;
+  }
 
-    objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME): DatabaseObjectStore<SCHEMA[NAME], C> {
-        throw new Error("Method not implemented.");
+  async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(
+    objectStores: ALLOWEDOBJECTSTORES[],
+    mode: 'readonly' | 'readwrite',
+    callback: (
+      transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>,
+    ) => Promise<void>,
+  ): Promise<void> {
+    let transaction = new IndexedDatabaseTransaction<
+      SCHEMA,
+      ALLOWEDOBJECTSTORES
+    >(this.database.transaction(objectStores as string[], mode));
+    try {
+      await callback(transaction);
+    } catch (e) {
+      transaction.transaction.abort();
+      throw e;
     }
+  }
+
+  async close() {
+    this.database.close();
+  }
+}
+
+class IndexedDatabaseTransaction<
+  SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } },
+  ALLOWEDOBJECTSTORES extends keyof SCHEMA
+> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
+  transaction: IDBTransaction;
+
+  constructor(transaction: IDBTransaction) {
+    super();
+    this.transaction = transaction;
+  }
+
+  async createObjectStore<
+    NAME extends ALLOWEDOBJECTSTORES,
+    T,
+    C extends keyof SCHEMA[NAME]
+  >(
+    name: NAME,
+    primaryColumnName: C,
+    primaryColumn: DatabaseColumn<T>,
+  ): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
+    this.transaction.db.createObjectStore(name as string);
+
+    throw new Error('Method not implemented.');
+  }
+
+  async createColumn<
+    NAME extends ALLOWEDOBJECTSTORES,
+    T,
+    C extends keyof SCHEMA[NAME]
+  >(name: NAME, columnName: C, column: DatabaseColumn<T>): Promise<void> {
+    // do nothing
+  }
+
+  objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(
+    name: NAME,
+  ): DatabaseObjectStore<SCHEMA[NAME], C> {
+    throw new Error('Method not implemented.');
+  }
 }
 
 export const create = () => new IndexedDatabaseConnection();
