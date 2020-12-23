@@ -25,7 +25,6 @@ import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, Data
 class IndexedDatabaseConnection extends DatabaseConnection {
     
     async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, never>) => void): Promise<Database<SCHEMA>> {
-        // TODO FIXME version
         return new Promise((resolve, reject) => {
             const databaseOpenRequest = window.indexedDB.open(name, 1);
             databaseOpenRequest.addEventListener('success', (event) => {
@@ -42,6 +41,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
                 let transaction = new IndexedDatabaseTransaction<SCHEMA, never>(databaseOpenRequest.transaction!);
                 try {
                     callback(transaction);
+                    resolve(database)
                 } catch (error) {
                     databaseOpenRequest.transaction!.abort();
                     reject(error);
@@ -60,12 +60,14 @@ class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColum
         this.database = database
     }
 
-    createObjectStore(name: string, options: IDBObjectStoreParameters): IDBObjectStore {
-        return this.database.createObjectStore(name, options)
-    }
-    
-    transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>> {
-        throw new Error("Method not implemented.");
+    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => void): Promise<void> {
+        let transaction = new IndexedDatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>(this.database.transaction(objectStores as string[], mode));
+        try {
+            callback(transaction);
+        } catch (e) {
+            transaction.transaction.abort();
+            throw e
+        }
     }
 }
 
@@ -77,8 +79,13 @@ class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Da
         this.transaction = transaction
     }
     
-    objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
+         this.transaction.db.createObjectStore(name, options)
+        s
         throw new Error("Method not implemented.");
     }
 
+    objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
+        throw new Error("Method not implemented.");
+    }
 }
