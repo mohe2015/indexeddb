@@ -67,7 +67,7 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
     }
 
     async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-        await this.client`CREATE TABLE ${name as string} (${primaryColumnName as string} ${primaryColumn.type.postgresqlType} PRIMARY KEY)`;
+        await this.client`CREATE TABLE ${this.client(name as string)} (${this.client(primaryColumnName as string)} ${this.client(primaryColumn.type.postgresqlType)} PRIMARY KEY)`;
         return new PostgresqlDatabaseObjectStore<SCHEMA[NAME], C>(this.client, name as string, primaryColumnName)
     }
 
