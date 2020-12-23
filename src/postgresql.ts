@@ -29,7 +29,7 @@ import {
   DatabaseTransaction,
   dbtypes,
   TypeOfProps,
-} from './interface.js';
+} from './interface.ts';
 import postgres from 'postgres';
 
 // pg and pg-promise have shitty promise support
