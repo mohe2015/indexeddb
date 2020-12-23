@@ -73,47 +73,52 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
         this.client = client
     }
 
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T>(name: NAME, primaryColumnName: string, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
         await this.client.query(`CREATE TABLE ${name} (${primaryColumnName} ${primaryColumn.type.postgresqlType} PRIMARY KEY`);
-        return new PostgresqlDatabaseObjectStore<SCHEMA[NAME]>(this.client, name as string, primaryColumnName)
+        return new PostgresqlDatabaseObjectStore<SCHEMA[NAME], C>(this.client, name as string, primaryColumnName)
     }
 
-    objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
+    objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME): DatabaseObjectStore<SCHEMA[NAME], C> {
         throw new Error("Not implemented")
         // TODO FIXME
-        return new PostgresqlDatabaseObjectStore(this.client, name as string, "")
+        //return new PostgresqlDatabaseObjectStore(this.client, name as string, "")
     }
 }
 
-export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }> extends DatabaseObjectStoreOrIndex<Type> {
+export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> extends DatabaseObjectStoreOrIndex<Type, C> {
 
     client: PG.PoolClient
     
     objectStoreName: string
-    columnName: string
+    columnName: C
 
-    constructor(client: PG.PoolClient, objectStoreName: string, columnName: string) {
+    constructor(client: PG.PoolClient, objectStoreName: string, columnName: C) {
         super()
         this.client = client
         this.objectStoreName = objectStoreName
         this.columnName = columnName
     }
 
-    async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[]): TypeOfProps<Pick<Type, COLUMNS>> {
-        await this.client.query(`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName} = `)
+    async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]["type"]["_T"]): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
+        let result = await this.client.query(`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName} = $1`, [key])
+        if (result.rows.length > 0) {
+            return result.rows[0]
+        } else {
+            return undefined
+        }
     }
 }
 
-export class PostgresqlDatabaseObjectStore<Type extends { [a: string]: DatabaseColumn<any> }> extends PostgresqlObjectStoreOrIndex<Type> {
+export class PostgresqlDatabaseObjectStore<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> extends PostgresqlObjectStoreOrIndex<Type, C> {
 
 
-    constructor(client: PG.PoolClient, objectStoreName: string, columnName: string) {
+    constructor(client: PG.PoolClient, objectStoreName: string, columnName: C) {
         super(client, objectStoreName, columnName)
     }
 
     // TODO FIXME the database needs to know which columns are indexes
-    index(name: string): Promise<DatabaseObjectStoreOrIndex<Type>> {
-
+    index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
+        throw new Error("not implemented")
     }
 }
 
