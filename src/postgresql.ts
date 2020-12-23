@@ -71,10 +71,8 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
         return new PostgresqlDatabaseObjectStore<SCHEMA[NAME], C>(this.client, name as string, primaryColumnName)
     }
 
-    objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME): DatabaseObjectStore<SCHEMA[NAME], C> {
-        throw new Error("Not implemented")
-        // TODO FIXME
-        //return new PostgresqlDatabaseObjectStore(this.client, name as string, "")
+    objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME, columnName: C): DatabaseObjectStore<SCHEMA[NAME], C> {
+        return new PostgresqlDatabaseObjectStore(this.client, name as string, columnName)
     }
 }
 
@@ -93,7 +91,7 @@ export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseCo
     }
 
     async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]["type"]["_T"]): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
-        let result = await this.client`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName as string} = ${key}`
+        let result = await this.client`SELECT ${this.client(columns as string[])} FROM ${this.client(this.objectStoreName)} WHERE ${this.columnName as string} = ${key}`
         
         throw new Error("not implemented")
     }

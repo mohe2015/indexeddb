@@ -73,7 +73,7 @@ export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: st
 
     abstract createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>>
 
-    abstract objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME): DatabaseObjectStore<SCHEMA[NAME], C>
+    abstract objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME, columnName: C): DatabaseObjectStore<SCHEMA[NAME], C>
 }
 
 export abstract class DatabaseObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> {
