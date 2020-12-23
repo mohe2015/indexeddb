@@ -79,7 +79,7 @@ class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Da
         this.transaction = transaction
     }
     
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T>(name: NAME, primaryColumnName: string, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
         this.transaction.db.createObjectStore(name as string, options)
         
         throw new Error("Method not implemented.");

@@ -20,7 +20,7 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
-import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface.js";
+import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStoreOrIndex, DatabaseTransaction, TypeOfProps } from "./interface.js";
 import PG from 'pg';
 
 class PostgresqlDatabaseConnection extends DatabaseConnection {
@@ -73,15 +73,49 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
         this.client = client
     }
 
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
-        await this.client.query(`CREATE TABLE ${name} (${options.keyPath} INTEGER)`);
-
-        throw new Error("Method not implemented.");
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T>(name: NAME, primaryColumnName: string, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
+        await this.client.query(`CREATE TABLE ${name} (${primaryColumnName} ${primaryColumn.type.postgresqlType} PRIMARY KEY`);
+        return new PostgresqlDatabaseObjectStore<SCHEMA[NAME]>(this.client, name as string, primaryColumnName)
     }
 
     objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
-        throw new Error("Method not implemented.");
+        throw new Error("Not implemented")
+        // TODO FIXME
+        return new PostgresqlDatabaseObjectStore(this.client, name as string, "")
     }
 }
+
+export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }> extends DatabaseObjectStoreOrIndex<Type> {
+
+    client: PG.PoolClient
+    
+    objectStoreName: string
+    columnName: string
+
+    constructor(client: PG.PoolClient, objectStoreName: string, columnName: string) {
+        super()
+        this.client = client
+        this.objectStoreName = objectStoreName
+        this.columnName = columnName
+    }
+
+    async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[]): TypeOfProps<Pick<Type, COLUMNS>> {
+        await this.client.query(`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName} = `)
+    }
+}
+
+export class PostgresqlDatabaseObjectStore<Type extends { [a: string]: DatabaseColumn<any> }> extends PostgresqlObjectStoreOrIndex<Type> {
+
+
+    constructor(client: PG.PoolClient, objectStoreName: string, columnName: string) {
+        super(client, objectStoreName, columnName)
+    }
+
+    // TODO FIXME the database needs to know which columns are indexes
+    index(name: string): Promise<DatabaseObjectStoreOrIndex<Type>> {
+
+    }
+}
+
 
 export const create = () => new PostgresqlDatabaseConnection();

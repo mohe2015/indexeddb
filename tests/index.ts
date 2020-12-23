@@ -23,6 +23,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 import { create } from "../src/api.js";
 import { DatabaseConnection, dbtypes, TypeOfProps, TypeOfTypeOfProps } from "../src/interface.js";
 
+// TODO FIXME maybe separate primary key storage
+// or at least store the name somewhere?
 const users = {
     name: {
         type: dbtypes.string,
@@ -48,7 +50,7 @@ const objectStores = {
 
 let connection: DatabaseConnection = await create();
 
-let database = await connection.database("test", objectStores, 1, (transaction) => {
+let database = await connection.database("test12", objectStores, 1, (transaction) => {
     transaction.createObjectStore("posts", {})
 });
 
