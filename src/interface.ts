@@ -27,6 +27,8 @@ export {}
 
 // inspired by https://github.com/gcanti/io-ts
 
+// https://v8.dev/blog/fast-async info about async
+
 export class Type<T> {
     _T!: T;
     postgresqlType: string
