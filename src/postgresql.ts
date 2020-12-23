@@ -20,18 +20,15 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
-import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStoreOrIndex, DatabaseTransaction, TypeOfProps } from "./interface.js";
-import PG from 'pg';
+import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseObjectStoreOrIndex, DatabaseTransaction, dbtypes, TypeOfProps } from "./interface.js";
+import pgp from 'pg-promise';
 
 class PostgresqlDatabaseConnection extends DatabaseConnection {
     
     async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>) => Promise<void>): Promise<Database<SCHEMA>> {
-        let pool = new PG.Pool({
+        let pool = pgp()({
             host: "/var/run/postgresql",
             database: name
-        })
-        pool.on('error', (err, client) => {
-            console.error('Unexpected error on idle client', err)
         })
         let database = new PostgresqlDatabase<SCHEMA>(pool);
         await database.transaction([], "versionchange", callback);
@@ -41,40 +38,31 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
 
 class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> extends Database<SCHEMA> {
     
-    pool: PG.Pool
+    pool: pgp.IDatabase<{}>
 
-    constructor(pool: PG.Pool) {
+    constructor(pool: pgp.IDatabase<{}>) {
         super()
         this.pool = pool
     }
     
     async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => Promise<void>): Promise<void> {
-        let client = await this.pool.connect()
-        try {
-            await client.query('BEGIN');
-            await callback(new PostgresqlDatabaseTransaction(client));
-            await client.query('COMMIT')
-        } catch (e) {
-          await client.query('ROLLBACK');
-          console.error(e);
-          throw e
-        } finally {
-          client.release()
-        }
+        await this.pool.tx(async t => {
+            await callback(new PostgresqlDatabaseTransaction(t));
+        })
     }
 }
 
 class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
 
-    client: PG.PoolClient
+    client: pgp.ITask<{}>
 
-    constructor(client: PG.PoolClient) {
+    constructor(client: pgp.ITask<{}>) {
         super()
         this.client = client
     }
 
     async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-        await this.client.query(`CREATE TABLE ${name} (${primaryColumnName} ${primaryColumn.type.postgresqlType} PRIMARY KEY)`);
+        await this.client.none(`CREATE TABLE ${name} (${primaryColumnName} ${primaryColumn.type.postgresqlType} PRIMARY KEY)`);
         return new PostgresqlDatabaseObjectStore<SCHEMA[NAME], C>(this.client, name as string, primaryColumnName)
     }
 
@@ -87,12 +75,12 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
 
 export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> extends DatabaseObjectStoreOrIndex<Type, C> {
 
-    client: PG.PoolClient
+    client: pgp.ITask<{}>
     
     objectStoreName: string
     columnName: C
 
-    constructor(client: PG.PoolClient, objectStoreName: string, columnName: C) {
+    constructor(client: pgp.ITask<{}>, objectStoreName: string, columnName: C) {
         super()
         this.client = client
         this.objectStoreName = objectStoreName
@@ -100,19 +88,13 @@ export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseCo
     }
 
     async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]["type"]["_T"]): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
-        let result = await this.client.query(`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName} = $1`, [key])
-        if (result.rows.length > 0) {
-            return result.rows[0]
-        } else {
-            return undefined
-        }
+        return await this.client.one(`SELECT ${columns.join(", ")} FROM ${this.objectStoreName} WHERE ${this.columnName} = $1`, [key])
     }
 }
 
 export class PostgresqlDatabaseObjectStore<Type extends { [a: string]: DatabaseColumn<any> }, C extends keyof Type> extends PostgresqlObjectStoreOrIndex<Type, C> {
 
-
-    constructor(client: PG.PoolClient, objectStoreName: string, columnName: C) {
+    constructor(client: pgp.ITask<{}>, objectStoreName: string, columnName: C) {
         super(client, objectStoreName, columnName)
     }
 
