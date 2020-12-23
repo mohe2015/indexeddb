@@ -29,18 +29,27 @@ export {}
 
 export class Type<T> {
     _T!: T;
+    postgresqlType: string
+
+    constructor(postgresqlType: string) {
+        this.postgresqlType = postgresqlType
+    }
 }
 
 export interface Any extends Type<any> {}
 
+enum DatabaseColumnType {
+    DEFAULT, INDEX, PRIMARY_KEY
+}
+
 export type DatabaseColumn<T> = {
     type: Type<T>,
-    index?: boolean
+    columnType: DatabaseColumnType
 }
 
 export const dbtypes = {
-    string: new Type<string>(),
-    number: new Type<number>(),
+    string: new Type<string>("TEXT"),
+    number: new Type<number>("INTEGER"),
 };
 
 // TODO FIXME generalize
@@ -60,7 +69,7 @@ export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: Data
 
 export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {
 
-    abstract createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>>
+    abstract createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T>(name: NAME, primaryColumnName: string, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME]>>
 
     abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]>
 }
