@@ -122,9 +122,10 @@ class IndexedDatabaseTransaction<
     primaryColumnName: C,
     primaryColumn: DatabaseColumn<T>,
   ): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-    this.transaction.db.createObjectStore(name as string);
-
-    throw new Error('Method not implemented.');
+    this.transaction.db.createObjectStore(name as string, {
+      keyPath: primaryColumnName as string,
+      // TODO autoincrement
+    });
   }
 
   async createColumn<
@@ -138,7 +139,7 @@ class IndexedDatabaseTransaction<
   objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(
     name: NAME,
   ): DatabaseObjectStore<SCHEMA[NAME], C> {
-    throw new Error('Method not implemented.');
+    return this.transaction.objectStore(name)
   }
 }
 

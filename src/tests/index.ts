@@ -60,7 +60,7 @@ const main = async () => {
         transaction.createColumn("posts", "content", objectStores.posts.content)
     });
 
-    await database.transaction(["users", "posts"], "readwrite", async (transaction) => {
+    await database.transaction(["posts"], "readwrite", async (transaction) => {
 
         let objectStore = transaction.objectStore("posts", "title")
 
