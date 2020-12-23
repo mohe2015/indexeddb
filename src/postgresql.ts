@@ -26,7 +26,6 @@ import PG from 'pg';
 class PostgresqlDatabaseConnection extends DatabaseConnection {
     
     async database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }>(name: string, schema: SCHEMA, targetVersion: number, callback: (transaction: DatabaseTransaction<SCHEMA, never>) => void): Promise<Database<SCHEMA>> {
-        // TODO FIXME version
         let pool = new PG.Pool({
             host: "/var/run/postgresql",
             database: name
@@ -34,22 +33,9 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
         pool.on('error', (err, client) => {
             console.error('Unexpected error on idle client', err)
         })
-        let client = await pool.connect()
-        try {
-            await client.query('BEGIN');
-
-            let database = new PostgresqlDatabase<SCHEMA>(pool);
-            let transaction = database.transaction([], "versionchange");
-            callback(transaction);
-
-            await client.query('COMMIT')
-        } catch (e) {
-          await client.query('ROLLBACK');
-          console.error(e);
-          throw e
-        } finally {
-          client.release()
-        }
+        let database = new PostgresqlDatabase<SCHEMA>(pool);
+        await database.transaction([], "versionchange", callback);
+        return database
     }
 }
 
@@ -62,11 +48,19 @@ class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseCo
         this.pool = pool
     }
     
-    transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>> {
+    async transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite" | "versionchange", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => void): Promise<void> {
         let client = await this.pool.connect()
-
-
-        throw new Error("Method not implemented.");
+        try {
+            await client.query('BEGIN');
+            callback(new PostgresqlDatabaseTransaction(client));
+            await client.query('COMMIT')
+        } catch (e) {
+          await client.query('ROLLBACK');
+          console.error(e);
+          throw e
+        } finally {
+          client.release()
+        }
     }
 }
 
@@ -79,8 +73,10 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
         this.client = client
     }
 
-    async createObjectStore(name: string, options: IDBObjectStoreParameters): Promise<any> {
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
         await this.client.query(`CREATE TABLE ${name} (${options.keyPath} INTEGER)`);
+
+        throw new Error("Method not implemented.");
     }
 
     objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {

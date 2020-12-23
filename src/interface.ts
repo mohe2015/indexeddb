@@ -89,10 +89,12 @@ export abstract class DatabaseConnection {
 
 export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> {
 
-    abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite"): Promise<DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>>
+    abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(objectStores: ALLOWEDOBJECTSTORES[], mode: "readonly" | "readwrite", callback: (transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>) => void): Promise<void>
 }
 
 export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {
+
+    abstract createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>>
 
     abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]>
 }
@@ -110,14 +112,15 @@ export abstract class DatabaseObjectStore<Type extends { [a: string]: DatabaseCo
 
 let connection: DatabaseConnection = null!;
 
-let database = await connection.database("test", objectStores, 1, (database) => {
+let database = await connection.database("test", objectStores, 1, (transaction) => {
     
 });
 
-let transaction = await database.transaction(["users", "users"], "readonly");
+await database.transaction(["users", "users"], "readonly", (transaction) => {
 
-let objectStore = transaction.objectStore("users")
+    let objectStore = transaction.objectStore("users")
 
-let value = objectStore.get(["name"])
+    let value = objectStore.get(["name"])
 
-value.name
+    value.name
+});
