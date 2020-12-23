@@ -55,6 +55,10 @@ class PostgresqlDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseCo
             await callback(new PostgresqlDatabaseTransaction(sql));
         })
     }
+
+    async close() {
+        await this.pool.end({ timeout: 0 })
+    }
 }
 
 class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
@@ -69,6 +73,10 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
     async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
         await this.client`CREATE TABLE ${this.client(name as string)} (${this.client(primaryColumnName as string)} ${this.client(primaryColumn.type.postgresqlType)} PRIMARY KEY)`;
         return new PostgresqlDatabaseObjectStore<SCHEMA[NAME], C>(this.client, name as string, primaryColumnName)
+    }
+
+    async createColumn<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, columnName: C, column: DatabaseColumn<T>): Promise<void> {
+        await this.client`ALTER TABLE ${this.client(name as string)} ADD COLUMN ${this.client(columnName as string)} ${this.client(column.type.postgresqlType)}`
     }
 
     objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME, columnName: C): DatabaseObjectStore<SCHEMA[NAME], C> {
@@ -92,8 +100,11 @@ export class PostgresqlObjectStoreOrIndex<Type extends { [a: string]: DatabaseCo
 
     async get<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]["type"]["_T"]): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
         let result = await this.client`SELECT ${this.client(columns as string[])} FROM ${this.client(this.objectStoreName)} WHERE ${this.columnName as string} = ${key}`
-        
-        throw new Error("not implemented")
+        if (result.length > 0) {
+            return result[0] as TypeOfProps<Pick<Type, COLUMNS>>
+        } else {
+            return undefined
+        }
     }
 }
 

@@ -56,6 +56,7 @@ let connection: DatabaseConnection = await create();
 
 let database = await connection.database("test12", objectStores, 1, async (transaction) => {
     //transaction.createObjectStore("posts", "title", objectStores.posts.title)
+    //transaction.createColumn("posts", "content", objectStores.posts.content)
 });
 
 await database.transaction(["users", "posts"], "readwrite", async (transaction) => {
@@ -64,5 +65,7 @@ await database.transaction(["users", "posts"], "readwrite", async (transaction) 
 
     let value = await objectStore.get(["content"], "Moritz Hedtke")
 
-    value?.content
+    console.log(value)
 });
+
+await database.close()

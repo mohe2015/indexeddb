@@ -70,6 +70,10 @@ class IndexedDatabase<SCHEMA extends { [a: string]: { [b: string]: DatabaseColum
             throw e
         }
     }
+
+    async close() {
+        this.database.close()
+    }
 }
 
 class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
@@ -84,6 +88,10 @@ class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Da
         this.transaction.db.createObjectStore(name as string)
         
         throw new Error("Method not implemented.");
+    }
+
+    async createColumn<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, columnName: C, column: DatabaseColumn<T>): Promise<void> {
+        // do nothing
     }
 
     objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME): DatabaseObjectStore<SCHEMA[NAME], C> {
