@@ -80,13 +80,13 @@ class IndexedDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: Da
         this.transaction = transaction
     }
     
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T>(name: NAME, primaryColumnName: string, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
-        this.transaction.db.createObjectStore(name as string, options)
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES, T, C extends keyof SCHEMA[NAME]>(name: NAME, primaryColumnName: C, primaryColumn: DatabaseColumn<T>): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
+        this.transaction.db.createObjectStore(name as string)
         
         throw new Error("Method not implemented.");
     }
 
-    objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]> {
+    objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(name: NAME): DatabaseObjectStore<SCHEMA[NAME], C> {
         throw new Error("Method not implemented.");
     }
 }
