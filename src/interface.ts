@@ -25,10 +25,9 @@ export {}
 // there will not be migration support at first. instead I will try to implement an
 // unified interface to do the migration (which is only possible when opening the database because of indexeddb)
 
-
 // inspired by https://github.com/gcanti/io-ts
 
-class Type<T> {
+export class Type<T> {
     _T!: T;
 }
 
@@ -39,48 +38,15 @@ export type DatabaseColumn<T> = {
     index?: boolean
 }
 
-const dbtypes = {
+export const dbtypes = {
     string: new Type<string>(),
     number: new Type<number>(),
 };
 
-let users = {
-    name: {
-        type: dbtypes.string,
-    },
-    age: {
-        type: dbtypes.number,
-    },
-}
-
-let posts = {
-    title: {
-        type: dbtypes.string,
-    },
-    content: {
-        type: dbtypes.string
-    },
-}
-
 // TODO FIXME generalize
-type TypeOf<O extends Any> = O['_T'];
-type TypeOfProps<O extends { [a: string]: DatabaseColumn<any> }> = { [k in keyof O]: TypeOf<O[k]["type"]> };
-type TypeOfTypeOfProps<O extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> = { [k in keyof O]: TypeOfProps<O[k]> };
-
-type Users = TypeOfProps<typeof users>
-
-// LOL
-
-const objectStores = {
-    users,
-    posts
-}
-
-type ObjectStores = TypeOfTypeOfProps<typeof objectStores>
-
-let a: ObjectStores = {} as ObjectStores;
-
-a.users.age
+export type TypeOf<O extends Any> = O['_T'];
+export type TypeOfProps<O extends { [a: string]: DatabaseColumn<any> }> = { [k in keyof O]: TypeOf<O[k]["type"]> };
+export type TypeOfTypeOfProps<O extends { [a: string]: { [b: string]: DatabaseColumn<any> } }> = { [k in keyof O]: TypeOfProps<O[k]> };
 
 export abstract class DatabaseConnection {
 
@@ -94,7 +60,7 @@ export abstract class Database<SCHEMA extends { [a: string]: { [b: string]: Data
 
 export abstract class DatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }, ALLOWEDOBJECTSTORES extends keyof SCHEMA> {
 
-    abstract createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>>
+    abstract createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>>
 
     abstract objectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME): DatabaseObjectStore<SCHEMA[NAME]>
 }
@@ -109,18 +75,3 @@ export abstract class DatabaseObjectStore<Type extends { [a: string]: DatabaseCo
     // TODO FIXME the database needs to know which columns are indexes
     abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<Type>>
 }
-
-let connection: DatabaseConnection = null!;
-
-let database = await connection.database("test", objectStores, 1, (transaction) => {
-    
-});
-
-await database.transaction(["users", "users"], "readonly", (transaction) => {
-
-    let objectStore = transaction.objectStore("users")
-
-    let value = objectStore.get(["name"])
-
-    value.name
-});

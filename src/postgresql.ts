@@ -20,7 +20,7 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
-import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface";
+import { Database, DatabaseColumn, DatabaseConnection, DatabaseObjectStore, DatabaseTransaction } from "./interface.js";
 import PG from 'pg';
 
 class PostgresqlDatabaseConnection extends DatabaseConnection {
@@ -73,7 +73,7 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
         this.client = client
     }
 
-    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: string, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
+    async createObjectStore<NAME extends ALLOWEDOBJECTSTORES>(name: NAME, options: IDBObjectStoreParameters): Promise<DatabaseObjectStore<SCHEMA[NAME]>> {
         await this.client.query(`CREATE TABLE ${name} (${options.keyPath} INTEGER)`);
 
         throw new Error("Method not implemented.");
@@ -83,3 +83,5 @@ class PostgresqlDatabaseTransaction<SCHEMA extends { [a: string]: { [b: string]:
         throw new Error("Method not implemented.");
     }
 }
+
+export const create = () => new PostgresqlDatabaseConnection();
