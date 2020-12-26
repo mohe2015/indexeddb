@@ -53,22 +53,28 @@ const objectStores = {
 }
 
 const main = async () => {
-    const connection: DatabaseConnection = await create();
+    try {
+        const connection: DatabaseConnection = await create();
 
-    const database = await connection.database("test12", objectStores, 1, async (transaction) => {
-        await transaction.createObjectStore("posts", "title", objectStores.posts.title)
-        await transaction.createColumn("posts", "content", objectStores.posts.content)
-    });
+        const database = await connection.database("test12", objectStores, 1, async (transaction) => {
+            await transaction.createObjectStore("posts", "title", objectStores.posts.title)
+            await transaction.createColumn("posts", "content", objectStores.posts.content)
+        });
 
-    await database.transaction(["posts"], "readwrite", async (transaction) => {
+        await database.transaction(["posts"], "readwrite", async (transaction) => {
 
-        const objectStore = transaction.objectStore("posts", "title")
+            const objectStore = transaction.objectStore("posts", "title")
 
-        const value = await objectStore.get(["content"], "Moritz Hedtke")
+            await objectStore.add(undefined, {title: "Moritz Hedtke", content: "Hallo, wie geht es dir?"});
 
-        console.log(value)
-    });
+            const value = await objectStore.get(["content"], "Moritz Hedtke")
 
-    await database.close()
+            console.log(value)
+        });
+
+        await database.close()
+    } catch (err) {
+        console.error(err)
+    }
 }
 main()

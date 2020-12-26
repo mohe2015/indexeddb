@@ -47,7 +47,6 @@ class IndexedDatabaseConnection implements DatabaseConnection {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, 1);
       databaseOpenRequest.addEventListener('success', () => {
-        console.log("success")
         resolve(new IndexedDatabase<SCHEMA>(databaseOpenRequest.result));
       });
       databaseOpenRequest.addEventListener('error', () => {
@@ -58,7 +57,6 @@ class IndexedDatabaseConnection implements DatabaseConnection {
       });
       databaseOpenRequest.addEventListener('upgradeneeded', async () => {
         if (databaseOpenRequest.transaction == null) throw new Error("no upgrade transaction")
-        console.log("upgradeneeded")
         const database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
         const transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
           databaseOpenRequest.transaction,
@@ -121,15 +119,18 @@ class IndexedDatabaseTransaction<
   constructor(transaction: IDBTransaction) {
     this.transaction = transaction;
 
+    // https://catchjs.com/Docs/AsyncAwait
     this.done = new Promise((resolve, reject) => {
       this.transaction.addEventListener('abort', (event) => {
-        reject(event)
+        console.warn(transaction.error)
+        resolve() // TODO FIXME this may be questionable
       })
       this.transaction.addEventListener('complete', () => {
         resolve(/*event*/)
       })
       this.transaction.addEventListener('error', (event) => {
-        reject(event)
+        event.stopPropagation() // as the name implies this prevents propagation
+        reject(transaction.error)
       })
     })
   }
@@ -169,7 +170,8 @@ class IndexedDatabaseTransaction<
 function handleRequest<T>(request: IDBRequest<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     request.addEventListener('error', (event) => {
-      reject(event)
+      event.stopPropagation() // as the name implies this prevents propagation
+      reject(request.error)
     })
     request.addEventListener('success', () => {
       resolve(request.result)
