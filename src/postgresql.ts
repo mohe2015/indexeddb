@@ -157,6 +157,19 @@ export class PostgresqlObjectStoreOrIndex<
     this.columnName = columnName;
   }
 
+  count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
+  getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
+    throw new Error('Method not implemented.');
+  }
+  getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
+    throw new Error('Method not implemented.');
+  }
+
   async get<COLUMNS extends keyof Type>(
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
@@ -184,6 +197,31 @@ export class PostgresqlDatabaseObjectStore<
     columnName: C,
   ) {
     super(client, objectStoreName, columnName);
+  }
+  
+  add(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  clear(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  delete(key: Type[C]['type']['_T']): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  put(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {
+    throw new Error('Method not implemented.');
+  }
+  getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
+    throw new Error('Method not implemented.');
+  }
+  getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
+    throw new Error('Method not implemented.');
+  }
+  getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
+    throw new Error('Method not implemented.');
   }
 
   // TODO FIXME the database needs to know which columns are indexes
