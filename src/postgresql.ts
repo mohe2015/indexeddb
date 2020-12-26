@@ -10,7 +10,7 @@ the Free Software Foundation, either version 3 of the License, or
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU Affero General -Public License for more details.
+GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -20,6 +20,8 @@ SPDX-FileCopyrightText: 2020 Moritz Hedtke <Moritz.Hedtke@t-online.de>
 
 SPDX-License-Identifier: AGPL-3.0-or-later
 */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* would love to be able to remove this eslint ignore */
 import {
   Database,
   DatabaseColumn,
@@ -27,7 +29,6 @@ import {
   DatabaseObjectStore,
   DatabaseObjectStoreOrIndex,
   DatabaseTransaction,
-  dbtypes,
   TypeOfProps,
 } from './interface';
 import postgres from 'postgres';
@@ -59,9 +60,9 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
 class PostgresqlDatabase<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
 > extends Database<SCHEMA> {
-  pool: postgres.Sql<{}>;
+  pool: postgres.Sql<Record<string, never>>;
 
-  constructor(pool: postgres.Sql<{}>) {
+  constructor(pool: postgres.Sql<Record<string, never>>) {
     super();
     this.pool = pool;
   }
@@ -87,9 +88,9 @@ class PostgresqlDatabaseTransaction<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } },
   ALLOWEDOBJECTSTORES extends keyof SCHEMA
 > extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
-  client: postgres.TransactionSql<{}>;
+  client: postgres.TransactionSql<Record<string, never>>;
 
-  constructor(client: postgres.TransactionSql<{}>) {
+  constructor(client: postgres.TransactionSql<Record<string, never>>) {
     super();
     this.client = client;
   }
@@ -143,13 +144,13 @@ export class PostgresqlObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > extends DatabaseObjectStoreOrIndex<Type, C> {
-  client: postgres.TransactionSql<{}>;
+  client: postgres.TransactionSql<Record<string, never>>;
 
   objectStoreName: string;
   columnName: C;
 
   constructor(
-    client: postgres.TransactionSql<{}>,
+    client: postgres.TransactionSql<Record<string, never>>,
     objectStoreName: string,
     columnName: C,
   ) {
@@ -181,7 +182,7 @@ export class PostgresqlDatabaseObjectStore<
   C extends keyof Type
 > extends PostgresqlObjectStoreOrIndex<Type, C> {
   constructor(
-    client: postgres.TransactionSql<{}>,
+    client: postgres.TransactionSql<Record<string, never>>,
     objectStoreName: string,
     columnName: C,
   ) {
@@ -189,9 +190,10 @@ export class PostgresqlDatabaseObjectStore<
   }
 
   // TODO FIXME the database needs to know which columns are indexes
-  index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  index(_name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
     throw new Error('not implemented');
   }
 }
 
-export const create = () => new PostgresqlDatabaseConnection();
+export const create = (): PostgresqlDatabaseConnection => new PostgresqlDatabaseConnection();
