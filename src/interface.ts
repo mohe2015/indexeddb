@@ -67,8 +67,8 @@ export type TypeOfTypeOfProps<
   O extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
 > = { [k in keyof O]: TypeOfProps<O[k]> };
 
-export abstract class DatabaseConnection {
-  abstract database<
+export interface DatabaseConnection {
+  database<
     SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
   >(
     name: string,
@@ -80,10 +80,10 @@ export abstract class DatabaseConnection {
   ): Promise<Database<SCHEMA>>;
 }
 
-export abstract class Database<
+export interface Database<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
 > {
-  abstract transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(
+  transaction<ALLOWEDOBJECTSTORES extends keyof SCHEMA>(
     objectStores: ALLOWEDOBJECTSTORES[],
     mode: 'readonly' | 'readwrite',
     callback: (
@@ -91,14 +91,14 @@ export abstract class Database<
     ) => Promise<void>,
   ): Promise<void>;
 
-  abstract close(): Promise<void>;
+  close(): Promise<void>;
 }
 
-export abstract class DatabaseTransaction<
+export interface DatabaseTransaction<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } },
   ALLOWEDOBJECTSTORES extends keyof SCHEMA
 > {
-  abstract createObjectStore<
+  createObjectStore<
     NAME extends ALLOWEDOBJECTSTORES,
     T,
     C extends keyof SCHEMA[NAME]
@@ -108,44 +108,44 @@ export abstract class DatabaseTransaction<
     primaryColumn: DatabaseColumn<T>,
   ): Promise<DatabaseObjectStore<SCHEMA[NAME], C>>;
 
-  abstract createColumn<
+  createColumn<
     NAME extends ALLOWEDOBJECTSTORES,
     T,
     C extends keyof SCHEMA[NAME]
   >(name: NAME, columnName: C, column: DatabaseColumn<T>): Promise<void>;
 
-  abstract objectStore<
+  objectStore<
     NAME extends ALLOWEDOBJECTSTORES,
     C extends keyof SCHEMA[NAME]
   >(name: NAME, columnName: C): DatabaseObjectStore<SCHEMA[NAME], C>;
 }
 
-export abstract class DatabaseObjectStoreOrIndex<
+export interface DatabaseObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > {
-  abstract get<COLUMNS extends keyof Type>(
+  get<COLUMNS extends keyof Type>(
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined>;
 
-  abstract count<COLUMNS extends keyof Type>(
+  count<COLUMNS extends keyof Type>(
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<number>;
 
   // TODO FIXME keyrange
-  abstract getKey<COLUMNS extends keyof Type>(
+  getKey<COLUMNS extends keyof Type>(
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<Type[C]['type']['_T']>;
 
-  abstract getAll<COLUMNS extends keyof Type>(
+  getAll<COLUMNS extends keyof Type>(
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<Array<TypeOfProps<Pick<Type, COLUMNS>>>>;
 
-  abstract getAllKeys<COLUMNS extends keyof Type>(
+  getAllKeys<COLUMNS extends keyof Type>(
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<Array<Type[C]['type']['_T']>>;
@@ -153,25 +153,25 @@ export abstract class DatabaseObjectStoreOrIndex<
   // TODO FIXME openCursor, openKeyCursor
 }
 
-export abstract class DatabaseObjectStore<
+export interface DatabaseObjectStore<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > extends DatabaseObjectStoreOrIndex<Type, C> {
   // TODO FIXME the database needs to know which columns are indexes
-  abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>>;
+ index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>>;
 
-  abstract add(
+  add(
     key: Type[C]['type']['_T'],
     value: TypeOfProps<Type>
   ): Promise<void>
 
-  abstract clear(): Promise<void>
+  clear(): Promise<void>
 
-  abstract delete(
+  delete(
     key: Type[C]['type']['_T'],
   ): Promise<void>;
 
-  abstract put(
+  put(
     key: Type[C]['type']['_T'],
     value: TypeOfProps<Type>
   ): Promise<void>

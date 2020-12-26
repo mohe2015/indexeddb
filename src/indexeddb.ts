@@ -23,7 +23,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* would love to be able to remove this eslint ignore */
 
-import {
+import type {
   Database,
   DatabaseColumn,
   DatabaseConnection,
@@ -33,7 +33,7 @@ import {
   TypeOfProps,
 } from './interface';
 
-class IndexedDatabaseConnection extends DatabaseConnection {
+class IndexedDatabaseConnection implements DatabaseConnection {
   database<
     SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
   >(
@@ -78,11 +78,10 @@ class IndexedDatabaseConnection extends DatabaseConnection {
 
 class IndexedDatabase<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
-> extends Database<SCHEMA> {
+> implements Database<SCHEMA> {
   database: IDBDatabase;
 
   constructor(database: IDBDatabase) {
-    super();
     this.database = database;
   }
 
@@ -114,13 +113,12 @@ class IndexedDatabase<
 class IndexedDatabaseTransaction<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } },
   ALLOWEDOBJECTSTORES extends keyof SCHEMA
-> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
+> implements DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
   transaction: IDBTransaction;
 
   done: Promise<void>
 
   constructor(transaction: IDBTransaction) {
-    super();
     this.transaction = transaction;
 
     this.done = new Promise((resolve, reject) => {
@@ -182,11 +180,10 @@ function handleRequest<T>(request: IDBRequest<T>): Promise<T> {
 export class IndexedDatabaseObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
-> extends DatabaseObjectStoreOrIndex<Type, C> {
+> implements DatabaseObjectStoreOrIndex<Type, C> {
   objectStoreOrIndex: IDBObjectStore | IDBIndex
 
   constructor(objectStoreOrIndex: IDBObjectStore | IDBIndex) {
-    super()
     this.objectStoreOrIndex = objectStoreOrIndex
   }
 
@@ -214,7 +211,7 @@ export class IndexedDatabaseObjectStoreOrIndex<
 export class IndexedDatabaseObjectStore<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
-> extends IndexedDatabaseObjectStoreOrIndex<Type, C> {
+> extends IndexedDatabaseObjectStoreOrIndex<Type, C> implements DatabaseObjectStore<Type, C>  {
   objectStore: IDBObjectStore
 
   constructor(objectStore: IDBObjectStore) {
@@ -225,6 +222,22 @@ export class IndexedDatabaseObjectStore<
   // TODO FIXME the database needs to know which columns are indexes
   async index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
     return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(name));
+  }
+
+  async add(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
+    await handleRequest(this.objectStore.add(value, key))
+  }
+
+  async clear(): Promise<void> {
+    await handleRequest(this.objectStore.clear())
+  }
+
+  async delete(key: Type[C]['type']['_T']): Promise<void> {
+    await handleRequest(this.objectStore.delete(key))
+  }
+
+  async put(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
+    await handleRequest(this.objectStore.put(value, key))
   }
 }
 
