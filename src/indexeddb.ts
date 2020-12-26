@@ -64,8 +64,8 @@ class IndexedDatabaseConnection extends DatabaseConnection {
           databaseOpenRequest.transaction,
         );
         try {
-          // TODO FIXME await?
           await callback(transaction);
+          await transaction.done;
           resolve(database);
         } catch (error) {
           databaseOpenRequest.transaction.abort();
@@ -99,6 +99,7 @@ class IndexedDatabase<
     >(this.database.transaction(objectStores as string[], mode));
     try {
       await callback(transaction);
+      await transaction.done;
     } catch (e) {
       transaction.transaction.abort();
       throw e;
@@ -116,9 +117,23 @@ class IndexedDatabaseTransaction<
 > extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
   transaction: IDBTransaction;
 
+  done: Promise<void>
+
   constructor(transaction: IDBTransaction) {
     super();
     this.transaction = transaction;
+
+    this.done = new Promise((resolve, reject) => {
+      this.transaction.addEventListener('abort', (event) => {
+        reject(event)
+      })
+      this.transaction.addEventListener('complete', () => {
+        resolve(/*event*/)
+      })
+      this.transaction.addEventListener('error', (event) => {
+        reject(event)
+      })
+    })
   }
 
   async createObjectStore<
