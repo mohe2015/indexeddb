@@ -25,7 +25,10 @@ import {
   DatabaseColumn,
   DatabaseConnection,
   DatabaseObjectStore,
+  DatabaseObjectStoreOrIndex,
   DatabaseTransaction,
+  Type,
+  TypeOfProps,
 } from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
@@ -122,10 +125,11 @@ class IndexedDatabaseTransaction<
     primaryColumnName: C,
     primaryColumn: DatabaseColumn<T>,
   ): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-    this.transaction.db.createObjectStore(name as string, {
+    return new IndexedDatabaseObjectStoreOrIndex(
+      this.transaction.db.createObjectStore(name as string, {
       keyPath: primaryColumnName as string,
       // TODO autoincrement
-    });
+    }));
   }
 
   async createColumn<
@@ -139,8 +143,49 @@ class IndexedDatabaseTransaction<
   objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(
     name: NAME,
   ): DatabaseObjectStore<SCHEMA[NAME], C> {
-    return this.transaction.objectStore(name)
+    return new IndexedDatabaseObjectStoreOrIndex(this.transaction.objectStore(name))
   }
 }
+
+
+export class IndexedDatabaseObjectStoreOrIndex<
+  Type extends { [a: string]: DatabaseColumn<any> },
+  C extends keyof Type
+> extends DatabaseObjectStoreOrIndex<Type, C> {
+
+  objectStoreOrIndex: IDBObjectStore | IDBIndex
+
+  constructor(objectStoreOrIndex: IDBObjectStore | IDBIndex) {
+    super()
+    this.objectStoreOrIndex = objectStoreOrIndex
+  }
+
+  async get<COLUMNS extends keyof Type>(
+    columns: COLUMNS[],
+    key: Type[C]['type']['_T'],
+  ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
+    // TODO FIXME resolve IDBRequest
+    this.objectStoreOrIndex.get(key)
+  }
+}
+
+export class IndexedDatabaseObjectStore<
+  Type extends { [a: string]: DatabaseColumn<any> },
+  C extends keyof Type
+> extends IndexedDatabaseObjectStoreOrIndex<Type, C> {
+
+  objectStore: IDBObjectStore
+
+  constructor(objectStore: IDBObjectStore) {
+    super(objectStore)
+    this.objectStore = objectStore
+  }
+
+  // TODO FIXME the database needs to know which columns are indexes
+  async index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
+    return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(name));
+  }
+}
+
 
 export const create = () => new IndexedDatabaseConnection();
