@@ -55,8 +55,8 @@ class IndexedDatabaseConnection extends DatabaseConnection {
       });
       databaseOpenRequest.addEventListener('upgradeneeded', async (event) => {
         console.log("upgradeneeded")
-        let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
-        let transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
+        const database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
+        const transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
           databaseOpenRequest.transaction!,
         );
         try {
@@ -89,7 +89,7 @@ class IndexedDatabase<
       transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>,
     ) => Promise<void>,
   ): Promise<void> {
-    let transaction = new IndexedDatabaseTransaction<
+    const transaction = new IndexedDatabaseTransaction<
       SCHEMA,
       ALLOWEDOBJECTSTORES
     >(this.database.transaction(objectStores as string[], mode));

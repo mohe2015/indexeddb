@@ -38,7 +38,7 @@ export class Type<T> {
   }
 }
 
-export interface Any extends Type<any> {}
+export type Any = Type<any>
 
 export enum DatabaseColumnType {
   DEFAULT,

@@ -12,6 +12,7 @@
     "format": "prettier --write \"src/**/*.{ts,js}\"",
     "lint": "prettier --check \"src/**/*.{ts,js}\"",
     "eslint": "eslint src --ext .ts",
+    "eslint-fix": "eslint src --ext .ts --fix",
     "docs": "typedoc --allowJs src/",
     "start-vite": "./node_modules/.bin/vite serve --https true",
     "build-browser-vite": "./node_modules/.bin/vite build"

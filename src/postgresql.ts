@@ -46,11 +46,11 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
       transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>,
     ) => Promise<void>,
   ): Promise<Database<SCHEMA>> {
-    let pool = postgres({
+    const pool = postgres({
       host: '/var/run/postgresql',
       database: name,
     });
-    let database = new PostgresqlDatabase<SCHEMA>(pool);
+    const database = new PostgresqlDatabase<SCHEMA>(pool);
     await database.transaction([], 'versionchange', callback);
     return database;
   }
@@ -163,7 +163,7 @@ export class PostgresqlObjectStoreOrIndex<
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
-    let result = await this.client`SELECT ${this.client(
+    const result = await this.client`SELECT ${this.client(
       columns as string[],
     )} FROM ${this.client(this.objectStoreName)} WHERE ${
       this.columnName as string
