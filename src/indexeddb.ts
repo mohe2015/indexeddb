@@ -183,7 +183,6 @@ export class IndexedDatabaseObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > extends DatabaseObjectStoreOrIndex<Type, C> {
-
   objectStoreOrIndex: IDBObjectStore | IDBIndex
 
   constructor(objectStoreOrIndex: IDBObjectStore | IDBIndex) {
@@ -197,13 +196,25 @@ export class IndexedDatabaseObjectStoreOrIndex<
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
     return await handleRequest(this.objectStoreOrIndex.get(key))
   }
+
+  async count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {
+    return await handleRequest(this.objectStoreOrIndex.count(key))
+  }
+  async getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
+    return await handleRequest(this.objectStoreOrIndex.getKey(key))
+  }
+  async getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
+    return await handleRequest(this.objectStoreOrIndex.getAll(key))
+  }
+  async getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
+    return await handleRequest(this.objectStoreOrIndex.getAllKeys(key))
+  }
 }
 
 export class IndexedDatabaseObjectStore<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > extends IndexedDatabaseObjectStoreOrIndex<Type, C> {
-
   objectStore: IDBObjectStore
 
   constructor(objectStore: IDBObjectStore) {

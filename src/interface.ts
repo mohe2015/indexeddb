@@ -128,6 +128,29 @@ export abstract class DatabaseObjectStoreOrIndex<
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined>;
+
+  abstract count<COLUMNS extends keyof Type>(
+    columns: COLUMNS[],
+    key: Type[C]['type']['_T'],
+  ): Promise<number>;
+
+  // TODO FIXME keyrange
+  abstract getKey<COLUMNS extends keyof Type>(
+    columns: COLUMNS[],
+    key: Type[C]['type']['_T'],
+  ): Promise<Type[C]['type']['_T']>;
+
+  abstract getAll<COLUMNS extends keyof Type>(
+    columns: COLUMNS[],
+    key: Type[C]['type']['_T'],
+  ): Promise<Array<TypeOfProps<Pick<Type, COLUMNS>>>>;
+
+  abstract getAllKeys<COLUMNS extends keyof Type>(
+    columns: COLUMNS[],
+    key: Type[C]['type']['_T'],
+  ): Promise<Array<Type[C]['type']['_T']>>;
+
+  // TODO FIXME openCursor, openKeyCursor
 }
 
 export abstract class DatabaseObjectStore<
@@ -136,4 +159,20 @@ export abstract class DatabaseObjectStore<
 > extends DatabaseObjectStoreOrIndex<Type, C> {
   // TODO FIXME the database needs to know which columns are indexes
   abstract index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>>;
+
+  abstract add(
+    key: Type[C]['type']['_T'],
+    value: TypeOfProps<Type>
+  ): Promise<void>
+
+  abstract clear(): Promise<void>
+
+  abstract delete(
+    key: Type[C]['type']['_T'],
+  ): Promise<void>;
+
+  abstract put(
+    key: Type[C]['type']['_T'],
+    value: TypeOfProps<Type>
+  ): Promise<void>
 }
