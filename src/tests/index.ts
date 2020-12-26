@@ -56,8 +56,8 @@ const main = async () => {
     let connection: DatabaseConnection = await create();
 
     let database = await connection.database("test12", objectStores, 1, async (transaction) => {
-        transaction.createObjectStore("posts", "title", objectStores.posts.title)
-        transaction.createColumn("posts", "content", objectStores.posts.content)
+        await transaction.createObjectStore("posts", "title", objectStores.posts.title)
+        await transaction.createColumn("posts", "content", objectStores.posts.content)
     });
 
     await database.transaction(["posts"], "readwrite", async (transaction) => {

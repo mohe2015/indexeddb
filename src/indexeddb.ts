@@ -27,12 +27,11 @@ import {
   DatabaseObjectStore,
   DatabaseObjectStoreOrIndex,
   DatabaseTransaction,
-  Type,
   TypeOfProps,
 } from './interface';
 
 class IndexedDatabaseConnection extends DatabaseConnection {
-  async database<
+  database<
     SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
   >(
     name: string,
@@ -45,6 +44,7 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, 1);
       databaseOpenRequest.addEventListener('success', (event) => {
+        console.log("success")
         resolve(new IndexedDatabase<SCHEMA>(databaseOpenRequest.result));
       });
       databaseOpenRequest.addEventListener('error', (event) => {
@@ -53,14 +53,15 @@ class IndexedDatabaseConnection extends DatabaseConnection {
       databaseOpenRequest.addEventListener('blocked', (event) => {
         reject(databaseOpenRequest.error);
       });
-      databaseOpenRequest.addEventListener('upgradeneeded', (event) => {
+      databaseOpenRequest.addEventListener('upgradeneeded', async (event) => {
+        console.log("upgradeneeded")
         let database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
         let transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
           databaseOpenRequest.transaction!,
         );
         try {
           // TODO FIXME await?
-          callback(transaction);
+          await callback(transaction);
           resolve(database);
         } catch (error) {
           databaseOpenRequest.transaction!.abort();
@@ -125,7 +126,7 @@ class IndexedDatabaseTransaction<
     primaryColumnName: C,
     primaryColumn: DatabaseColumn<T>,
   ): Promise<DatabaseObjectStore<SCHEMA[NAME], C>> {
-    return new IndexedDatabaseObjectStoreOrIndex(
+    return new IndexedDatabaseObjectStore(
       this.transaction.db.createObjectStore(name as string, {
       keyPath: primaryColumnName as string,
       // TODO autoincrement
@@ -143,10 +144,20 @@ class IndexedDatabaseTransaction<
   objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(
     name: NAME,
   ): DatabaseObjectStore<SCHEMA[NAME], C> {
-    return new IndexedDatabaseObjectStoreOrIndex(this.transaction.objectStore(name))
+    return new IndexedDatabaseObjectStore(this.transaction.objectStore(name as string))
   }
 }
 
+function handleRequest<T>(request: IDBRequest<T>): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    request.addEventListener('error', (event) => {
+      reject(event)
+    })
+    request.addEventListener('success', (event) => {
+      resolve(request.result)
+    })
+  })
+}
 
 export class IndexedDatabaseObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
@@ -164,8 +175,7 @@ export class IndexedDatabaseObjectStoreOrIndex<
     columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
-    // TODO FIXME resolve IDBRequest
-    this.objectStoreOrIndex.get(key)
+    return await handleRequest(this.objectStoreOrIndex.get(key))
   }
 }
 
@@ -186,6 +196,5 @@ export class IndexedDatabaseObjectStore<
     return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(name));
   }
 }
-
 
 export const create = () => new IndexedDatabaseConnection();
