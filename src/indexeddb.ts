@@ -35,36 +35,37 @@ class IndexedDatabaseConnection extends DatabaseConnection {
     SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
   >(
     name: string,
-    schema: SCHEMA,
-    targetVersion: number,
+    _schema: SCHEMA,
+    _targetVersion: number,
     callback: (
       transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>,
     ) => Promise<void>,
   ): Promise<Database<SCHEMA>> {
     return new Promise((resolve, reject) => {
       const databaseOpenRequest = window.indexedDB.open(name, 1);
-      databaseOpenRequest.addEventListener('success', (event) => {
+      databaseOpenRequest.addEventListener('success', () => {
         console.log("success")
         resolve(new IndexedDatabase<SCHEMA>(databaseOpenRequest.result));
       });
-      databaseOpenRequest.addEventListener('error', (event) => {
+      databaseOpenRequest.addEventListener('error', () => {
         reject(databaseOpenRequest.error);
       });
-      databaseOpenRequest.addEventListener('blocked', (event) => {
+      databaseOpenRequest.addEventListener('blocked', () => {
         reject(databaseOpenRequest.error);
       });
-      databaseOpenRequest.addEventListener('upgradeneeded', async (event) => {
+      databaseOpenRequest.addEventListener('upgradeneeded', async () => {
+        if (databaseOpenRequest.transaction == null) throw new Error("no upgrade transaction")
         console.log("upgradeneeded")
         const database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
         const transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
-          databaseOpenRequest.transaction!,
+          databaseOpenRequest.transaction,
         );
         try {
           // TODO FIXME await?
           await callback(transaction);
           resolve(database);
         } catch (error) {
-          databaseOpenRequest.transaction!.abort();
+          databaseOpenRequest.transaction.abort();
           reject(error);
         }
       });
@@ -129,7 +130,7 @@ class IndexedDatabaseTransaction<
     return new IndexedDatabaseObjectStore(
       this.transaction.db.createObjectStore(name as string, {
       keyPath: primaryColumnName as string,
-      // TODO autoincrement
+      autoIncrement: primaryColumn.type.postgresqlType == "SERIAL" // TODO FIXME
     }));
   }
 
@@ -137,6 +138,7 @@ class IndexedDatabaseTransaction<
     NAME extends ALLOWEDOBJECTSTORES,
     T,
     C extends keyof SCHEMA[NAME]
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   >(name: NAME, columnName: C, column: DatabaseColumn<T>): Promise<void> {
     // do nothing
   }
@@ -153,7 +155,7 @@ function handleRequest<T>(request: IDBRequest<T>): Promise<T> {
     request.addEventListener('error', (event) => {
       reject(event)
     })
-    request.addEventListener('success', (event) => {
+    request.addEventListener('success', () => {
       resolve(request.result)
     })
   })
@@ -172,7 +174,7 @@ export class IndexedDatabaseObjectStoreOrIndex<
   }
 
   async get<COLUMNS extends keyof Type>(
-    columns: COLUMNS[],
+    _columns: COLUMNS[],
     key: Type[C]['type']['_T'],
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
     return await handleRequest(this.objectStoreOrIndex.get(key))
@@ -197,4 +199,4 @@ export class IndexedDatabaseObjectStore<
   }
 }
 
-export const create = () => new IndexedDatabaseConnection();
+export const create = (): IndexedDatabaseConnection => new IndexedDatabaseConnection();
