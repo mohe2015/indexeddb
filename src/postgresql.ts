@@ -22,7 +22,7 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* would love to be able to remove this eslint ignore */
-import {
+import type {
   Database,
   DatabaseColumn,
   DatabaseConnection,
@@ -36,7 +36,7 @@ import postgres from 'postgres';
 // pg and pg-promise have shitty promise support
 // currently either use https://github.com/porsager/postgres or https://github.com/malthe/ts-postgres
 
-class PostgresqlDatabaseConnection extends DatabaseConnection {
+class PostgresqlDatabaseConnection implements DatabaseConnection {
   async database<
     SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
   >(
@@ -59,11 +59,10 @@ class PostgresqlDatabaseConnection extends DatabaseConnection {
 
 class PostgresqlDatabase<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } }
-> extends Database<SCHEMA> {
+> implements Database<SCHEMA> {
   pool: postgres.Sql<Record<string, never>>;
 
   constructor(pool: postgres.Sql<Record<string, never>>) {
-    super();
     this.pool = pool;
   }
 
@@ -87,11 +86,10 @@ class PostgresqlDatabase<
 class PostgresqlDatabaseTransaction<
   SCHEMA extends { [a: string]: { [b: string]: DatabaseColumn<any> } },
   ALLOWEDOBJECTSTORES extends keyof SCHEMA
-> extends DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
+> implements DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES> {
   client: postgres.TransactionSql<Record<string, never>>;
 
   constructor(client: postgres.TransactionSql<Record<string, never>>) {
-    super();
     this.client = client;
   }
 
@@ -143,7 +141,7 @@ class PostgresqlDatabaseTransaction<
 export class PostgresqlObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
-> extends DatabaseObjectStoreOrIndex<Type, C> {
+> implements DatabaseObjectStoreOrIndex<Type, C> {
   client: postgres.TransactionSql<Record<string, never>>;
 
   objectStoreName: string;
@@ -154,7 +152,6 @@ export class PostgresqlObjectStoreOrIndex<
     objectStoreName: string,
     columnName: C,
   ) {
-    super();
     this.client = client;
     this.objectStoreName = objectStoreName;
     this.columnName = columnName;
@@ -180,7 +177,7 @@ export class PostgresqlObjectStoreOrIndex<
 export class PostgresqlDatabaseObjectStore<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
-> extends PostgresqlObjectStoreOrIndex<Type, C> {
+> extends PostgresqlObjectStoreOrIndex<Type, C> implements DatabaseObjectStore<Type, C> {
   constructor(
     client: postgres.TransactionSql<Record<string, never>>,
     objectStoreName: string,
