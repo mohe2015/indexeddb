@@ -160,7 +160,7 @@ class PostgresqlDatabaseTransaction<
   }
 }
 
-export class PostgresqlObjectStoreOrIndex<
+export class PostgresqlDatabaseObjectStoreOrIndex<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > implements DatabaseObjectStoreOrIndex<Type, C> {
@@ -233,7 +233,7 @@ export class PostgresqlObjectStoreOrIndex<
 export class PostgresqlDatabaseObjectStore<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
-> extends PostgresqlObjectStoreOrIndex<Type, C> implements DatabaseObjectStore<Type, C> {
+> extends PostgresqlDatabaseObjectStoreOrIndex<Type, C> implements DatabaseObjectStore<Type, C> {
   constructor(
     client: postgres.TransactionSql<Record<string, never>>,
     objectStoreName: string,
@@ -260,10 +260,14 @@ export class PostgresqlDatabaseObjectStore<
     await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${Object.keys(value)}) VALUES ${Object.values(value)} ON CONFLICT DO UPDATE`;
   }
 
-  // TODO FIXME the database needs to know which columns are indexes
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  index(_name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
-    throw new Error('not implemented');
+  index<D extends keyof Type>(
+    columnName: D,
+  ): DatabaseObjectStoreOrIndex<Type, D> {
+    return new PostgresqlDatabaseObjectStoreOrIndex(
+      this.client,
+      this.objectStoreName,
+      columnName,
+    );
   }
 }
 
