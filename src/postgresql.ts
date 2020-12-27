@@ -51,6 +51,7 @@ class PostgresqlDatabaseConnection implements DatabaseConnection {
     const pool = postgres({
       host: '/var/run/postgresql',
       database: name,
+      debug: true
     });
     let oldVersion: number;
     const database = new PostgresqlDatabase<SCHEMA>(pool);
@@ -234,7 +235,7 @@ export class PostgresqlDatabaseObjectStore<
   }
   
   async add(value: TypeOfProps<Type>): Promise<void> {
-    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${Object.keys(value)}) VALUES ${Object.values(value)}`;
+    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${this.client(Object.keys(value))}) VALUES (${Object.values(value)})`;
   }
 
   async clear(): Promise<void> {
@@ -248,7 +249,7 @@ export class PostgresqlDatabaseObjectStore<
   }
   
   async put(value: TypeOfProps<Type>): Promise<void> {
-    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${this.client(Object.keys(value))}) VALUES (${this.client(Object.values(value))}) ON CONFLICT DO UPDATE SET ${this.client(value)}`;
+    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${this.client(Object.keys(value))}) VALUES (${Object.values(value)}) ON CONFLICT DO NOTHING`//UPDATE SET ${this.client(value)}`;
   }
 
   index<D extends keyof Type>(
