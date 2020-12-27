@@ -22,13 +22,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* would love to be able to remove this eslint ignore */
-import type {
+import {
   Database,
   DatabaseColumn,
+  DatabaseColumnType,
   DatabaseConnection,
   DatabaseObjectStore,
   DatabaseObjectStoreOrIndex,
   DatabaseTransaction,
+  dbtypes,
   TypeOfProps,
 } from './interface';
 import postgres from 'postgres';
@@ -45,14 +47,34 @@ class PostgresqlDatabaseConnection implements DatabaseConnection {
     targetVersion: number,
     callback: (
       transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>,
+      oldVersion: number,
     ) => Promise<void>,
   ): Promise<Database<SCHEMA>> {
     const pool = postgres({
       host: '/var/run/postgresql',
       database: name,
     });
+    let oldVersion: number;
     const database = new PostgresqlDatabase<SCHEMA>(pool);
-    await database.transaction([], 'versionchange', callback);
+    await database.transaction(["migration_info"], "versionchange", async (transaction) => {
+      transaction.createObjectStore("migration_info", "key", {
+        columnType: DatabaseColumnType.PRIMARY_KEY,
+        type: dbtypes.string,
+      })
+      transaction.createColumn("migration_info", "value", {
+        columnType: DatabaseColumnType.PRIMARY_KEY,
+        type: dbtypes.string
+      })
+      const result = await transaction.objectStore("migration_info", "key").get(["value"], "version")
+      oldVersion = result?.value || 1
+    })
+    await database.transaction([], 'versionchange', async (transaction) => {
+      await callback(transaction, oldVersion);
+      await transaction.objectStore("migration_info" as never, "key").put({
+        key: "version",
+        value: targetVersion.toString()
+      } as TypeOfProps<SCHEMA[never]>)
+    });
     return database;
   }
 }

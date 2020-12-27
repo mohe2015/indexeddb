@@ -59,8 +59,6 @@ const main = async () => {
         const database = await connection.database("test12", objectStores, 1, async (transaction) => {
             await transaction.createObjectStore("posts", "title", objectStores.posts.title)
 
-        
-
             await transaction.createColumn("posts", "content", objectStores.posts.content)
         });
 

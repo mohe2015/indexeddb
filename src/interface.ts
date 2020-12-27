@@ -76,6 +76,7 @@ export interface DatabaseConnection {
     targetVersion: number,
     callback: (
       transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>,
+      oldVersion: number,
     ) => Promise<void>,
   ): Promise<Database<SCHEMA>>;
 }

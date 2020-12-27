@@ -42,6 +42,7 @@ class IndexedDatabaseConnection implements DatabaseConnection {
     _targetVersion: number,
     callback: (
       transaction: DatabaseTransaction<SCHEMA, keyof SCHEMA>,
+      oldVersion: number,
     ) => Promise<void>,
   ): Promise<Database<SCHEMA>> {
     return new Promise((resolve, reject) => {
@@ -55,14 +56,14 @@ class IndexedDatabaseConnection implements DatabaseConnection {
       databaseOpenRequest.addEventListener('blocked', () => {
         reject(databaseOpenRequest.error);
       });
-      databaseOpenRequest.addEventListener('upgradeneeded', async () => {
+      databaseOpenRequest.addEventListener('upgradeneeded', async (event) => {
         if (databaseOpenRequest.transaction == null) throw new Error("no upgrade transaction")
         const database = new IndexedDatabase<SCHEMA>(databaseOpenRequest.result);
         const transaction = new IndexedDatabaseTransaction<SCHEMA, keyof SCHEMA>(
           databaseOpenRequest.transaction,
         );
         try {
-          await callback(transaction);
+          await callback(transaction, event.oldVersion);
           await transaction.done;
           resolve(database);
         } catch (error) {
