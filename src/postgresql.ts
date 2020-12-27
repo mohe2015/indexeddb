@@ -179,17 +179,38 @@ export class PostgresqlObjectStoreOrIndex<
     this.columnName = columnName;
   }
 
-  count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {
-    throw new Error('Method not implemented.');
+  async count(key: Type[C]['type']['_T']): Promise<number> {
+    const result = await this.client`SELECT COUNT(*) FROM ${this.client(this.objectStoreName)} WHERE ${
+      this.columnName as string
+    } = ${key}`;
+    return result[0].count
   }
-  getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
-    throw new Error('Method not implemented.');
+
+  async getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
+    const result = await this.client`SELECT ${this.columnName as string} FROM ${this.client(this.objectStoreName)} WHERE ${
+      this.columnName as string
+    } = ${key} LIMIT 1`;
+    if (result.length > 0) {
+      return result[0];
+    } else {
+      return undefined;
+    }
   }
-  getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
-    throw new Error('Method not implemented.');
+
+  async getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
+    const result = await this.client`SELECT ${this.client(
+      columns as string[],
+    )} FROM ${this.client(this.objectStoreName)} WHERE ${
+      this.columnName as string
+    } = ${key}`;
+    return result as unknown as Array<TypeOfProps<Pick<Type, COLUMNS>>>;
   }
-  getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
-    throw new Error('Method not implemented.');
+
+  async getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
+    const result = await this.client`SELECT ${this.columnName as string} FROM ${this.client(this.objectStoreName)} WHERE ${
+      this.columnName as string
+    } = ${key}`;
+    return result
   }
 
   async get<COLUMNS extends keyof Type>(
@@ -200,7 +221,7 @@ export class PostgresqlObjectStoreOrIndex<
       columns as string[],
     )} FROM ${this.client(this.objectStoreName)} WHERE ${
       this.columnName as string
-    } = ${key}`;
+    } = ${key} LIMIT 1`;
     if (result.length > 0) {
       return result[0] as TypeOfProps<Pick<Type, COLUMNS>>;
     } else {
@@ -221,29 +242,22 @@ export class PostgresqlDatabaseObjectStore<
     super(client, objectStoreName, columnName);
   }
   
-  add(value: TypeOfProps<Type>): Promise<void> {
-    throw new Error('Method not implemented.');
+  async add(value: TypeOfProps<Type>): Promise<void> {
+    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${Object.keys(value)}) VALUES ${Object.values(value)}`;
   }
-  clear(): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async clear(): Promise<void> {
+    await this.client`DELETE FROM ${this.client(this.objectStoreName)}`
   }
-  delete(key: Type[C]['type']['_T']): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async delete(key: Type[C]['type']['_T']): Promise<void> {
+    await this.client`DELETE FROM ${this.client(this.objectStoreName)} WHERE ${
+      this.columnName as string
+    } = ${key}`
   }
-  put(value: TypeOfProps<Type>): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {
-    throw new Error('Method not implemented.');
-  }
-  getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
-    throw new Error('Method not implemented.');
-  }
-  getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
-    throw new Error('Method not implemented.');
-  }
-  getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
-    throw new Error('Method not implemented.');
+  
+  async put(value: TypeOfProps<Type>): Promise<void> {
+    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${Object.keys(value)}) VALUES ${Object.values(value)} ON CONFLICT DO UPDATE`;
   }
 
   // TODO FIXME the database needs to know which columns are indexes

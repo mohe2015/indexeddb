@@ -130,8 +130,7 @@ export interface DatabaseObjectStoreOrIndex<
     key: Type[C]['type']['_T'],
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined>;
 
-  count<COLUMNS extends keyof Type>(
-    columns: COLUMNS[],
+  count(
     key: Type[C]['type']['_T'],
   ): Promise<number>;
 
