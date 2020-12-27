@@ -208,15 +208,18 @@ export class IndexedDatabaseObjectStoreOrIndex<
     return await handleRequest(this.objectStoreOrIndex.get(key))
   }
 
-  async count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {
+  async count(key: Type[C]['type']['_T']): Promise<number> {
     return await handleRequest(this.objectStoreOrIndex.count(key))
   }
+
   async getKey<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T']> {
     return await handleRequest(this.objectStoreOrIndex.getKey(key))
   }
+
   async getAll<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<TypeOfProps<Pick<Type, COLUMNS>>[]> {
     return await handleRequest(this.objectStoreOrIndex.getAll(key))
   }
+
   async getAllKeys<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<Type[C]['type']['_T'][]> {
     return await handleRequest(this.objectStoreOrIndex.getAllKeys(key))
   }
@@ -233,9 +236,10 @@ export class IndexedDatabaseObjectStore<
     this.objectStore = objectStore
   }
 
-  // TODO FIXME the database needs to know which columns are indexes
-  async index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>> {
-    return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(name));
+  index<D extends keyof Type>(
+    columnName: D,
+  ): DatabaseObjectStoreOrIndex<Type, D> {
+    return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(columnName as string));
   }
 
   async add(value: TypeOfProps<Type>): Promise<void> {

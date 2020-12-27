@@ -157,8 +157,10 @@ export interface DatabaseObjectStore<
   Type extends { [a: string]: DatabaseColumn<any> },
   C extends keyof Type
 > extends DatabaseObjectStoreOrIndex<Type, C> {
-  // TODO FIXME the database needs to know which columns are indexes
- index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>>;
+
+  index<D extends keyof Type>(
+    columnName: D,
+  ): DatabaseObjectStoreOrIndex<Type, D> 
 
   add(
     value: TypeOfProps<Type>
