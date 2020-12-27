@@ -58,6 +58,9 @@ const main = async () => {
 
         const database = await connection.database("test12", objectStores, 1, async (transaction) => {
             await transaction.createObjectStore("posts", "title", objectStores.posts.title)
+
+        
+
             await transaction.createColumn("posts", "content", objectStores.posts.content)
         });
 
@@ -65,7 +68,7 @@ const main = async () => {
 
             const objectStore = transaction.objectStore("posts", "title")
 
-            await objectStore.add(undefined, {title: "Moritz Hedtke", content: "Hallo, wie geht es dir?"});
+            await objectStore.add({title: "Moritz Hedtke", content: "Hallo, wie geht es dir?"});
 
             const value = await objectStore.get(["content"], "Moritz Hedtke")
 

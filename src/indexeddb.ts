@@ -121,7 +121,7 @@ class IndexedDatabaseTransaction<
 
     // https://catchjs.com/Docs/AsyncAwait
     this.done = new Promise((resolve, reject) => {
-      this.transaction.addEventListener('abort', (event) => {
+      this.transaction.addEventListener('abort', () => {
         console.warn(transaction.error)
         resolve() // TODO FIXME this may be questionable
       })
@@ -149,6 +149,17 @@ class IndexedDatabaseTransaction<
       keyPath: primaryColumnName as string,
       autoIncrement: primaryColumn.type.postgresqlType == "SERIAL" // TODO FIXME
     }));
+
+    // keyPath set (it's just a normal column)
+    // autoincremennt sets column type to serial
+    
+    // keypath not set (for postgresql it's just an extra column)
+    // maybe reserve a name for that? and abstract it away? with a special type?
+
+    // DOTHIS: maybe just don't allow an unset keyPath?
+
+    // https://golb.hplar.ch/2017/09/A-closer-look-at-IndexedDB.html
+    // An out-of-line key is stored separately from the value. It has the advantage that the application can store not only JavaScript objects but also primitive data types like string and numbers as the value of the record.
   }
 
   async createColumn<
@@ -226,8 +237,8 @@ export class IndexedDatabaseObjectStore<
     return new IndexedDatabaseObjectStoreOrIndex(this.objectStore.index(name));
   }
 
-  async add(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
-    await handleRequest(this.objectStore.add(value, key))
+  async add(value: TypeOfProps<Type>): Promise<void> {
+    await handleRequest(this.objectStore.add(value))
   }
 
   async clear(): Promise<void> {
@@ -238,8 +249,8 @@ export class IndexedDatabaseObjectStore<
     await handleRequest(this.objectStore.delete(key))
   }
 
-  async put(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
-    await handleRequest(this.objectStore.put(value, key))
+  async put(value: TypeOfProps<Type>): Promise<void> {
+    await handleRequest(this.objectStore.put(value))
   }
 }
 

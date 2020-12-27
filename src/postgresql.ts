@@ -199,7 +199,7 @@ export class PostgresqlDatabaseObjectStore<
     super(client, objectStoreName, columnName);
   }
   
-  add(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
+  add(value: TypeOfProps<Type>): Promise<void> {
     throw new Error('Method not implemented.');
   }
   clear(): Promise<void> {
@@ -208,7 +208,7 @@ export class PostgresqlDatabaseObjectStore<
   delete(key: Type[C]['type']['_T']): Promise<void> {
     throw new Error('Method not implemented.');
   }
-  put(key: Type[C]['type']['_T'], value: TypeOfProps<Type>): Promise<void> {
+  put(value: TypeOfProps<Type>): Promise<void> {
     throw new Error('Method not implemented.');
   }
   count<COLUMNS extends keyof Type>(columns: COLUMNS[], key: Type[C]['type']['_T']): Promise<number> {

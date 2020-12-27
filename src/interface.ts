@@ -161,7 +161,6 @@ export interface DatabaseObjectStore<
  index(name: string): Promise<DatabaseObjectStoreOrIndex<Type, C>>;
 
   add(
-    key: Type[C]['type']['_T'],
     value: TypeOfProps<Type>
   ): Promise<void>
 
@@ -172,7 +171,6 @@ export interface DatabaseObjectStore<
   ): Promise<void>;
 
   put(
-    key: Type[C]['type']['_T'],
     value: TypeOfProps<Type>
   ): Promise<void>
 }
