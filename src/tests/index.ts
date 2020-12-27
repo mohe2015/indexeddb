@@ -68,7 +68,7 @@ const main = async () => {
 
             const objectStore = transaction.objectStore("posts", "title")
 
-            await objectStore.add({title: "Moritz Hedtke", content: "Hallo, wie geht es dir?"});
+            await objectStore.put({title: "Moritz Hedtke", content: "Hallo, wie geht es dir?"});
 
             const value = await objectStore.get(["content"], "Moritz Hedtke")
 

@@ -249,7 +249,7 @@ export class PostgresqlDatabaseObjectStore<
   }
   
   async put(value: TypeOfProps<Type>): Promise<void> {
-    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${this.client(Object.keys(value))}) VALUES (${Object.values(value)}) ON CONFLICT DO NOTHING`//UPDATE SET ${this.client(value)}`;
+    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${this.client(Object.keys(value))}) VALUES (${Object.values(value)}) ON CONFLICT (${this.client(this.columnName as string)}) DO UPDATE SET ${this.client(value)}`;
   }
 
   index<D extends keyof Type>(
