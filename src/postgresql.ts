@@ -22,17 +22,15 @@ SPDX-License-Identifier: AGPL-3.0-or-later
 */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* would love to be able to remove this eslint ignore */
-import {
+import type {
   Database,
   DatabaseColumn,
-  DatabaseColumnType,
   DatabaseConnection,
   DatabaseObjectStore,
   DatabaseObjectStoreOrIndex,
   DatabaseTransaction,
-  dbtypes,
   TypeOfProps,
-} from './interface';
+} from './interface.js';
 import postgres from 'postgres';
 
 // pg and pg-promise have shitty promise support
@@ -57,16 +55,9 @@ class PostgresqlDatabaseConnection implements DatabaseConnection {
     let oldVersion: number;
     const database = new PostgresqlDatabase<SCHEMA>(pool);
     await database.transaction(["migration_info"], "versionchange", async (transaction) => {
-      transaction.createObjectStore("migration_info", "key", {
-        columnType: DatabaseColumnType.PRIMARY_KEY,
-        type: dbtypes.string,
-      })
-      transaction.createColumn("migration_info", "value", {
-        columnType: DatabaseColumnType.PRIMARY_KEY,
-        type: dbtypes.string
-      })
+      await transaction.client`CREATE TABLE IF NOT EXISTS migration_info (key TEXT, value TEXT)`;
       const result = await transaction.objectStore("migration_info", "key").get(["value"], "version")
-      oldVersion = result?.value || 1
+      oldVersion = result?.value || 0
     })
     await database.transaction([], 'versionchange', async (transaction) => {
       await callback(transaction, oldVersion);
@@ -92,7 +83,7 @@ class PostgresqlDatabase<
     objectStores: ALLOWEDOBJECTSTORES[],
     mode: 'readonly' | 'readwrite' | 'versionchange',
     callback: (
-      transaction: DatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>,
+      transaction: PostgresqlDatabaseTransaction<SCHEMA, ALLOWEDOBJECTSTORES>,
     ) => Promise<void>,
   ): Promise<void> {
     await this.pool.begin(async (sql) => {
@@ -151,7 +142,7 @@ class PostgresqlDatabaseTransaction<
   objectStore<NAME extends ALLOWEDOBJECTSTORES, C extends keyof SCHEMA[NAME]>(
     name: NAME,
     columnName: C,
-  ): DatabaseObjectStore<SCHEMA[NAME], C> {
+  ): PostgresqlDatabaseObjectStore<SCHEMA[NAME], C> {
     return new PostgresqlDatabaseObjectStore(
       this.client,
       name as string,
@@ -219,9 +210,9 @@ export class PostgresqlDatabaseObjectStoreOrIndex<
   ): Promise<TypeOfProps<Pick<Type, COLUMNS>> | undefined> {
     const result = await this.client`SELECT ${this.client(
       columns as string[],
-    )} FROM ${this.client(this.objectStoreName)} WHERE ${
+    )} FROM ${this.client(this.objectStoreName)} WHERE ${this.client(
       this.columnName as string
-    } = ${key} LIMIT 1`;
+    )} = ${key} LIMIT 1`;
     if (result.length > 0) {
       return result[0] as TypeOfProps<Pick<Type, COLUMNS>>;
     } else {
@@ -257,7 +248,7 @@ export class PostgresqlDatabaseObjectStore<
   }
   
   async put(value: TypeOfProps<Type>): Promise<void> {
-    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${Object.keys(value)}) VALUES ${Object.values(value)} ON CONFLICT DO UPDATE`;
+    await this.client`INSERT INTO ${this.client(this.objectStoreName)} (${this.client(Object.keys(value))}) VALUES (${this.client(Object.values(value))}) ON CONFLICT DO UPDATE SET ${this.client(value)}`;
   }
 
   index<D extends keyof Type>(

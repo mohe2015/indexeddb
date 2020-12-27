@@ -56,10 +56,12 @@ const main = async () => {
     try {
         const connection: DatabaseConnection = await create();
 
-        const database = await connection.database("test12", objectStores, 1, async (transaction) => {
-            await transaction.createObjectStore("posts", "title", objectStores.posts.title)
+        const database = await connection.database("test12", objectStores, 1, async (transaction, oldVersion) => {
+            if (oldVersion === 0) {
+                await transaction.createObjectStore("posts", "title", objectStores.posts.title)
 
-            await transaction.createColumn("posts", "content", objectStores.posts.content)
+                await transaction.createColumn("posts", "content", objectStores.posts.content)
+            }
         });
 
         await database.transaction(["posts"], "readwrite", async (transaction) => {
